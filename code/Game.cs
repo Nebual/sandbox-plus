@@ -1,5 +1,6 @@
 using Sandbox;
 using MinimalExtended;
+using System;
 
 namespace SandboxGame
 {
@@ -75,7 +76,7 @@ namespace SandboxGame
 				ent.PhysicsBody.Position -= delta;
 				//DebugOverlay.Line( p, tr.EndPos, 10, false );
 			}
-
+			Sandbox.Hooks.Entities.TriggerOnSpawned(ent, owner);
 		}
 
 		[ServerCmd( "spawn_entity" )]
@@ -107,6 +108,20 @@ namespace SandboxGame
 			ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) );
 
 			//Log.Info( $"ent: {ent}" );
+			Sandbox.Hooks.Entities.TriggerOnSpawned(ent, owner);
+		}
+	}
+}
+
+namespace Sandbox.Hooks
+{
+	public static partial class Entities
+	{
+		public static event Action<Entity,Entity> OnSpawned;
+
+		public static void TriggerOnSpawned(Entity spawned, Entity owner)
+		{
+			OnSpawned?.Invoke(spawned, owner);
 		}
 	}
 }

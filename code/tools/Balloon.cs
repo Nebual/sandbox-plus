@@ -108,6 +108,8 @@
 					.WithMaxRestLength( 100 )
 					.WithCollisionsEnabled()
 					.Create();
+
+				Sandbox.Hooks.Entities.TriggerOnSpawned(ent, Owner);
 			}
 		}
 	}

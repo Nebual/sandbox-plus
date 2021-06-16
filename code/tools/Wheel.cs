@@ -78,6 +78,8 @@
 					.WithPivot( tr.EndPos )
 					.WithBasis( Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 90, 0, 0 ) ) )
 					.Create();
+
+				Sandbox.Hooks.Entities.TriggerOnSpawned(ent, Owner);
 			}
 		}
 	}
