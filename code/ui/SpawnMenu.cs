@@ -15,7 +15,7 @@ public partial class SpawnMenu : Panel
 	{
 		Instance = this;
 
-		StyleSheet.Load( "/ui/sandbox/SpawnMenu.scss" );
+		StyleSheet.Load( "/ui/SpawnMenu.scss" );
 
 		var left = Add.Panel( "left" );
 		{
@@ -46,7 +46,7 @@ public partial class SpawnMenu : Panel
 				{
 					foreach ( var entry in Library.GetAllAttributes<Sandbox.Tools.BaseTool>() )
 					{
-						if ( entry.Title.StartsWith( "Sandbox.Tools.Base" ) )
+						if ( entry.Title.StartsWith( "Base" ) )
 							continue;
 
 						var button = list.Add.Button( entry.Title );

@@ -9,7 +9,7 @@ public partial class SandboxHud : HudEntity<RootPanel>
 		if ( !IsClient )
 			return;
 
-		RootPanel.StyleSheet.Load( "/ui/sandbox/SandboxHud.scss" );
+		RootPanel.StyleSheet.Load( "/ui/SandboxHud.scss" );
 
 		RootPanel.AddChild<NameTags>();
 		RootPanel.AddChild<CrosshairCanvas>();
