@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace Sandbox
@@ -25,7 +26,7 @@ namespace Sandbox
 
 	public class DuplicatorEncoder
 	{
-		public static List<Dictionary<string, object>> Decode( byte[] data )
+		public static DuplicatorData Decode( byte[] data )
 		{
 			using ( var stream = new MemoryStream( data ) )
 			using ( var bn = new BinaryReader( stream ) )
@@ -42,30 +43,86 @@ namespace Sandbox
 			}
 		}
 
-		static byte[] Encode( List<Dictionary<string, object>> entityData )
+		static void writeString( BinaryWriter bn, string s )
+		{
+			bn.Write( s.Length );
+			bn.Write( Encoding.ASCII.GetBytes( s ) );
+		}
+		static string readString( BinaryReader bn )
+		{
+			return Encoding.ASCII.GetString( bn.ReadBytes( bn.ReadInt32() ) );
+		}
+
+		static byte[] Encode( DuplicatorData entityData )
 		{
 			using ( var stream = new MemoryStream() )
 			using ( var bn = new BinaryWriter( stream ) )
 			{
 				bn.Write( (uint)0x44555045 ); // File type 'DUPE'
 				bn.Write( (byte)0 ); // Encoder version
+				writeString( bn, entityData.name );
+				writeString( bn, entityData.author );
+				writeString( bn, entityData.date );
+
+				bn.Write( (uint)entityData.entities.Count );
+				foreach(DuplicatorData.DuplicatorItem item in entityData.entities )
+				{
+
+				}
+				bn.Write( (uint)entityData.constraints.Count );
+				foreach ( DuplicatorData.DuplicatorItem item in entityData.entities )
+				{
+
+				}
+
 				return stream.GetBuffer();
 			}
 		}
 
-		static string EncodeJson( List<Dictionary<string, object>> entityData )
+		static DuplicatorData DecodeV0( BinaryReader reader )
+		{
+			return new DuplicatorData();
+		}
+
+		static string EncodeJson( DuplicatorData entityData )
 		{
 			return JsonSerializer.Serialize( entityData, new JsonSerializerOptions { WriteIndented = true } );
 		}
 
-		static List<Dictionary<string, object>> DecodeV0( BinaryReader reader )
+		static DuplicatorData DecodeJsonV0( string data )
 		{
-			return new List<Dictionary<string, object>>();
+			return (DuplicatorData)JsonSerializer.Deserialize( data, typeof( DuplicatorData ) );
+		}
+	}
+
+	public class DuplicatorData
+	{
+		public class DuplicatorItem
+		{
+			public string className;
+			public string model;
+			public Vector3 position;
+			public Rotation angles;
+			public List<object> userData = new List<object>();
+		}
+		public class DuplicatorConstraint
+		{
+			public int entIndex1;
+			public int entIndex2;
+			public int bone1;
+			public int bone2;
+			public string type;
 		}
 
-		static List<Dictionary<string, object>> DecodeJsonV0( string data )
+		public string name = "";
+		public string author = "";
+		public string date = "";
+		public List<DuplicatorItem> entities = new List<DuplicatorItem>();
+		public List<DuplicatorConstraint> constraints = new List<DuplicatorConstraint>();
+		public void Clear() { name = ""; author = ""; date = ""; entities.Clear(); constraints.Clear(); }
+		public void Add(Entity ent)
 		{
-			return (List<Dictionary<string, object>>)JsonSerializer.Deserialize( data, typeof( List<Dictionary<string, object>> ) );
+
 		}
 	}
 }
@@ -121,13 +178,13 @@ namespace Sandbox.Tools
 			}
 		}
 
-		List<Entity> Selected = new List<Entity>();
-		Vector3 Origin;
+		DuplicatorData Selected = new DuplicatorData();
+		Matrix Origin;
 		float PasteRotationOffset = 0;
 		float PasteHeightOffset = 0;
 
 		[ClientRpc]
-		void SetupGhosts( List<Entity> entities, Vector3 origin )
+		void SetupGhosts( DuplicatorData entities, Vector3 origin )
 		{
 
 		}
@@ -135,14 +192,16 @@ namespace Sandbox.Tools
 		void Copy( TraceResult tr )
 		{
 			var floorTr = Trace.Ray( tr.EndPos, tr.EndPos + new Vector3( 0, 0, -1e6f ) ).WorldOnly().Run();
-			Origin = floorTr.Hit ? floorTr.EndPos : tr.EndPos;
+			Origin = Matrix.CreateTranslation( floorTr.Hit ? floorTr.EndPos : tr.EndPos );
+
 			PasteRotationOffset = 0;
 			PasteHeightOffset = 0;
 			Selected.Clear();
 
 			if ( AreaCopy )
 			{
-				Selected.AddRange( Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) );
+				foreach ( Entity ent in Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) )
+					Selected.Add( ent );
 			}
 			else
 			{
@@ -156,7 +215,7 @@ namespace Sandbox.Tools
 
 				}
 			}
-			SetupGhosts( To.Single( Owner ), Selected, Origin );
+			SetupGhosts( To.Single( Owner ), Selected, Origin.Transform( new Vector3() ) );
 		}
 
 		void Paste( TraceResult tr )
