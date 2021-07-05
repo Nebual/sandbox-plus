@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace Sandbox
 {
-	public class Duplicatable
+	public interface Duplicatable
 	{
 		// Called while copying to store entity data
 		public virtual Dictionary<string, object> PreDuplicatorCopy() { return new Dictionary<string, object>(); }
@@ -52,9 +53,19 @@ namespace Sandbox
 			}
 		}
 
+		static string EncodeJson( List<Dictionary<string, object>> entityData )
+		{
+			return JsonSerializer.Serialize( entityData, new JsonSerializerOptions { WriteIndented = true } );
+		}
+
 		static List<Dictionary<string, object>> DecodeV0( BinaryReader reader )
 		{
 			return new List<Dictionary<string, object>>();
+		}
+
+		static List<Dictionary<string, object>> DecodeJsonV0( string data )
+		{
+			return (List<Dictionary<string, object>>)JsonSerializer.Deserialize( data, typeof( List<Dictionary<string, object>> ) );
 		}
 	}
 }
@@ -99,7 +110,7 @@ namespace Sandbox.Tools
 
 		}
 
-		void ToolFired(InputButton input)
+		void OnTool( InputButton input)
 		{
 			var startPos = Owner.EyePos;
 			var dir = Owner.EyeRot.Forward;
@@ -133,9 +144,9 @@ namespace Sandbox.Tools
 			using ( Prediction.Off() )
 			{
 				if ( Input.Pressed( InputButton.Attack1 ) )
-					ToolFired( InputButton.Attack1 );
+					OnTool( InputButton.Attack1 );
 				if ( Input.Pressed( InputButton.Attack2 ) )
-					ToolFired( InputButton.Attack2 );
+					OnTool( InputButton.Attack2 );
 			}
 		}
 
