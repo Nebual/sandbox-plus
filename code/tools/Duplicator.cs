@@ -36,52 +36,102 @@ namespace Sandbox
 				switch ( ver )
 				{
 					case 0:
-						return DecodeV0( bn );
+						return new DecoderV0( bn ).Decode();
 					default:
 						throw new Exception( "Invalid encoder version: " + ver );
 				}
 			}
 		}
 
-		static void writeString( BinaryWriter bn, string s )
-		{
-			bn.Write( s.Length );
-			bn.Write( Encoding.ASCII.GetBytes( s ) );
-		}
-		static string readString( BinaryReader bn )
-		{
-			return Encoding.ASCII.GetString( bn.ReadBytes( bn.ReadInt32() ) );
-		}
-
 		static byte[] Encode( DuplicatorData entityData )
 		{
 			using ( var stream = new MemoryStream() )
-			using ( var bn = new BinaryWriter( stream ) )
 			{
-				bn.Write( (uint)0x44555045 ); // File type 'DUPE'
-				bn.Write( (byte)0 ); // Encoder version
-				writeString( bn, entityData.name );
-				writeString( bn, entityData.author );
-				writeString( bn, entityData.date );
-
-				bn.Write( (uint)entityData.entities.Count );
-				foreach ( DuplicatorData.DuplicatorItem item in entityData.entities )
+				using ( var bn = new BinaryWriter( stream ) )
 				{
-
+					new Encoder( bn ).Encode( entityData );
 				}
-				bn.Write( (uint)entityData.constraints.Count );
-				foreach ( DuplicatorData.DuplicatorItem item in entityData.entities )
-				{
-
-				}
-
 				return stream.GetBuffer();
 			}
 		}
 
-		static DuplicatorData DecodeV0( BinaryReader reader )
+		private class Encoder
 		{
-			return new DuplicatorData();
+			BinaryWriter bn;
+			public Encoder(BinaryWriter bn_) { bn = bn_; }
+			public void Encode( DuplicatorData entityData )
+			{
+				bn.Write( (uint)0x44555045 ); // File type 'DUPE'
+				bn.Write( (byte)0 ); // Encoder version
+				writeString( entityData.name );
+				writeString( entityData.author );
+				writeString( entityData.date );
+
+				bn.Write( (uint)entityData.entities.Count );
+				foreach ( DuplicatorData.DuplicatorItem item in entityData.entities )
+				{
+					writeEntity( item );
+				}
+				bn.Write( (uint)entityData.constraints.Count );
+				foreach ( DuplicatorData.DuplicatorConstraint item in entityData.constraints )
+				{
+					writeConstraint( item );
+				}
+			}
+
+			void writeString( string s )
+			{
+				bn.Write( s.Length );
+				bn.Write( Encoding.ASCII.GetBytes( s ) );
+			}
+
+			void writeVector( string s )
+			{
+				bn.Write( s.Length );
+				bn.Write( Encoding.ASCII.GetBytes( s ) );
+			}
+
+			void writeEntity( DuplicatorData.DuplicatorItem ent )
+			{
+				bn.Write( ent.index );
+				writeString( bn, ent.className );
+				writeString( bn, ent.model );
+			}
+
+			void writeConstraint( DuplicatorData.DuplicatorConstraint constr )
+			{
+			}
+		}
+
+		private abstract class Decoder
+		{
+			protected BinaryReader bn;
+			public Decoder(BinaryReader bn_ ) { bn = bn_; }
+			public abstract DuplicatorData Decode();
+			public abstract string readString();
+			public abstract DuplicatorData.DuplicatorItem readEntity();
+			public abstract DuplicatorData.DuplicatorConstraint readConstraint();
+		}
+
+		private class DecoderV0 : Decoder
+		{
+			public DecoderV0( BinaryReader bn_ ) : base(bn_) { }
+			public override DuplicatorData Decode()
+			{
+				return new DuplicatorData();
+			}
+			public override string readString()
+			{
+				return Encoding.ASCII.GetString( bn.ReadBytes( bn.ReadInt32() ) );
+			}
+			public override DuplicatorData.DuplicatorItem readEntity()
+			{
+
+			}
+			public override DuplicatorData.DuplicatorConstraint readConstraint()
+			{
+
+			}
 		}
 
 		static string EncodeJson( DuplicatorData entityData )
