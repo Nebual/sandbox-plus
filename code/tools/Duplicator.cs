@@ -11,16 +11,16 @@ namespace Sandbox
 	public interface Duplicatable
 	{
 		// Called while copying to store entity data
-		public virtual Dictionary<string, object> PreDuplicatorCopy() { return new Dictionary<string, object>(); }
+		public virtual List<object> PreDuplicatorCopy() { return new List<object>(); }
 
 		// Called after the duplicator has finished creating this entity
-		public virtual void PostDuplicatorPaste( Dictionary<string, object> data ) { }
+		public virtual void PostDuplicatorPaste( List<object> userdata ) { }
 
 		// Called after all entities are created
 		public virtual void PostDuplicatorPasteEntities( Dictionary<int, Entity> entities ) { }
 
 		// Called after pasting is done
-		public virtual void PostDuplicatorPasteDone( Dictionary<int, Entity> entities ) { }
+		public virtual void PostDuplicatorPasteDone() { }
 
 	}
 
@@ -65,7 +65,7 @@ namespace Sandbox
 				writeString( bn, entityData.date );
 
 				bn.Write( (uint)entityData.entities.Count );
-				foreach(DuplicatorData.DuplicatorItem item in entityData.entities )
+				foreach ( DuplicatorData.DuplicatorItem item in entityData.entities )
 				{
 
 				}
@@ -99,11 +99,39 @@ namespace Sandbox
 	{
 		public class DuplicatorItem
 		{
+			public int index;
 			public string className;
 			public string model;
 			public Vector3 position;
-			public Rotation angles;
+			public Rotation rotation;
 			public List<object> userData = new List<object>();
+
+			public DuplicatorItem( Entity ent, Matrix originInv )
+			{
+				index = ent.NetworkIdent;
+				className = ent.ClassInfo.Name;
+				if ( ent is Prop p )
+					model = p.GetModel().Name;
+				else
+					model = "";
+				position = originInv.Transform( ent.Position );
+				rotation = ent.Rotation;
+				if ( ent is Duplicatable dupe )
+					userData = dupe.PreDuplicatorCopy();
+			}
+
+			public Entity Spawn( Matrix origin )
+			{
+				Entity ent = Library.Create<Entity>( className );
+				ent.Position = origin.Transform( position );
+				ent.Rotation = rotation;
+				//ent.PhysicsEnabled = ;
+				//ent.EnableSolidCollisions =;
+				//ent.Massless = ;
+				if ( ent is Duplicatable dupe )
+					dupe.PostDuplicatorPaste( userData );
+				return ent;
+			}
 		}
 		public class DuplicatorConstraint
 		{
@@ -112,6 +140,15 @@ namespace Sandbox
 			public int bone1;
 			public int bone2;
 			public string type;
+			public DuplicatorConstraint()
+			{
+
+			}
+
+			public void Spawn( Dictionary<int, Entity> spawnedEnts )
+			{
+
+			}
 		}
 
 		public string name = "";
@@ -120,9 +157,45 @@ namespace Sandbox
 		public List<DuplicatorItem> entities = new List<DuplicatorItem>();
 		public List<DuplicatorConstraint> constraints = new List<DuplicatorConstraint>();
 		public void Clear() { name = ""; author = ""; date = ""; entities.Clear(); constraints.Clear(); }
-		public void Add(Entity ent)
+		public void Add( Entity ent, Matrix originInv )
 		{
-
+			entities.Add( new DuplicatorItem( ent, originInv ) );
+		}
+		public void Paste( Matrix origin )
+		{
+			Dictionary<int, Entity> spawnedEnts = new Dictionary<int, Entity>();
+			foreach ( DuplicatorItem item in entities )
+			{
+				try
+				{
+					spawnedEnts[item.index] = item.Spawn( origin );
+				}
+				catch ( Exception e )
+				{
+					Log.Warning( e, "Failed to spawn class (" + item.className + ")" );
+				}
+			}
+			foreach ( Entity ent in spawnedEnts.Values )
+			{
+				if ( ent is Duplicatable dupe )
+					dupe.PostDuplicatorPasteEntities( spawnedEnts );
+			}
+			foreach ( DuplicatorConstraint item in constraints )
+			{
+				try
+				{
+					item.Spawn( spawnedEnts );
+				}
+				catch ( Exception e )
+				{
+					Log.Warning( e, "Failed to apply constraint" );
+				}
+			}
+			foreach ( Entity ent in spawnedEnts.Values )
+			{
+				if ( ent is Duplicatable dupe )
+					dupe.PostDuplicatorPasteDone();
+			}
 		}
 	}
 }
@@ -132,17 +205,6 @@ namespace Sandbox.Tools
 	[Library( "tool_duplicator", Title = "Duplicator", Description = "Save and load contraptions", Group = "construction" )]
 	public partial class DuplicatorTool : BaseTool
 	{
-		static HashSet<string> GenericClasses = new HashSet<string>();
-		static void GenericFactory( string classname )
-		{
-			var ent = Library.Create<Prop>( classname );
-			//ent.Position = ;
-			//ent.Rotation = ;
-			//ent.PhysicsEnabled = ;
-			//ent.EnableSolidCollisions =;
-			//ent.Massless = ;
-		}
-
 		// Default behavior will be restoring the freeze state of entities to what they were when copied
 		[ConVar.ClientData( "tool_duplicator_freeze_all", Help = "Freeze all entities during pasting", Saved = true )]
 		public bool FreezeAllAfterPaste { get; set; } = false;
@@ -152,11 +214,6 @@ namespace Sandbox.Tools
 		public float AreaSize { get; set; } = 250;
 
 
-		List<PreviewEntity> ghosts = new List<PreviewEntity>();
-		public override void CreatePreviews()
-		{
-
-		}
 
 		void GetAttachedEntities( Entity baseEnt )
 		{
@@ -168,7 +225,7 @@ namespace Sandbox.Tools
 				Entity ent = entsToCheck.Pop();
 				if ( entsChecked.Add( ent ) )
 				{
-					Selected.Add( ent );
+					Selected.Add( ent, Origin.Inverted );
 					foreach ( Entity p in ent.Children )
 						entsToCheck.Push( p );
 					if ( ent.Parent.IsValid() )
@@ -183,6 +240,7 @@ namespace Sandbox.Tools
 		float PasteRotationOffset = 0;
 		float PasteHeightOffset = 0;
 
+		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
 		void SetupGhosts( DuplicatorData entities, Vector3 origin )
 		{
@@ -201,7 +259,7 @@ namespace Sandbox.Tools
 			if ( AreaCopy )
 			{
 				foreach ( Entity ent in Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) )
-					Selected.Add( ent );
+					Selected.Add( ent, Origin.Inverted );
 			}
 			else
 			{
@@ -218,6 +276,7 @@ namespace Sandbox.Tools
 			SetupGhosts( To.Single( Owner ), Selected, Origin.Transform( new Vector3() ) );
 		}
 
+		static HashSet<string> AllowedClasses = new HashSet<string>();
 		void Paste( TraceResult tr )
 		{
 
