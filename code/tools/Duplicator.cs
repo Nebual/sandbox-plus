@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Text.Json;
 
 namespace Sandbox
@@ -76,7 +76,7 @@ namespace Sandbox.Tools
 	public partial class DuplicatorTool : BaseTool
 	{
 		static HashSet<string> GenericClasses = new HashSet<string>();
-		static void GenericFactory(string classname)
+		static void GenericFactory( string classname )
 		{
 			var ent = Library.Create<Prop>( classname );
 			//ent.Position = ;
@@ -87,10 +87,12 @@ namespace Sandbox.Tools
 		}
 
 		// Default behavior will be restoring the freeze state of entities to what they were when copied
-		[ConVar.ClientData( "tool_duplicator_freeze_all" )]
+		[ConVar.ClientData( "tool_duplicator_freeze_all", Help = "Freeze all entities during pasting", Saved = true )]
 		public bool FreezeAllAfterPaste { get; set; } = false;
-		[ConVar.ClientData( "tool_duplicator_unfreeze_all" )]
+		[ConVar.ClientData( "tool_duplicator_unfreeze_all", Help = "Unfreeze all entities after pasting", Saved = true )]
 		public bool UnfreezeAllAfterPaste { get; set; } = false;
+		[ConVar.ClientData( "tool_duplicator_area_size", Help = "Area copy size", Saved = true )]
+		public float AreaSize { get; set; } = 250;
 
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
@@ -99,10 +101,62 @@ namespace Sandbox.Tools
 
 		}
 
+		void GetAttachedEntities( Entity baseEnt )
+		{
+			HashSet<Entity> entsChecked = new();
+			Stack<Entity> entsToCheck = new();
+			entsToCheck.Push( baseEnt );
+			while ( entsToCheck.Count > 0 )
+			{
+				Entity ent = entsToCheck.Pop();
+				if ( entsChecked.Add( ent ) )
+				{
+					Selected.Add( ent );
+					foreach ( Entity p in ent.Children )
+						entsToCheck.Push( p );
+					if ( ent.Parent.IsValid() )
+						entsToCheck.Push( ent.Parent );
+
+				}
+			}
+		}
+
+		List<Entity> Selected = new List<Entity>();
+		Vector3 Origin;
+		float PasteRotationOffset = 0;
+		float PasteHeightOffset = 0;
+
+		[ClientRpc]
+		void SetupGhosts( List<Entity> entities, Vector3 origin )
+		{
+
+		}
 
 		void Copy( TraceResult tr )
 		{
+			var floorTr = Trace.Ray( tr.EndPos, tr.EndPos + new Vector3( 0, 0, -1e6f ) ).WorldOnly().Run();
+			Origin = floorTr.Hit ? floorTr.EndPos : tr.EndPos;
+			PasteRotationOffset = 0;
+			PasteHeightOffset = 0;
+			Selected.Clear();
 
+			if ( AreaCopy )
+			{
+				Selected.AddRange( Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) );
+			}
+			else
+			{
+				// Hit an entity
+				if ( tr.Entity.IsValid() )
+				{
+					GetAttachedEntities( tr.Entity );
+				}
+				else // Hit the world
+				{
+
+				}
+			}
+			SetupGhosts( To.Single( Owner ), Selected, Origin );
 		}
 
 		void Paste( TraceResult tr )
@@ -110,13 +164,14 @@ namespace Sandbox.Tools
 
 		}
 
-		void OnTool( InputButton input)
+		bool AreaCopy = false;
+		void OnTool( InputButton input )
 		{
 			var startPos = Owner.EyePos;
 			var dir = Owner.EyeRot.Forward;
 			var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance ).Ignore( Owner ).Run();
 
-			switch(input)
+			switch ( input )
 			{
 				case InputButton.Attack1:
 					if ( tr.Hit )
@@ -146,7 +201,24 @@ namespace Sandbox.Tools
 				if ( Input.Pressed( InputButton.Attack1 ) )
 					OnTool( InputButton.Attack1 );
 				if ( Input.Pressed( InputButton.Attack2 ) )
-					OnTool( InputButton.Attack2 );
+				{
+					if ( Input.Down( InputButton.Run ) )
+					{
+						AreaCopy = !AreaCopy;
+					}
+					else
+					{
+						OnTool( InputButton.Attack2 );
+					}
+				}
+				if ( Input.Pressed( InputButton.Next ) && Input.Down( InputButton.Use ) )
+				{
+					PasteHeightOffset += 5;
+				}
+				if ( Input.Pressed( InputButton.Prev ) && Input.Down( InputButton.Use ) )
+				{
+					PasteHeightOffset -= 5;
+				}
 			}
 		}
 
