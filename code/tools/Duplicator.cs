@@ -106,7 +106,7 @@ namespace Sandbox
 			public Rotation rotation;
 			public List<object> userData = new List<object>();
 
-			public DuplicatorItem( Entity ent, Matrix originInv )
+			public DuplicatorItem( Entity ent, Matrix origin )
 			{
 				index = ent.NetworkIdent;
 				className = ent.ClassInfo.Name;
@@ -114,7 +114,7 @@ namespace Sandbox
 					model = p.GetModel().Name;
 				else
 					model = "";
-				position = originInv.Transform( ent.Position );
+				position = origin.Inverted.Transform( ent.Position );
 				rotation = ent.Rotation;
 				if ( ent is Duplicatable dupe )
 					userData = dupe.PreDuplicatorCopy();
@@ -157,9 +157,9 @@ namespace Sandbox
 		public List<DuplicatorItem> entities = new List<DuplicatorItem>();
 		public List<DuplicatorConstraint> constraints = new List<DuplicatorConstraint>();
 		public void Clear() { name = ""; author = ""; date = ""; entities.Clear(); constraints.Clear(); }
-		public void Add( Entity ent, Matrix originInv )
+		public void Add( Entity ent, Matrix origin )
 		{
-			entities.Add( new DuplicatorItem( ent, originInv ) );
+			entities.Add( new DuplicatorItem( ent, origin ) );
 		}
 		public void Paste( Matrix origin )
 		{
@@ -225,7 +225,7 @@ namespace Sandbox.Tools
 				Entity ent = entsToCheck.Pop();
 				if ( entsChecked.Add( ent ) )
 				{
-					Selected.Add( ent, Origin.Inverted );
+					Selected.Add( ent, Origin );
 					foreach ( Entity p in ent.Children )
 						entsToCheck.Push( p );
 					if ( ent.Parent.IsValid() )
@@ -259,7 +259,7 @@ namespace Sandbox.Tools
 			if ( AreaCopy )
 			{
 				foreach ( Entity ent in Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) )
-					Selected.Add( ent, Origin.Inverted );
+					Selected.Add( ent, Origin );
 			}
 			else
 			{
