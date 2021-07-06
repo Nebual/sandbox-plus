@@ -493,8 +493,17 @@ namespace Sandbox.Tools
 		}
 		void ReceiveDuplicatorData( byte[] data )
 		{
-			Selected = DuplicatorEncoder.Decode( data );
-			SetupGhosts( To.Single( Owner ), Selected.getGhostData() );
+			try
+			{
+				Selected = DuplicatorEncoder.Decode( data );
+				// Ghosts are set up on the client already when they load the file
+			}
+			catch
+			{
+				// Reset and clear the ghosts
+				Selected = null;
+				SetupGhosts( To.Single( Owner ), new DuplicatorData().getGhostData() );
+			}
 		}
 
 		void Copy( TraceResult tr )
