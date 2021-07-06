@@ -207,7 +207,7 @@ namespace Sandbox
 
 		static string EncodeJson( DuplicatorData entityData )
 		{
-			return JsonSerializer.Serialize( entityData, new JsonSerializerOptions { WriteIndented = true } );
+			return JsonSerializer.Serialize( entityData, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true } );
 		}
 
 		static DuplicatorData DecodeJsonV0( string data )
@@ -229,7 +229,7 @@ namespace Sandbox
 			public Rotation rotation;
 			public List<object> userData = new List<object>();
 			public DuplicatorItem() { }
-			public DuplicatorItem( Entity ent, Matrix origin )
+			public DuplicatorItem( Entity ent, Transform origin )
 			{
 				index = ent.NetworkIdent;
 				className = ent.ClassInfo.Name;
@@ -237,17 +237,17 @@ namespace Sandbox
 					model = p.GetModel().Name;
 				else
 					model = "";
-				position = origin.Inverted.Transform( ent.Position );
-				rotation = ent.Rotation;
+				position = origin.PointToLocal( ent.Position );
+				rotation = origin.RotationToLocal( ent.Rotation );
 				if ( ent is Duplicatable dupe )
 					userData = dupe.PreDuplicatorCopy();
 			}
 
-			public Entity Spawn( Matrix origin )
+			public Entity Spawn( Transform origin )
 			{
 				Entity ent = Library.Create<Entity>( className );
-				ent.Position = origin.Transform( position );
-				ent.Rotation = rotation;
+				ent.Position = origin.PointToWorld( position );
+				ent.Rotation = origin.RotationToWorld( rotation );
 				//ent.PhysicsEnabled = ;
 				//ent.EnableSolidCollisions =;
 				//ent.Massless = ;
@@ -285,7 +285,7 @@ namespace Sandbox
 		public string date = "";
 		public List<DuplicatorItem> entities = new List<DuplicatorItem>();
 		public List<DuplicatorConstraint> joints = new List<DuplicatorConstraint>();
-		public void Add( Entity ent, Matrix origin )
+		public void Add( Entity ent, Transform origin )
 		{
 			if ( ent is Duplicatable || AllowedClasses.Contains( ent.ClassInfo.Name ) )
 				entities.Add( new DuplicatorItem( ent, origin ) );
@@ -304,23 +304,22 @@ namespace Sandbox
 	{
 		Player owner;
 		DuplicatorData data;
-		Matrix origin;
-		Stopwatch timer = new Stopwatch();
-		TimeSpan timeUsed = new TimeSpan();
-		TimeSpan timeElapsed = new TimeSpan();
+		Transform origin;
+		Stopwatch timeUsed = new Stopwatch();
+		Stopwatch timeElapsed = new Stopwatch();
 		Dictionary<int, Entity> entList = new Dictionary<int, Entity>();
-		public DuplicatorPasteJob( Player owner_, DuplicatorData data_, Matrix origin_ )
+		public DuplicatorPasteJob( Player owner_, DuplicatorData data_, Transform origin_ )
 		{
 			owner = owner_;
 			data = data_;
 			origin = origin_;
-			timer.Start();
+			timeElapsed.Start();
 			Event.Register( this );
 		}
 
 		bool checkTime()
 		{
-			return ((timeUsed + timer.Elapsed).TotalSeconds / timeElapsed.TotalSeconds) < 0.1; // Stay under 10% cputime
+			return timeUsed.Elapsed.TotalSeconds / timeElapsed.Elapsed.TotalSeconds < 0.1; // Stay under 10% cputime
 		}
 
 		int spawnedEnts = 0;
@@ -359,19 +358,15 @@ namespace Sandbox
 				{
 					Log.Warning( e, "Failed to spawn constraint (" + item.type + ")" );
 				}
-				if ( spawnedConstraints == data.joints.Count )
-				{
-					foreach ( Entity ent in entList.Values )
-					{
-						if ( ent is Duplicatable dupe )
-							dupe.PostDuplicatorPasteDone();
-					}
-				}
 				return true;
 			}
 			else
 			{
-				// Finalize dupe
+				foreach ( Entity ent in entList.Values )
+				{
+					if ( ent is Duplicatable dupe )
+						dupe.PostDuplicatorPasteDone();
+				}
 				return false;
 			}
 		}
@@ -379,8 +374,7 @@ namespace Sandbox
 		[Event.Tick]
 		public void Tick()
 		{
-			timeElapsed += timer.Elapsed;
-			timer.Restart();
+			timeUsed.Start();
 			while ( checkTime() )
 			{
 				if ( !next() )
@@ -390,9 +384,7 @@ namespace Sandbox
 					return;
 				}
 			}
-			timeElapsed += timer.Elapsed;
-			timeUsed += timer.Elapsed;
-			timer.Restart();
+			timeUsed.Stop();
 		}
 	}
 
@@ -470,8 +462,9 @@ namespace Sandbox.Tools
 		}
 
 		DuplicatorData Selected = null;
-		float PasteRotationOffset = 0;
-		float PasteHeightOffset = 0;
+		[Net] float PasteRotationOffset { get; set; } = 0;
+		[Net] float PasteHeightOffset { get; set; } = 0;
+		[Net] bool AreaCopy { get; set; } = false;
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
@@ -481,7 +474,7 @@ namespace Sandbox.Tools
 		}
 
 		[ServerCmd]
-		static void ReceiveDuplicatorDataS( byte[] data )
+		static void ReceiveDuplicatorDataCmd( byte[] data )
 		{
 			Entity player = ConsoleSystem.Caller.Pawn;
 			if ( player == null ) return;
@@ -512,7 +505,7 @@ namespace Sandbox.Tools
 			DuplicatorData copied = new DuplicatorData();
 
 			var floorTr = Trace.Ray( tr.EndPos, tr.EndPos + new Vector3( 0, 0, -1e6f ) ).WorldOnly().Run();
-			Matrix origin = Matrix.CreateTranslation( floorTr.Hit ? floorTr.EndPos : tr.EndPos );
+			Transform origin = new Transform( floorTr.Hit ? floorTr.EndPos : tr.EndPos );
 			PasteRotationOffset = 0;
 			PasteHeightOffset = 0;
 
@@ -553,12 +546,13 @@ namespace Sandbox.Tools
 
 		void Paste( TraceResult tr )
 		{
-			Pasting[Owner] = new DuplicatorPasteJob( Owner, Selected, Matrix.CreateTranslation( tr.EndPos + new Vector3( 0, 0, PasteHeightOffset ) ) );
+			Pasting[Owner] = new DuplicatorPasteJob( Owner, Selected, new Transform( tr.EndPos + new Vector3( 0, 0, PasteHeightOffset ) ) );
 		}
 
-		bool AreaCopy = false;
 		void OnTool( InputButton input )
 		{
+			if ( Pasting.ContainsKey( Owner ) ) return;
+
 			var startPos = Owner.EyePos;
 			var dir = Owner.EyeRot.Forward;
 			var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance ).Ignore( Owner ).Run();
@@ -566,7 +560,7 @@ namespace Sandbox.Tools
 			switch ( input )
 			{
 				case InputButton.Attack1:
-					if ( tr.Hit && Selected is not null && !Pasting.ContainsKey( Owner ) )
+					if ( tr.Hit && Selected is not null )
 					{
 						Paste( tr );
 						CreateHitEffects( tr.EndPos, tr.Normal );
