@@ -81,7 +81,8 @@ namespace Sandbox
 			}
 			void writeString( string s )
 			{
-				bn.Write( s.Length ); bn.Write( Encoding.ASCII.GetBytes( s ) );
+				byte[] bytes = Encoding.ASCII.GetBytes( s );
+				bn.Write( bytes.Length ); bn.Write( bytes );
 			}
 			void writeVector( Vector3 v )
 			{
