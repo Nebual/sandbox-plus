@@ -411,13 +411,12 @@ namespace Sandbox.Tools
 		}
 
 		DuplicatorData Selected = null;
-		Matrix Origin;
 		float PasteRotationOffset = 0;
 		float PasteHeightOffset = 0;
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
-		void SetupGhosts( DuplicatorData entities, Vector3 origin )
+		void SetupGhosts( DuplicatorData entities )
 		{
 
 		}
@@ -427,7 +426,7 @@ namespace Sandbox.Tools
 			DuplicatorData copied = new DuplicatorData();
 
 			var floorTr = Trace.Ray( tr.EndPos, tr.EndPos + new Vector3( 0, 0, -1e6f ) ).WorldOnly().Run();
-			Origin = Matrix.CreateTranslation( floorTr.Hit ? floorTr.EndPos : tr.EndPos );
+			Matrix origin = Matrix.CreateTranslation( floorTr.Hit ? floorTr.EndPos : tr.EndPos );
 			PasteRotationOffset = 0;
 			PasteHeightOffset = 0;
 
@@ -435,14 +434,14 @@ namespace Sandbox.Tools
 			{
 				AreaCopy = false;
 				foreach ( Entity ent in Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) )
-					copied.Add( ent, Origin );
+					copied.Add( ent, origin );
 			}
 			else
 			{
 				if ( tr.Entity.IsValid() )
 				{
 					foreach ( Entity ent in GetAttachedEntities( tr.Entity ) )
-						copied.Add( ent, Origin );
+						copied.Add( ent, origin );
 				}
 				else
 				{
@@ -452,7 +451,7 @@ namespace Sandbox.Tools
 					}
 				}
 			}
-			SetupGhosts( To.Single( Owner ), copied, Origin.Transform( new Vector3() ) );
+			SetupGhosts( To.Single( Owner ), copied );
 
 			Selected = copied.entities.Count > 0 ? copied : null;
 		}
