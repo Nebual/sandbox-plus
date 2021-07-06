@@ -44,7 +44,7 @@ namespace Sandbox
 			}
 		}
 
-		static byte[] Encode( DuplicatorData entityData )
+		public static byte[] Encode( DuplicatorData entityData )
 		{
 			using ( var stream = new MemoryStream() )
 			{
@@ -294,7 +294,14 @@ namespace Sandbox
 		TimeSpan timeUsed = new TimeSpan();
 		TimeSpan timeElapsed = new TimeSpan();
 		Dictionary<int, Entity> entList = new Dictionary<int, Entity>();
-		public DuplicatorPasteJob( Player owner_, DuplicatorData data_, Matrix origin_ ) { owner = owner_; data = data_; origin = origin_; timer.Start(); }
+		public DuplicatorPasteJob( Player owner_, DuplicatorData data_, Matrix origin_ )
+		{
+			owner = owner_;
+			data = data_;
+			origin = origin_;
+			timer.Start();
+			Event.Register( this );
+		}
 
 		bool checkTime()
 		{
@@ -372,6 +379,10 @@ namespace Sandbox
 			timeUsed += timer.Elapsed;
 			timer.Restart();
 		}
+	}
+
+	public class DuplicatorGhostData
+	{
 	}
 }
 
