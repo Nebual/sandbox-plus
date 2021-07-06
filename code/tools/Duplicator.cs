@@ -58,7 +58,7 @@ namespace Sandbox
 		private class Encoder
 		{
 			BinaryWriter bn;
-			public Encoder(BinaryWriter bn_) { bn = bn_; }
+			public Encoder( BinaryWriter bn_ ) { bn = bn_; }
 			public void Encode( DuplicatorData entityData )
 			{
 				bn.Write( (uint)0x44555045 ); // File type 'DUPE'
@@ -78,24 +78,52 @@ namespace Sandbox
 					writeConstraint( item );
 				}
 			}
-
 			void writeString( string s )
 			{
-				bn.Write( s.Length );
-				bn.Write( Encoding.ASCII.GetBytes( s ) );
+				bn.Write( s.Length ); bn.Write( Encoding.ASCII.GetBytes( s ) );
 			}
-
-			void writeVector( string s )
+			void writeVector( Vector3 v )
 			{
-				bn.Write( s.Length );
-				bn.Write( Encoding.ASCII.GetBytes( s ) );
+				bn.Write( v.x ); bn.Write( v.y ); bn.Write( v.z );
+			}
+			void writeRotation( Rotation r )
+			{
+				bn.Write( r.x ); bn.Write( r.y ); bn.Write( r.z ); bn.Write( r.w );
+			}
+			void writeObject( object o )
+			{
+				switch ( o )
+				{
+					case string str:
+						bn.Write( (byte)1 );
+						writeString( str );
+						break;
+					case Vector3 v:
+						bn.Write( (byte)2 );
+						writeVector( v );
+						break;
+					case Rotation r:
+						bn.Write( (byte)3 );
+						writeRotation( r );
+						break;
+					case Entity ent:
+						bn.Write( (byte)4 );
+						bn.Write( ent.NetworkIdent );
+						break;
+					default:
+						throw new Exception( "Invalid userdata " + o.GetType() );
+				}
 			}
 
 			void writeEntity( DuplicatorData.DuplicatorItem ent )
 			{
 				bn.Write( ent.index );
-				writeString( bn, ent.className );
-				writeString( bn, ent.model );
+				writeString( ent.className );
+				writeString( ent.model );
+				writeVector( ent.position );
+				writeRotation( ent.rotation );
+				bn.Write( ent.userData.Count );
+				foreach ( object o in ent.userData ) writeObject( o );
 			}
 
 			void writeConstraint( DuplicatorData.DuplicatorConstraint constr )
@@ -103,34 +131,75 @@ namespace Sandbox
 			}
 		}
 
-		private abstract class Decoder
+		private class DecoderV0
 		{
-			protected BinaryReader bn;
-			public Decoder(BinaryReader bn_ ) { bn = bn_; }
-			public abstract DuplicatorData Decode();
-			public abstract string readString();
-			public abstract DuplicatorData.DuplicatorItem readEntity();
-			public abstract DuplicatorData.DuplicatorConstraint readConstraint();
-		}
-
-		private class DecoderV0 : Decoder
-		{
-			public DecoderV0( BinaryReader bn_ ) : base(bn_) { }
-			public override DuplicatorData Decode()
+			BinaryReader bn;
+			public DecoderV0( BinaryReader bn_ ) { bn = bn_; }
+			public DuplicatorData Decode()
 			{
-				return new DuplicatorData();
+				DuplicatorData ret = new DuplicatorData();
+				ret.name = readString();
+				ret.author = readString();
+				ret.date = readString();
+				for ( int i = 0, end = Math.Min( bn.ReadInt32(), 2048 ); i < end; ++i )
+				{
+					ret.entities.Add( readEntity() );
+				}
+				for ( int i = 0, end = Math.Min( bn.ReadInt32(), 2048 ); i < end; ++i )
+				{
+					ret.constraints.Add( readConstraint() );
+				}
+				return ret;
 			}
-			public override string readString()
+			protected string readString()
 			{
 				return Encoding.ASCII.GetString( bn.ReadBytes( bn.ReadInt32() ) );
 			}
-			public override DuplicatorData.DuplicatorItem readEntity()
+			protected Vector3 readVector()
 			{
-
+				return new Vector3( bn.ReadSingle(), bn.ReadSingle(), bn.ReadSingle() ); // Args eval left to right in C#
 			}
-			public override DuplicatorData.DuplicatorConstraint readConstraint()
+			protected Rotation readRotation()
 			{
-
+				Rotation ret = new Rotation();
+				ret.x = bn.ReadSingle(); ret.y = bn.ReadSingle(); ret.z = bn.ReadSingle(); ret.w = bn.ReadSingle();
+				return ret;
+			}
+			protected object readObject()
+			{
+				byte type = bn.ReadByte();
+				switch ( type )
+				{
+					case 1:
+						return readString();
+					case 2:
+						return readVector();
+					case 3:
+						return readRotation();
+					case 4:
+						return bn.ReadInt32();
+					default:
+						throw new Exception( "Invalid userdata type (" + type + ")" );
+				}
+			}
+			protected DuplicatorData.DuplicatorItem readEntity()
+			{
+				DuplicatorData.DuplicatorItem ret = new DuplicatorData.DuplicatorItem();
+				ret.index = bn.ReadInt32();
+				ret.className = readString();
+				ret.model = readString();
+				ret.position = readVector();
+				ret.rotation = readRotation();
+				for ( int i = 0, end = Math.Min( bn.ReadInt32(), 1024 ); i < end; ++i )
+				{
+					ret.userData.Add( readObject() );
+				}
+				return ret;
+			}
+			protected DuplicatorData.DuplicatorConstraint readConstraint()
+			{
+				DuplicatorData.DuplicatorConstraint ret = new DuplicatorData.DuplicatorConstraint();
+				return ret;
 			}
 		}
 
@@ -155,7 +224,7 @@ namespace Sandbox
 			public Vector3 position;
 			public Rotation rotation;
 			public List<object> userData = new List<object>();
-
+			public DuplicatorItem() { }
 			public DuplicatorItem( Entity ent, Matrix origin )
 			{
 				index = ent.NetworkIdent;
