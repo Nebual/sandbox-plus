@@ -73,8 +73,8 @@ namespace Sandbox
 				{
 					writeEntity( item );
 				}
-				bn.Write( (uint)entityData.constraints.Count );
-				foreach ( DuplicatorData.DuplicatorConstraint item in entityData.constraints )
+				bn.Write( (uint)entityData.joints.Count );
+				foreach ( DuplicatorData.DuplicatorConstraint item in entityData.joints )
 				{
 					writeConstraint( item );
 				}
@@ -148,7 +148,7 @@ namespace Sandbox
 				}
 				for ( int i = 0, end = Math.Min( bn.ReadInt32(), 2048 ); i < end; ++i )
 				{
-					ret.constraints.Add( readConstraint() );
+					ret.joints.Add( readConstraint() );
 				}
 				return ret;
 			}
@@ -257,14 +257,20 @@ namespace Sandbox
 		}
 		public class DuplicatorConstraint
 		{
+			public Vector3 anchor1;
+			public Vector3 anchor2;
 			public int entIndex1;
 			public int entIndex2;
 			public int bone1;
 			public int bone2;
 			public string type;
-			public DuplicatorConstraint()
+			public DuplicatorConstraint() { }
+			public DuplicatorConstraint( PhysicsJoint joint )
 			{
-
+				anchor1 = joint.Anchor1;
+				anchor2 = joint.Anchor2;
+				entIndex1 = joint.Body1.Entity.NetworkIdent;
+				entIndex2 = joint.Body2.Entity.NetworkIdent;
 			}
 
 			public void Spawn( Dictionary<int, Entity> spawnedEnts )
@@ -277,11 +283,19 @@ namespace Sandbox
 		public string author = "";
 		public string date = "";
 		public List<DuplicatorItem> entities = new List<DuplicatorItem>();
-		public List<DuplicatorConstraint> constraints = new List<DuplicatorConstraint>();
+		public List<DuplicatorConstraint> joints = new List<DuplicatorConstraint>();
 		public void Add( Entity ent, Matrix origin )
 		{
 			if ( ent is Duplicatable || AllowedClasses.Contains( ent.ClassInfo.Name ) )
 				entities.Add( new DuplicatorItem( ent, origin ) );
+		}
+		public void Add( PhysicsJoint joint )
+		{
+			joints.Add( new DuplicatorConstraint( joint ) );
+		}
+		public DuplicatorGhostData getGhostData()
+		{
+			return new DuplicatorGhostData();
 		}
 	}
 
@@ -333,9 +347,9 @@ namespace Sandbox
 				}
 				return true;
 			}
-			else if ( spawnedConstraints < data.constraints.Count )
+			else if ( spawnedConstraints < data.joints.Count )
 			{
-				DuplicatorData.DuplicatorConstraint item = data.constraints[spawnedConstraints++];
+				DuplicatorData.DuplicatorConstraint item = data.joints[spawnedConstraints++];
 				try
 				{
 					item.Spawn( entList );
@@ -344,7 +358,7 @@ namespace Sandbox
 				{
 					Log.Warning( e, "Failed to spawn constraint (" + item.type + ")" );
 				}
-				if ( spawnedConstraints == data.constraints.Count )
+				if ( spawnedConstraints == data.joints.Count )
 				{
 					foreach ( Entity ent in entList.Values )
 					{
@@ -405,20 +419,53 @@ namespace Sandbox.Tools
 		{
 			HashSet<Entity> entsChecked = new();
 			Stack<Entity> entsToCheck = new();
+			entsChecked.Add( baseEnt );
 			entsToCheck.Push( baseEnt );
+
 			while ( entsToCheck.Count > 0 )
 			{
 				Entity ent = entsToCheck.Pop();
-				if ( entsChecked.Add( ent ) )
+				foreach ( Entity e in ent.Children )
 				{
-					foreach ( Entity p in ent.Children )
-						entsToCheck.Push( p );
-					if ( ent.Parent.IsValid() )
-						entsToCheck.Push( ent.Parent );
+					if ( entsChecked.Add( e ) )
+					{
+						entsToCheck.Push( e );
+					}
+				}
 
+				if ( ent.Parent.IsValid() && entsChecked.Add( ent.Parent ) )
+				{
+					entsToCheck.Push( ent.Parent );
+				}
+
+				if ( ent.PhysicsGroup is not null )
+				{
+					for ( int i = 0, end = ent.PhysicsGroup.BodyCount; i < end; ++i )
+					{
+						Entity e = ent.PhysicsGroup.GetBody( i ).Entity;
+						if ( entsChecked.Add( e ) )
+							entsToCheck.Push( e );
+					}
 				}
 			}
 			return entsChecked.ToList();
+		}
+
+		List<PhysicsJoint> GetJoints( List<Entity> ents )
+		{
+			HashSet<PhysicsJoint> jointsChecked = new();
+			foreach ( Entity ent in ents )
+			{
+				PhysicsGroup group = ent.PhysicsGroup;
+				if ( group is not null )
+				{
+					for ( int i = 0, end = group.JointCount; i < end; ++i )
+					{
+						jointsChecked.Add( group.GetJoint( i ) );
+					}
+				}
+			}
+			return jointsChecked.ToList();
 		}
 
 		DuplicatorData Selected = null;
@@ -427,9 +474,27 @@ namespace Sandbox.Tools
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
-		void SetupGhosts( DuplicatorData entities )
+		void SetupGhosts( DuplicatorGhostData entities )
 		{
 
+		}
+
+		[ServerCmd]
+		static void ReceiveDuplicatorDataS( byte[] data )
+		{
+			Entity player = ConsoleSystem.Caller.Pawn;
+			if ( player == null ) return;
+			var inventory = player.Inventory;
+			if ( inventory == null ) return;
+			if ( inventory.Active is not Tool tool ) return;
+			if ( tool == null ) return;
+			if ( tool.CurrentTool is not DuplicatorTool dupe ) return;
+			dupe.ReceiveDuplicatorData( data );
+		}
+		void ReceiveDuplicatorData( byte[] data )
+		{
+			Selected = DuplicatorEncoder.Decode( data );
+			SetupGhosts( To.Single( Owner ), Selected.getGhostData() );
 		}
 
 		void Copy( TraceResult tr )
@@ -444,15 +509,24 @@ namespace Sandbox.Tools
 			if ( AreaCopy )
 			{
 				AreaCopy = false;
+				List<Entity> ents = new List<Entity>();
 				foreach ( Entity ent in Physics.GetEntitiesInBox( new BBox( new Vector3( -AreaSize ), new Vector3( AreaSize ) ) ) )
+				{
+					ents.Add( ent );
 					copied.Add( ent, origin );
+				}
+				foreach ( PhysicsJoint j in GetJoints( ents ) )
+					copied.Add( j );
 			}
 			else
 			{
 				if ( tr.Entity.IsValid() )
 				{
-					foreach ( Entity ent in GetAttachedEntities( tr.Entity ) )
-						copied.Add( ent, origin );
+					List<Entity> ents = GetAttachedEntities( tr.Entity );
+					foreach ( Entity e in ents )
+						copied.Add( e, origin );
+					foreach ( PhysicsJoint j in GetJoints( ents ) )
+						copied.Add( j );
 				}
 				else
 				{
@@ -462,8 +536,8 @@ namespace Sandbox.Tools
 					}
 				}
 			}
-			SetupGhosts( To.Single( Owner ), copied );
 
+			SetupGhosts( To.Single( Owner ), copied.getGhostData() );
 			Selected = copied.entities.Count > 0 ? copied : null;
 		}
 
