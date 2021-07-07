@@ -462,11 +462,11 @@ namespace Sandbox.Tools
 		}
 
 		DuplicatorData Selected = null;
-		[Net] float PasteRotationOffset { get; set; } = 0;
-		[Net] float PasteHeightOffset { get; set; } = 0;
-		[Net] bool AreaCopy { get; set; } = false;
+		[Net, Predicted] float PasteRotationOffset { get; set; } = 0;
+		[Net, Predicted] float PasteHeightOffset { get; set; } = 0;
+		[Net, Predicted] bool AreaCopy { get; set; } = false;
 
-		static DuplicatorTool getTool(Entity player)
+		static DuplicatorTool getTool( Entity player )
 		{
 			if ( player == null ) return null;
 			var inventory = player.Inventory;
@@ -478,11 +478,11 @@ namespace Sandbox.Tools
 		}
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
-		[ClientRpc]
-		void SetupGhosts( DuplicatorGhostData entities )
+		/*[ClientRpc]
+		static void SetupGhosts(DuplicatorGhostData entities)
 		{
 
-		}
+		}*/
 
 		[ClientCmd( "tool_duplicator_openfile", Help = "Loads a duplicator file" )]
 		static void OpenFile( string path )
@@ -496,14 +496,14 @@ namespace Sandbox.Tools
 			SaveDuplicatorDataCmd( path );
 		}
 
-		[ClientRpc]
+		/*[ClientRpc]
 		void SaveFileData(string path, byte[] data)
 		{
-			using ( Stream s = FileSystem.Data.OpenWrite( path ) )
+			using (Stream s = FileSystem.Data.OpenWrite( path ))
 			{
 				s.Write( data, 0, data.Length );
 			}
-		}
+		}*/
 
 
 		[ServerCmd]
@@ -528,7 +528,7 @@ namespace Sandbox.Tools
 			{
 				// Reset and clear the ghosts
 				Selected = null;
-				SetupGhosts( To.Single( Owner ), new DuplicatorData().getGhostData() );
+				//SetupGhosts( To.Single( Owner ), new DuplicatorData().getGhostData() );
 			}
 		}
 		void SaveDuplicatorData( string path )
@@ -537,7 +537,7 @@ namespace Sandbox.Tools
 			try
 			{
 				byte[] data = DuplicatorEncoder.Encode( Selected );
-				SaveFileData( To.Single( Owner ), path, data );
+				//SaveFileData( To.Single( Owner ), path, data );
 			}
 			catch
 			{
@@ -584,7 +584,7 @@ namespace Sandbox.Tools
 				}
 			}
 
-			SetupGhosts( To.Single( Owner ), copied.getGhostData() );
+			//SetupGhosts( To.Single( Owner ), copied.getGhostData() );
 			Selected = copied.entities.Count > 0 ? copied : null;
 		}
 
@@ -623,6 +623,24 @@ namespace Sandbox.Tools
 
 		public override void Simulate()
 		{
+			if ( Input.Down( InputButton.Use ) )
+			{
+				PasteRotationOffset += Input.MouseDelta[0];
+				Input.MouseDelta = new Vector3();
+			}
+			if ( Input.Pressed( InputButton.Attack2 ) && Input.Down( InputButton.Run ) )
+			{
+				AreaCopy = !AreaCopy;
+			}
+			if ( Input.Pressed( InputButton.Next ) && Input.Down( InputButton.Use ) )
+			{
+				PasteHeightOffset += 5;
+			}
+			if ( Input.Pressed( InputButton.Prev ) && Input.Down( InputButton.Use ) )
+			{
+				PasteHeightOffset -= 5;
+			}
+
 			if ( !Host.IsServer )
 				return;
 
