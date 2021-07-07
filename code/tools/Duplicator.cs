@@ -466,6 +466,17 @@ namespace Sandbox.Tools
 		[Net] float PasteHeightOffset { get; set; } = 0;
 		[Net] bool AreaCopy { get; set; } = false;
 
+		static DuplicatorTool getTool(Entity player)
+		{
+			if ( player == null ) return null;
+			var inventory = player.Inventory;
+			if ( inventory == null ) return null;
+			if ( inventory.Active is not Tool tool ) return null;
+			if ( tool == null ) return null;
+			if ( tool.CurrentTool is not DuplicatorTool dupe ) return null;
+			return dupe;
+		}
+
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
 		void SetupGhosts( DuplicatorGhostData entities )
@@ -473,18 +484,39 @@ namespace Sandbox.Tools
 
 		}
 
+		[ClientCmd( "tool_duplicator_openfile", Help = "Loads a duplicator file" )]
+		static void OpenFile( string path )
+		{
+			ReceiveDuplicatorDataCmd( FileSystem.Data.ReadAllBytes( path ).ToArray() );
+		}
+
+		[ClientCmd( "tool_duplicator_savefile", Help = "Saves a duplicator file" )]
+		static void SaveFile( string path )
+		{
+			SaveDuplicatorDataCmd( path );
+		}
+
+		[ClientRpc]
+		void SaveFileData(string path, byte[] data)
+		{
+			using ( Stream s = FileSystem.Data.OpenWrite( path ) )
+			{
+				s.Write( data, 0, data.Length );
+			}
+		}
+
+
+		[ServerCmd]
+		static void SaveDuplicatorDataCmd( string path )
+		{
+			getTool( ConsoleSystem.Caller.Pawn )?.SaveDuplicatorData( path );
+		}
 		[ServerCmd]
 		static void ReceiveDuplicatorDataCmd( byte[] data )
 		{
-			Entity player = ConsoleSystem.Caller.Pawn;
-			if ( player == null ) return;
-			var inventory = player.Inventory;
-			if ( inventory == null ) return;
-			if ( inventory.Active is not Tool tool ) return;
-			if ( tool == null ) return;
-			if ( tool.CurrentTool is not DuplicatorTool dupe ) return;
-			dupe.ReceiveDuplicatorData( data );
+			getTool( ConsoleSystem.Caller.Pawn )?.ReceiveDuplicatorData( data );
 		}
+
 		void ReceiveDuplicatorData( byte[] data )
 		{
 			try
@@ -497,6 +529,18 @@ namespace Sandbox.Tools
 				// Reset and clear the ghosts
 				Selected = null;
 				SetupGhosts( To.Single( Owner ), new DuplicatorData().getGhostData() );
+			}
+		}
+		void SaveDuplicatorData( string path )
+		{
+			if ( Selected is null ) return;
+			try
+			{
+				byte[] data = DuplicatorEncoder.Encode( Selected );
+				SaveFileData( To.Single( Owner ), path, data );
+			}
+			catch
+			{
 			}
 		}
 
