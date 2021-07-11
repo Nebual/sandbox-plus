@@ -32,7 +32,7 @@ namespace Sandbox
 			using ( var stream = new MemoryStream( data ) )
 			using ( var bn = new BinaryReader( stream ) )
 			{
-				if ( bn.ReadUInt32() != 0x44555045 ) throw new Exception( "The file isn't a duplicator file!" );
+				if ( bn.ReadUInt32() != 0x45505544 ) throw new Exception( "The file isn't a duplicator file!" );
 				int ver = (int)bn.ReadByte();
 				switch ( ver )
 				{
@@ -62,7 +62,7 @@ namespace Sandbox
 			public Encoder( BinaryWriter bn_ ) { bn = bn_; }
 			public void Encode( DuplicatorData entityData )
 			{
-				bn.Write( (uint)0x44555045 ); // File type 'DUPE'
+				bn.Write( (uint)0x45505544 ); // File type 'DUPE'
 				bn.Write( (byte)0 ); // Encoder version
 				writeString( entityData.name );
 				writeString( entityData.author );
@@ -218,7 +218,10 @@ namespace Sandbox
 
 	public class DuplicatorData
 	{
-		public static HashSet<string> AllowedClasses = new HashSet<string>();
+		public static HashSet<string> AllowedClasses = new HashSet<string>()
+		{
+			"prop_physics"
+		};
 
 		public class DuplicatorItem
 		{
@@ -478,11 +481,11 @@ namespace Sandbox.Tools
 		}
 
 		List<PreviewEntity> ghosts = new List<PreviewEntity>();
-		/*[ClientRpc]
-		static void SetupGhosts(DuplicatorGhostData entities)
+		[ClientRpc]
+		public static void SetupGhosts(DuplicatorGhostData entities)
 		{
 
-		}*/
+		}
 
 		[ClientCmd( "tool_duplicator_openfile", Help = "Loads a duplicator file" )]
 		static void OpenFile( string path )
@@ -496,15 +499,14 @@ namespace Sandbox.Tools
 			SaveDuplicatorDataCmd( path );
 		}
 
-		/*[ClientRpc]
-		void SaveFileData(string path, byte[] data)
+		[ClientRpc]
+		public static void SaveFileData(string path, byte[] data)
 		{
 			using (Stream s = FileSystem.Data.OpenWrite( path ))
 			{
 				s.Write( data, 0, data.Length );
 			}
-		}*/
-
+		}
 
 		[ServerCmd]
 		static void SaveDuplicatorDataCmd( string path )
@@ -537,7 +539,7 @@ namespace Sandbox.Tools
 			try
 			{
 				byte[] data = DuplicatorEncoder.Encode( Selected );
-				//SaveFileData( To.Single( Owner ), path, data );
+				SaveFileData( To.Single( Owner ), path, data );
 			}
 			catch
 			{
