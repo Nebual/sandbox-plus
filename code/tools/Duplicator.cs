@@ -297,9 +297,14 @@ namespace Sandbox
 		{
 			joints.Add( new DuplicatorConstraint( joint ) );
 		}
-		public DuplicatorGhostData getGhostData()
+		public List<DuplicatorGhost> getGhosts()
 		{
-			return new DuplicatorGhostData();
+			List<DuplicatorGhost> ret = new();
+			foreach(DuplicatorItem item in entities)
+			{
+				ret.Add( new DuplicatorGhost( item.position, item.rotation, item.model ) );
+			}
+			return ret;
 		}
 	}
 
@@ -391,8 +396,17 @@ namespace Sandbox
 		}
 	}
 
-	public class DuplicatorGhostData
+	public struct DuplicatorGhost
 	{
+		public Vector3 position;
+		public Rotation rotation;
+		public string model;
+		public DuplicatorGhost(Vector3 pos, Rotation rot, string model_)
+		{
+			position = pos;
+			rotation = rot;
+			model = model_;
+		}
 	}
 }
 
@@ -411,9 +425,10 @@ namespace Sandbox.Tools
 
 		public static Dictionary<Player, DuplicatorPasteJob> Pasting = new Dictionary<Player, DuplicatorPasteJob>();
 
-		List<Entity> GetAttachedEntities( Entity baseEnt )
+		void GetAttachedEntities( Entity baseEnt, List<Entity> ents, List<PhysicsJoint> joints )
 		{
 			HashSet<Entity> entsChecked = new();
+			HashSet<PhysicsJoint> jointsChecked = new();
 			Stack<Entity> entsToCheck = new();
 			entsChecked.Add( baseEnt );
 			entsToCheck.Push( baseEnt );
@@ -442,11 +457,35 @@ namespace Sandbox.Tools
 						if ( entsChecked.Add( e ) )
 							entsToCheck.Push( e );
 					}
+					foreach(PhysicsJoint j in GetJoints(ent))
+					{
+						if( jointsChecked.Add(j) )
+						{
+							if ( entsChecked.Add( j.Body1.Entity ) )
+								entsToCheck.Push( j.Body1.Entity );
+							if ( entsChecked.Add( j.Body2.Entity ) )
+								entsToCheck.Push( j.Body2.Entity );
+						}
+					}
 				}
 			}
-			return entsChecked.ToList();
+			ents.AddRange( entsChecked );
+			joints.AddRange( jointsChecked );
 		}
 
+		List<PhysicsJoint> GetJoints( Entity ent )
+		{
+			List<PhysicsJoint> ret = new();
+			PhysicsGroup group = ent.PhysicsGroup;
+			if ( group is not null )
+			{
+				for ( int i = 0, end = group.JointCount; i < end; ++i )
+				{
+					ret.Add( group.GetJoint( i ) );
+				}
+			}
+			return ret;
+		}
 		List<PhysicsJoint> GetJoints( List<Entity> ents )
 		{
 			HashSet<PhysicsJoint> jointsChecked = new();
@@ -468,6 +507,7 @@ namespace Sandbox.Tools
 		[Net, Predicted] float PasteRotationOffset { get; set; } = 0;
 		[Net, Predicted] float PasteHeightOffset { get; set; } = 0;
 		[Net, Predicted] bool AreaCopy { get; set; } = false;
+		[Net, Predicted] Transform Origin { get; set; }
 
 		static DuplicatorTool getTool( Entity player )
 		{
@@ -480,17 +520,29 @@ namespace Sandbox.Tools
 			return dupe;
 		}
 
-		List<PreviewEntity> ghosts = new List<PreviewEntity>();
 		[ClientRpc]
-		public static void SetupGhosts(DuplicatorGhostData entities)
+		public static void SetupGhostsRpc( List<DuplicatorGhost> ghosts )
 		{
-
+			getTool( Local.Pawn )?.SetupGhosts( ghosts );
+		}
+		public void SetupGhosts( List<DuplicatorGhost> ghosts )
+		{
+			foreach ( DuplicatorGhost ghost in ghosts )
+			{
+				PreviewEntity previewModel = null;
+				if ( TryCreatePreview( ref previewModel, ghost.model ) )
+				{
+					previewModel.RelativeToNormal = false;
+					previewModel.OffsetBounds = true;
+					previewModel.PositionOffset = -previewModel.CollisionBounds.Center;
+				}
+			}
 		}
 
 		[ClientCmd( "tool_duplicator_openfile", Help = "Loads a duplicator file" )]
 		static void OpenFile( string path )
 		{
-			ReceiveDuplicatorDataCmd( FileSystem.Data.ReadAllBytes( path ).ToArray() );
+			ReceiveDuplicatorDataCmd( FileSystem.Data.ReadAllText( path ) );
 		}
 
 		[ClientCmd( "tool_duplicator_savefile", Help = "Saves a duplicator file" )]
@@ -514,23 +566,23 @@ namespace Sandbox.Tools
 			getTool( ConsoleSystem.Caller.Pawn )?.SaveDuplicatorData( path );
 		}
 		[ServerCmd]
-		static void ReceiveDuplicatorDataCmd( byte[] data )
+		static void ReceiveDuplicatorDataCmd( string data )
 		{
 			getTool( ConsoleSystem.Caller.Pawn )?.ReceiveDuplicatorData( data );
 		}
 
-		void ReceiveDuplicatorData( byte[] data )
+		void ReceiveDuplicatorData( string data )
 		{
 			try
 			{
-				Selected = DuplicatorEncoder.Decode( data );
+				Selected = DuplicatorEncoder.Decode( Encoding.ASCII.GetBytes( data ) );
 				// Ghosts are set up on the client already when they load the file
 			}
 			catch
 			{
 				// Reset and clear the ghosts
 				Selected = null;
-				//SetupGhosts( To.Single( Owner ), new DuplicatorData().getGhostData() );
+				SetupGhostsRpc( To.Single( Owner ), new DuplicatorData().getGhosts() );
 			}
 		}
 		void SaveDuplicatorData( string path )
@@ -571,10 +623,12 @@ namespace Sandbox.Tools
 			{
 				if ( tr.Entity.IsValid() )
 				{
-					List<Entity> ents = GetAttachedEntities( tr.Entity );
+					List<Entity> ents = new();
+					List<PhysicsJoint> joints = new();
+					GetAttachedEntities( tr.Entity, ents, joints );
 					foreach ( Entity e in ents )
 						copied.Add( e, origin );
-					foreach ( PhysicsJoint j in GetJoints( ents ) )
+					foreach ( PhysicsJoint j in joints )
 						copied.Add( j );
 				}
 				else
@@ -586,7 +640,7 @@ namespace Sandbox.Tools
 				}
 			}
 
-			//SetupGhosts( To.Single( Owner ), copied.getGhostData() );
+			SetupGhostsRpc( To.Single( Owner ), copied.getGhosts() );
 			Selected = copied.entities.Count > 0 ? copied : null;
 		}
 
