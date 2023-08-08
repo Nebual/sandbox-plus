@@ -149,7 +149,7 @@ partial class SandboxGame : GameManager
 		if ( !TypeLibrary.HasAttribute<SpawnableAttribute>( entityType ) )
 			return;
 
-		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 200 )
+		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 4096 )
 			.UseHitboxes()
 			.Ignore( owner )
 			.Size( 2 )
@@ -163,7 +163,7 @@ partial class SandboxGame : GameManager
 		}
 
 		ent.Position = tr.EndPosition;
-		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) );
+		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw + 180, 0 ) );
 
 		Event.Run( "entity.spawned", ent, owner );
 	}
