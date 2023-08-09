@@ -303,6 +303,18 @@
       ]
     },
     "HttpAllowList": null,
-    "TickRate": 50
+    "TickRate": 50,
+    "LaunchConfigs": [
+      {
+        "Name": "WireGates",
+        "GameIdent": "wiremod.sandboxplus#local",
+        "MapName": "facepunch.square",
+        "MaxPlayers": 1,
+        "GameSettings": {},
+        "Addons": "katka.stargateaddon#local; wiremod.wireboxaddon;",
+        "PreLaunchCommand": "",
+        "PostLaunchCommand": ""
+      }
+    ]
   }
 }
