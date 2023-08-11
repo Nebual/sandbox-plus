@@ -34,7 +34,9 @@
         "water": "Trigger",
         "debris": "Unset",
         "player": "Unset",
-        "glass": "Unset"
+        "glass": "Unset",
+        "weapon": "Collide",
+        "nocollide": "Ignore"
       },
       "Pairs": [
         {
@@ -104,6 +106,21 @@
         {
           "a": "water",
           "b": "glass"
+        },
+        {
+          "a": "player",
+          "b": "weapon",
+          "r": "Trigger"
+        },
+        {
+          "a": "solid",
+          "b": "nocollide",
+          "r": "Collide"
+        },
+        {
+          "a": "player",
+          "b": "nocollide",
+          "r": "Collide"
         }
       ]
     },

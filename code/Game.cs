@@ -44,9 +44,10 @@ partial class SandboxGame : GameManager
 	{
 		base.ClientJoined( cl );
 		var player = new SandboxPlayer( cl );
-		player.Respawn();
 
 		cl.Pawn = player;
+
+		player.Respawn();
 	}
 
 	protected override void OnDestroy()
@@ -61,7 +62,7 @@ partial class SandboxGame : GameManager
 		var player = ConsoleSystem.Caller.Pawn as SandboxPlayer;
 
 		player.Inventory.Add( new Pistol() );
-		player.Inventory.Add( new SMG() );
+		player.Inventory.Add( new MP5() );
 		player.Inventory.Add( new Shotgun() );
 		player.Inventory.Add( new RPG() );
 	}
