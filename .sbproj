@@ -328,7 +328,7 @@
         "MapName": "facepunch.square",
         "MaxPlayers": 1,
         "GameSettings": {},
-        "Addons": "katka.stargateaddon#local; wiremod.wireboxaddon;",
+        "Addons": "katka.stargateaddon#local;wiremod.wireboxaddon#local;",
         "PreLaunchCommand": "",
         "PostLaunchCommand": ""
       }
