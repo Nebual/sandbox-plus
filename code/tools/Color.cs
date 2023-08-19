@@ -52,7 +52,7 @@ namespace Sandbox.Tools
 		}
 
 		[ClientRpc]
-		public static void SetEntityMaterialOverride( ModelEntity modelEnt, Color color )
+		public static void SetEntityColorOverride( ModelEntity modelEnt, Color color )
 		{
 			if ( Game.IsClient)
 			{
@@ -78,7 +78,7 @@ public static partial class ModelEntityExtensions
 {
 	public static void SetEntityColorOverride( this ModelEntity instance, Color color )
 	{
-		Sandbox.Tools.ColorTool.SetEntityMaterialOverride( instance, color ); ;
+		Sandbox.Tools.ColorTool.SetEntityColorOverride( instance, color ); ;
 	}
 }
 
