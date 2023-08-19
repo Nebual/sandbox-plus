@@ -29,7 +29,7 @@ namespace Sandbox.Tools
 					if ( tr.Entity is not ModelEntity modelEnt )
 						return;
 
-					modelEnt.SetEntityColorOverride( GetConvarValue( "tool_color_color" ) );
+					modelEnt.RenderColor = GetConvarValue( "tool_color_color" );
 
 					CreateHitEffects( tr.EndPosition, tr.Normal );
 				}
@@ -51,19 +51,6 @@ namespace Sandbox.Tools
 			}
 		}
 
-		[ClientRpc]
-		public static void SetEntityColorOverride( ModelEntity modelEnt, Color color )
-		{
-			if ( Game.IsClient)
-			{
-				if (modelEnt?.SceneObject != null)
-				{
-					modelEnt.SceneObject.ColorTint = color;
-				}
-			}
-		}
-
-
 		public override void CreateToolPanel()
 		{
 			if ( Game.IsClient )
@@ -72,13 +59,6 @@ namespace Sandbox.Tools
 				SpawnMenu.Instance?.ToolPanel?.AddChild( colorSelector );
 			}
 		}
-	}
-}
-public static partial class ModelEntityExtensions
-{
-	public static void SetEntityColorOverride( this ModelEntity instance, Color color )
-	{
-		Sandbox.Tools.ColorTool.SetEntityColorOverride( instance, color ); ;
 	}
 }
 
