@@ -30,7 +30,7 @@
             }
         }
 
-        <a class="button" href="/servers">Find a Game</a>
+        <a class="button" onclick="@OpenServerList">Find a Game</a>
         <a class="button" href="/settings">Settings</a>
 
         <span style="height: 20px;"></span>
@@ -59,6 +59,18 @@
         lobby.Title = $"{Game.Menu.Package.Title} Server";
         lobby.Description = ":)";
         lobby.Map = "facepunch.construct";
+    }
+
+    void OpenServerList()
+    {
+        var options = new Sandbox.Modals.ServerListModalOptions();
+        options.TargetGame = Game.Menu.Package.FullIdent;
+        options.OnSelected = (server) =>
+        {
+            Game.Menu.ConnectToServer(server.SteamId);
+        };
+
+        Game.Overlay.ShowServerList(options);
     }
 }
 

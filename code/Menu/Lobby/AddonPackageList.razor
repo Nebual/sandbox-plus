@@ -56,6 +56,7 @@
         await RunQuery();
     }
     public List<Package> CollectionFoundPackages{ get; set; }
+    public string[] CollectionFoundPackageIdents;
 
     protected async Task RunQuery()
     {
@@ -65,18 +66,25 @@
             foreach (var packageId in Result1.PackageReferences) {
                 CollectionFoundPackages.Add(await Package.FetchAsync(packageId, true, true));
             }
+            CollectionFoundPackageIdents = Result1.PackageReferences;
         }
-        var query = Query ?? "type:addon game:any|game:@Game.Menu.Package.FullIdent";
+        var query = Query != "" ? Query : "type:addon game:any|game:@Game.Menu.Package.FullIdent|game:facepunch.sandbox";
+        var containsSearch = query.Trim().Split(' ').Any(x => !x.Contains(":") && !x.Contains("+") && !x.Contains("-"));
 
-        Result = await Package.FindAsync(Query, Take, Skip);
+        query += " -npc -entity"; // These runtime addons don't make sense to load on boot
+        if (!query.Contains("type:")) {
+            query += " type:addon"; // sometimes <PackageFilters> clears the type, re-add it
+        }
+
+        Result = await Package.FindAsync(query, Take, Skip);
 
         if (Result != null)
         {
             OnResult?.Invoke(Result);
 
-            if (Query == "") {
+            if (!containsSearch) {
                 // they haven't filtered yet, so default to showing SandboxPlus Addons collection first
-                FoundPackages = CollectionFoundPackages.Concat(Result.Packages.ToList()).ToArray();
+                FoundPackages = CollectionFoundPackages.Concat(Result.Packages.Where(x => !CollectionFoundPackageIdents.Contains(x.FullIdent)).ToList()).ToArray();
             } else {
                 FoundPackages = Result.Packages;
             }

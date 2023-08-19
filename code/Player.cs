@@ -346,4 +346,13 @@ public partial class SandboxPlayer : Player
 			Camera.Main.SetViewModelCamera( 90f );
 		}
 	}
+
+	[Event( "entity.spawned" )]
+	public static void OnSpawned( Entity spawned, Entity owner )
+	{
+		if ( owner is Player player )
+		{
+			spawned.SetPlayerOwner( player );
+		}
+	}
 }

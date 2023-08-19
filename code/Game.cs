@@ -189,12 +189,6 @@ partial class SandboxGame : GameManager
 
 		var entityname = package.GetMeta( "PrimaryAsset", "" );
 
-		if ( string.IsNullOrEmpty( entityname ) )
-		{
-			Log.Warning( $"{package.FullIdent} doesn't have a PrimaryAsset key" );
-			return;
-		}
-
 		if ( !CanSpawnPackage( package ) )
 		{
 			Log.Warning( $"Not allowed to spawn package {package.FullIdent}" );
@@ -202,6 +196,16 @@ partial class SandboxGame : GameManager
 		}
 
 		await package.MountAsync( true );
+
+		if ( string.IsNullOrEmpty( entityname ) )
+		{
+			Log.Info( "Mounted package (without PrimaryAsset key) " + package.Title );
+
+			Event.Run( "package.mounted" );
+			PostSpawnPackage();
+
+			return;
+		}
 
 		Log.Info( $"Spawning Entity: {entityname}" );
 
@@ -225,6 +229,12 @@ partial class SandboxGame : GameManager
 
 		ent.Position = tr.EndPosition;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) );
+	}
+
+	[ClientRpc]
+	public static void PostSpawnPackage()
+	{
+		Event.Run( "package.mounted" );
 	}
 
 	static bool CanSpawnPackage( Package package )

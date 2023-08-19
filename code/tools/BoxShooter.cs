@@ -13,7 +13,7 @@
 			{
 				if ( Input.Pressed( "reload" ) )
 				{
-					var tr = Trace.Ray( Owner.EyePosition, Owner.EyePosition + Owner.EyeRotation.Forward * 4000 ).Ignore( Owner ).Run();
+					var tr = DoTrace( false );
 
 					if ( tr.Entity is ModelEntity ent && !string.IsNullOrEmpty( ent.GetModelName() ) )
 					{

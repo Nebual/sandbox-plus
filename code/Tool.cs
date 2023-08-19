@@ -123,6 +123,12 @@ partial class Tool : Carriable
 		anim.Handedness = CitizenAnimationHelper.Hand.Right;
 		anim.AimBodyWeight = 1.0f;
 	}
+
+	public static void SetActiveTool( string toolId )
+	{
+		ConsoleSystem.Run( "tool_current", toolId );
+		InventoryBar.SetActiveSlot( "weapon_tool" );
+	}
 }
 
 namespace Sandbox.Tools
@@ -175,15 +181,22 @@ namespace Sandbox.Tools
 			Parent?.CreateHitEffects( pos, normal, continuous );
 		}
 
-		public virtual TraceResult DoTrace()
+		public virtual TraceResult DoTrace( bool checkCanTool = true )
 		{
 			var startPos = Owner.EyePosition;
 			var dir = Owner.EyeRotation.Forward;
 
-			return Trace.Ray( startPos, startPos + (dir * MaxTraceDistance) )
+			var tr = Trace.Ray( startPos, startPos + (dir * MaxTraceDistance) )
 				.WithAnyTags( "solid", "nocollide" )
 				.Ignore( Owner )
 				.Run();
+
+			if ( checkCanTool && tr.Entity.IsValid() && !tr.Entity.IsWorld )
+			{
+				return CanToolParams.RunCanTool( Owner, ClassName, tr );
+			}
+
+			return tr;
 		}
 
 		protected string GetConvarValue( string name, string defaultValue = null )

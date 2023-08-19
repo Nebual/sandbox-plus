@@ -60,12 +60,7 @@ namespace Sandbox.Tools
 				if ( !Game.IsServer )
 					return;
 
-				var startPos = Owner.EyePosition;
-				var dir = Owner.EyeRotation.Forward;
-
-				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
-					.Ignore( Owner )
-					.Run();
+				var tr = DoTrace();
 
 				if ( !tr.Hit || !tr.Entity.IsValid() )
 				{

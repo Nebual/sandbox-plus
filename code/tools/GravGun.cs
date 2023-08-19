@@ -5,7 +5,7 @@ using System.Linq;
 [Library( "gravgun" )]
 public partial class GravGun : Carriable
 {
-	public override string ViewModelPath => "weapons/rust_pistol/v_rust_pistol.vmdl";
+	public override string ViewModelPath => Cloud.Asset( "wiremod.v_gravity_gun2" );
 
 	public PhysicsBody HeldBody { get; private set; }
 	public Vector3 HeldPos { get; private set; }
@@ -37,7 +37,7 @@ public partial class GravGun : Carriable
 		base.Spawn();
 
 		Tags.Add( "weapon" );
-		SetModel( "weapons/rust_pistol/rust_pistol.vmdl" );
+		Model = Cloud.Model( "wiremod.gravity_gun2" );
 	}
 
 	[GameEvent.Entity.PreCleanup]

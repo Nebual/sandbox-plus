@@ -95,6 +95,25 @@ public class InventoryBar : Panel
 		player.ActiveChildInput = ent;
 	}
 
+	[ConCmd.Client( "weapon_switch" )]
+	public static bool SetActiveSlot( string weaponClassName )
+	{
+		// set the active weapon to the toolgun
+		if ( Game.LocalPawn is not Player player ) return false;
+		if ( player.Inventory is null ) return false;
+
+		for ( int i = 0; i < player.Inventory.Count(); i++ )
+		{
+			var entity = player.Inventory.GetSlot( i );
+			if ( !entity.IsValid() ) continue;
+			if ( entity.ClassName != weaponClassName ) continue;
+
+			player.ActiveChildInput = entity;
+			return true;
+		}
+		return false;
+	}
+
 	private static void SwitchActiveSlot( IBaseInventory inventory, int idelta )
 	{
 		var count = inventory.Count();

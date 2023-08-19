@@ -24,6 +24,22 @@ namespace UndoManager
 			}
 		}
 
+		[GameEvent.Client.BuildInput]
+		public static void ProcessClientInput()
+		{
+			if ( Input.Pressed( "undo" ) )
+			{
+				if ( Input.Down( "run" ) )
+				{
+					OnRedo();
+				}
+				else
+				{
+					OnUndo();
+				}
+			}
+		}
+
 		[ConCmd.Server( "undo" )]
 		public static async void OnUndo()
 		{
@@ -103,7 +119,7 @@ namespace UndoManager
 					continue;
 				}
 
-				CreateUndoParticles( To.Single( creator ), prop.Position );
+				CreateRedoParticles( To.Single( creator ), prop.Position );
 
 				Redoer.OnRedone( To.Single( creator ) );
 				Redoer.ResetProp( redo );
@@ -126,6 +142,15 @@ namespace UndoManager
 					Particles.Create( "particles/physgun_freeze.vpcf", pos + Vector3.Up * 2 );
 				}
 				Game.LocalPawn?.PlaySound( "drop_001" );
+			}
+		}
+
+		[ClientRpc]
+		public static void CreateRedoParticles( Vector3 pos )
+		{
+			using ( Prediction.Off() )
+			{
+				Game.LocalPawn?.PlaySound( "drop_002" );
 			}
 		}
 	}

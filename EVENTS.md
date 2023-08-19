@@ -1,6 +1,7 @@
 # Custom Events provided by SandboxPlus
 
 - "game.init": run on initial addon load
+- "package.mounted": run when a package is async mounted via `spawnpackage`
 - "sandbox.hud.loaded": run after the Sandbox.Hud has loaded, eg. for extending the spawnmenu
 - "entity.spawned"
   - `Event.Run( "entity.spawned", IEntity spawned, IEntity owner )`
@@ -10,6 +11,8 @@
     Should return the string to show in the toast, or empty string if the undoable is redundant and should be skipped over (eg. if the weld was already removed)
 - "spawnlists.initialize"
   - Takes no parameters; you're expected to call `ModelSelector.AddToSpawnlist( "screen", string[] models)`
+- "player.cantool": called by traces.
+  - Takes a single CanToolParams parameter. Writing `params.preventDefault = true` will prevent the tool action.
 - "player.simulate"
   - `Event.Run( "player.simulate", SandboxPlayer player )`
 - "player.killed"
@@ -23,5 +26,12 @@
     ```
 - "weapon.shootbullet": used to allow overriding bullet behaviour, such as when shooting through a Stargate
   - Takes a single ShootBulletParams parameter. Writing `params.preventDefault = true` will disable the default bullet behaviour.
+
+# Custom Concommands
+
+- `weapon_switch physgun`
+- `spawnpackage wiremod.sbox_tool_auto` - extended to work on runtime addons beyond just 'npc' + 'entity', see `Event("package.mounted")`
+- `undo` + `redo`
+- `reload_hud`, though it typically hotreloads nicely in the editor
 
 For more usage examples, see [Wirebox](https://github.com/wiremod/wirebox).

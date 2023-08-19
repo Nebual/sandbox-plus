@@ -45,6 +45,10 @@ partial class SandboxPlayer
 		// Still no good? Bail.
 		if ( !IsValidUseEntity( ent ) ) return null;
 
+		tr = CanToolParams.RunCanTool( this, "use", tr );
+		if ( !tr.Hit )
+			return null;
+
 		return ent;
 	}
 

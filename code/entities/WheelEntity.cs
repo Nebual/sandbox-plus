@@ -1,7 +1,7 @@
 ﻿using Sandbox.Physics;
 using Sandbox;
 
-[Library( "ent_wheel" )]
+[Library( "ent_wheel", Title = "Wheel" )]
 public partial class WheelEntity : Prop
 {
 	public HingeJoint Joint;

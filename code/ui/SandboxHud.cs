@@ -39,14 +39,22 @@ public partial class SandboxHud : HudEntity<RootPanel>
 		CurrentTool.GetCurrentTool()?.Activate();
 	}
 
+	[Event( "package.mounted" )]
 	[Event.Hotload]
 	private void OnReloaded()
 	{
+		Log.Info( "SandboxHud.OnReloaded" );
 		if ( !Game.IsClient )
 			return;
 
 		RootPanel.DeleteChildren();
 		PopulateHud();
 		HotReloadTool();
+	}
+
+	[ConCmd.Client( "reload_hud" )]
+	public static void ReloadHud()
+	{
+		Instance?.OnReloaded();
 	}
 }

@@ -4,7 +4,7 @@ using System;
 [Library( "physgun" )]
 public partial class PhysGun : Carriable
 {
-	public override string ViewModelPath => "weapons/rust_pistol/v_rust_pistol.vmdl";
+	public override string ViewModelPath => Cloud.Asset( "wiremod.v_gravity_gun2" );
 
 	public PhysicsBody HeldBody { get; private set; }
 	public Vector3 HeldPos { get; private set; }
@@ -32,12 +32,22 @@ public partial class PhysGun : Carriable
 	[Net] public int GrabbedBone { get; set; }
 	[Net] public Vector3 GrabbedPos { get; set; }
 
+	private Sound BeamSound;
+	private int BeamSoundPlaying;
+
 	public override void Spawn()
 	{
 		base.Spawn();
 
 		Tags.Add( "weapon" );
-		SetModel( "weapons/rust_pistol/rust_pistol.vmdl" );
+		Model = Cloud.Model( "wiremod.gravity_gun2" );
+		SetMaterialGroup( "physicsgun" );
+	}
+
+	public override void CreateViewModel()
+	{
+		base.CreateViewModel();
+		ViewModelEntity.SetMaterialGroup( "physicsgun" );
 	}
 
 	[GameEvent.Entity.PreCleanup]
@@ -60,6 +70,31 @@ public partial class PhysGun : Carriable
 
 			if ( !Grabbing )
 				Grabbing = true;
+		}
+		if ( Input.Down( "attack1" ) )
+		{
+			if ( BeamSoundPlaying == 0 )
+			{
+				BeamSound = PlaySound( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" );
+				BeamSoundPlaying = 1;
+			}
+			if ( HeldBody.IsValid() && BeamSoundPlaying != 2 )
+			{
+				if ( BeamSoundPlaying == 1 )
+				{
+					BeamSound.Stop();
+				}
+				BeamSound = PlaySound( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" );
+				BeamSoundPlaying = 2;
+			}
+		}
+		else
+		{
+			if ( BeamSoundPlaying != 0 )
+			{
+				BeamSound.Stop();
+				BeamSoundPlaying = 0;
+			}
 		}
 
 		bool grabEnabled = Grabbing && Input.Down( "attack1" );
@@ -113,6 +148,7 @@ public partial class PhysGun : Carriable
 			.Ignore( this )
 			.OnTraceEvent( Owner ) // SandboxPlus addition for Stargate support
 			.Run();
+		tr = CanToolParams.RunCanTool( Owner as Player, ClassName, tr );
 
 		if ( !tr.Hit || !tr.Entity.IsValid() || tr.Entity.IsWorld ) return;
 		if ( tr.Entity.Tags.Has( PhysgunBlockTag ) ) return;
@@ -152,6 +188,7 @@ public partial class PhysGun : Carriable
 			.Ignore( this )
 			.OnTraceEvent( Owner ) // SandboxPlus addition for Stargate support
 			.Run();
+		tr = CanToolParams.RunCanTool( Owner as Player, ClassName, tr );
 
 		if ( !tr.Hit || !tr.Entity.IsValid() || tr.Entity.IsWorld || tr.StartedSolid ) return;
 		if ( tr.Entity.Tags.Has( PhysgunBlockTag ) ) return;
