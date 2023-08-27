@@ -39,6 +39,11 @@ public partial class GravGun : Carriable
 
 	private const string grabbedTag = "grabbed";
 
+	[Net]
+	private float ProngsState { get; set; } = 0;
+	[Net]
+	private bool ProngsActive { get; set; } = false;
+
 	public override void Spawn()
 	{
 		base.Spawn();
@@ -47,8 +52,6 @@ public partial class GravGun : Carriable
 		SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 
 		Tags.Add( "weapon", "solid" );
-
-		UseAnimGraph = false;
 	}
 
 	public override void ClientSpawn()
@@ -164,12 +167,23 @@ public partial class GravGun : Carriable
 		GrabEnd();
 	}
 
+	[ClientRpc]
+	public void SetViewModelParam( string param, bool value = true )
+	{
+		ViewModelEntity?.SetAnimParameter( param, value );
+	}
+
 	public override void Simulate( IClient client )
 	{
 		if ( Owner is not Player owner ) return;
 
+		SetAnimParameter( "prongs", ProngsState );
+		ViewModelEntity?.SetAnimParameter( "prongs", ProngsState );
+
 		if ( !Game.IsServer )
 			return;
+
+		ProngsState = ProngsState.LerpTo( ProngsActive ? 1 : 0, Time.Delta * 10f );
 
 		using ( Prediction.Off() )
 		{
@@ -194,21 +208,29 @@ public partial class GravGun : Carriable
 					}
 
 					GrabEnd();
+
+					SetViewModelParam( To.Single( owner ), "altfire" );
 				}
 				else if ( Input.Pressed( "attack2" ) )
 				{
 					GrabEnd();
+
+					SetViewModelParam( To.Single( owner ), "drop" );
 				}
 				else
 				{
 					GrabMove( eyePos, eyeDir, eyeRot );
 				}
 
+				ProngsActive = true;
+
 				return;
 			}
 
 			if ( timeSinceDrop < DropCooldown )
 				return;
+
+			ProngsActive = false;
 
 			var tr = Trace.Ray( eyePos, eyePos + eyeDir * MaxPullDistance )
 				.UseHitboxes()
@@ -235,6 +257,9 @@ public partial class GravGun : Carriable
 			if ( body.BodyType != PhysicsBodyType.Dynamic )
 				return;
 
+			if ( eyePos.Distance( modelEnt.CollisionWorldSpaceCenter ) < AttachDistance )
+				ProngsActive = true;
+
 			if ( Input.Pressed( "attack1" ) )
 			{
 				if ( tr.Distance < MaxPushDistance )
@@ -242,6 +267,8 @@ public partial class GravGun : Carriable
 					var pushScale = 1.0f - Math.Clamp( tr.Distance / MaxPushDistance, 0.0f, 1.0f );
 					body.ApplyImpulseAt( tr.EndPosition, eyeDir * (body.Mass * (PushForce * pushScale)) );
 				}
+
+				SetViewModelParam( To.Single( owner ), "fire" );
 			}
 			else if ( Input.Down( "attack2" ) )
 			{
@@ -260,6 +287,8 @@ public partial class GravGun : Carriable
 				{
 					var holdDistance = HoldDistance + attachPos.Distance( body.MassCenter );
 					GrabStart( modelEnt, body, eyePos + eyeDir * holdDistance, eyeRot );
+
+					SetViewModelParam( To.Single( owner ), "hold" );
 				}
 				else
 				{
@@ -281,6 +310,8 @@ public partial class GravGun : Carriable
 	public override void ActiveStart( Entity ent )
 	{
 		base.ActiveStart( ent );
+
+		ViewModelEntity?.SetAnimParameter( "deploy", true );
 
 		if ( Game.IsServer )
 		{
@@ -404,10 +435,19 @@ public partial class GravGun : Carriable
 
 		HoldPos = startPos - HeldPos * HeldBody.Rotation + dir * holdDistance;
 		HoldRot = rot * HeldRot;
+
+		//ProngsActive = true;
 	}
 
 	public override bool IsUsable( Entity user )
 	{
 		return Owner == null || HeldBody.IsValid();
+	}
+
+	public override void OnCarryDrop( Entity dropper )
+	{
+		GrabEnd();
+
+		base.OnCarryDrop( dropper );
 	}
 }
