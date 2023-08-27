@@ -7,7 +7,7 @@ using System.Linq;
 [Library( "gravgun" )]
 public partial class GravGun : Carriable
 {
-	public override string ViewModelPath => "models/gravitygun/v_gravitygun.vmdl";
+	public override string ViewModelPath => Cloud.Asset( "katka/gravitygun" );
 	private AnimatedEntity ViewModelArms { get; set; }
 	private AnimatedEntity ArmsAdapter { get; set; }
 	public List<CapsuleLightEntity> LightsWorld;
@@ -48,7 +48,7 @@ public partial class GravGun : Carriable
 	{
 		base.Spawn();
 		
-		SetModel( "models/gravitygun/v_gravitygun.vmdl" );
+		SetModel( ViewModelPath );
 		SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 
 		Tags.Add( "weapon", "solid" );
@@ -102,7 +102,7 @@ public partial class GravGun : Carriable
 		ViewModelEntity.EnableViewmodelRendering = true;
 		ViewModelEntity.SetBodyGroup( "crystal_inside", 1 );
 
-		ArmsAdapter = new AnimatedEntity( "models/hand_adapter_valvebiped_to_sbox/hand_adapter_valvebiped_to_sbox.vmdl" );
+		ArmsAdapter = new AnimatedEntity( Cloud.Asset( "katka/hand_adapter_valvebiped_to_sbox" ) );
 		ArmsAdapter.SetParent( ViewModelEntity, true );
 		ArmsAdapter.EnableViewmodelRendering = ViewModelEntity.EnableViewmodelRendering;
 

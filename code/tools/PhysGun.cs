@@ -7,7 +7,7 @@ using System.Linq;
 [Library( "physgun" )]
 public partial class PhysGun : Carriable
 {
-	public override string ViewModelPath => "models/gravitygun/v_gravitygun.vmdl";
+	public override string ViewModelPath => Cloud.Asset( "katka/gravitygun" );
 	private AnimatedEntity ViewModelArms { get; set; }
 	private AnimatedEntity ArmsAdapter { get; set; }
 	public List<CapsuleLightEntity> LightsWorld;
@@ -47,7 +47,7 @@ public partial class PhysGun : Carriable
 	{
 		base.Spawn();
 		
-		SetModel( "models/gravitygun/v_gravitygun.vmdl" );
+		SetModel( ViewModelPath );
 		SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 
 		Tags.Add( "weapon", "solid" );
@@ -101,7 +101,7 @@ public partial class PhysGun : Carriable
 		ViewModelEntity.EnableViewmodelRendering = true;
 		ViewModelEntity.SetBodyGroup( "crystal_inside", 1 );
 
-		ArmsAdapter = new AnimatedEntity( "models/hand_adapter_valvebiped_to_sbox/hand_adapter_valvebiped_to_sbox.vmdl" );
+		ArmsAdapter = new AnimatedEntity( Cloud.Asset( "katka/hand_adapter_valvebiped_to_sbox" ) );
 		ArmsAdapter.SetParent( ViewModelEntity, true );
 		ArmsAdapter.EnableViewmodelRendering = ViewModelEntity.EnableViewmodelRendering;
 
@@ -184,7 +184,7 @@ public partial class PhysGun : Carriable
 		{
 			//(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
 
-			ViewModelEntity?.SetAnimParameter( "fire", true );
+			//ViewModelEntity?.SetAnimParameter( "fire", true );
 
 			if ( !Grabbing )
 				Grabbing = true;
@@ -214,9 +214,6 @@ public partial class PhysGun : Carriable
 					else
 					{
 						TryStartGrab( eyePos, eyeRot, eyeDir );
-
-						SetViewModelParam( To.Single( owner ), "hold" );
-
 					}
 				}
 				else if ( Grabbing )
@@ -446,6 +443,8 @@ public partial class PhysGun : Carriable
 			return;
 
 		GrabEnd();
+
+		SetViewModelParam( To.Single( Owner ), "hold" );
 
 		Grabbing = true;
 		HeldBody = body;
