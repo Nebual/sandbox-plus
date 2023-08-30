@@ -1,0 +1,243 @@
+﻿@using Sandbox.UI
+@namespace Sandbox.UI
+@inherits Panel
+
+<root>
+    <div class="inner">
+        @if (!string.IsNullOrEmpty(Label))
+        {
+            <label style="font-size: 18px; margin-bottom: 5px;">@Label</label>
+        }
+        @if (ShowRange)
+        {
+            <div class="values">
+                <div class="left">@Min.ToString( NumberFormat )</div>
+                <div class="right">@Max.ToString( NumberFormat )</div>
+            </div>
+        }
+        <div @ref="TrackPanel" class="track">
+            <div class="track-active" style="width: @(SliderPosition())%;"></div>
+            <div @ref="ThumbPanel" style="left: @(SliderPosition())%;" class="thumb">
+                @if (this.HasActive)
+                {
+                    <div class="value-tooltip">
+                        <label>@Value.ToString( NumberFormat )</label>
+                        <div class="tail"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</root>
+
+@code {
+    public Action<float> OnValueChanged { get; set; }
+
+    /// <summary>
+    /// Text indicating the purpose of the slider.
+    /// </summary>
+    public string Label { get; set; } = "";
+
+    /// <summary>
+    /// The convar to bind to. Handles Value/OnValueChanged
+    /// </summary>
+    public string Convar { get; set; } = "";
+
+    public float Max { get; set; } = 100;
+    public float Min { get; set; } = 0;
+
+    /// <summary>
+    /// If set to 1, value will be rounded to 1's
+    /// If set to 10, value will be rounded to 10's
+    /// If set to 0.1, value will be rounded to 0.1's
+    /// </summary>
+    public float Step { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Show the range values above the slider
+    /// </summary>
+    public bool ShowRange { get; set; } = true;
+
+    public string NumberFormat { get; set; } = "0.###";
+
+    private float _value;
+
+    public float Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == value)
+                return;
+
+            _value = MathX.Clamp( _value, Min, Max );
+            _value = value;
+            StateHasChanged();
+        }
+    }
+
+    private Panel TrackPanel { get; set; }
+    private Panel ThumbPanel { get; set; }
+    private TextEntry TextEntryPanel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Convar != "")
+        {
+            Value = float.Parse(ConsoleSystem.GetValue(Convar, Min.ToString()));
+        }
+    }
+
+    /// <summary>
+    /// Convert a screen position to a value. The value is clamped, but not snapped.
+    /// </summary>
+    public virtual float ScreenPosToValue( Vector2 pos )
+    {
+        var normalized = MathX.LerpInverse(pos.x, TrackPanel.Box.Left, TrackPanel.Box.Right, true);
+        var scaled = MathX.LerpTo( Min, Max, normalized, true );
+        return Step > 0 ? scaled.SnapToGrid( Step ) : scaled;
+    }
+
+    /// <summary>
+    /// If we move the mouse while we're being pressed then set the value
+    /// </summary>
+    protected override void OnMouseMove( MousePanelEvent e )
+    {
+        base.OnMouseMove( e );
+
+        if ( !HasActive || e.MouseButton == MouseButtons.Middle ) return;
+
+        Value = ScreenPosToValue( Mouse.Position );
+        e.StopPropagation();
+    }
+
+    /// <summary>
+    /// On mouse press jump to that position
+    /// </summary>
+    protected override void OnMouseDown( MousePanelEvent e )
+    {
+        base.OnMouseDown( e );
+
+        Value = ScreenPosToValue( Mouse.Position );
+        e.StopPropagation();
+
+        TextEntryPanel?.Blur();
+    }
+
+    protected override void OnMouseUp(MousePanelEvent e)
+    {
+        base.OnMouseUp(e);
+
+        if (Convar != "")
+        {
+            ConsoleSystem.Run(Convar, ((float)Value).ToString());
+        }
+        OnValueChanged?.Invoke(Value);
+    }
+
+    protected override void OnMiddleClick( MousePanelEvent e )
+    {
+        base.OnMiddleClick( e );
+        e.StopPropagation();
+    }
+
+    private float SliderPosition() 
+    {
+        return MathX.LerpInverse(Value, Min, Max, true) * 100.0f;
+    }
+}
+
+<style>
+Slider {
+    min-width: 50px;
+    position: relative;
+    flex-shrink: 0;
+    flex-direction: row;
+    pointer-events: all;
+    margin: 0px 8px;
+    align-items: center;
+    padding-bottom: 15px;
+
+    > .inner {
+        flex-direction: column;
+        min-height: 32px;
+        width: 100%;
+
+        > .values {
+            width: 100%;
+            pointer-events: none;
+            font-size: 14px;
+            color: #aaa;
+
+            > .left {
+                flex-grow: 1;
+            }
+        }
+
+        > .track {
+            background-color: #888;
+            height: 7px;
+            margin: 8px;
+            align-items: center;
+            border-radius: 4px;
+
+            > .track-active {
+                background-color: #fff;
+                position: absolute;
+                height: 100%;
+                left: 0px;
+                border-radius: 4px;
+            }
+
+            > .thumb {
+                background-color: #fff;
+                border-radius: 100px;
+                width: 16px;
+                height: 16px;
+                transform: translateX(-50%);
+            }
+        }
+    }
+
+    > .entry {
+        width: 50px;
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        > textentry {
+            text-align: right;
+            width: 100%;
+            border-radius: 4px;
+            padding: 0;
+            min-height: 0px;
+
+            > .content-label {
+                padding: 0 4px;
+            }
+        }
+    }
+}
+
+Slider .value-tooltip {
+    position: absolute;
+    bottom: 150%;
+    left: -8px;
+    z-index: 1000;
+    flex-direction: column;
+
+    > .label {
+        font-size: 20px;
+        background-color: black;
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    > .tail {
+        left: 8px;
+        background-color: black;
+        width: 10px;
+        height: 10px;
+        transform: rotateZ(45 deg);
+    }
+}
+</style>

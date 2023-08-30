@@ -18,7 +18,7 @@ spawnmenu {
 	z-index: 10;
 	backdrop-filter: blur( 10px ) contrast( 50% ) saturate( 50% ) brightness( 10% );
 
-	.left {
+	> .left {
 		flex-grow: 1;
 		flex-direction: column;
 		position: relative;
@@ -39,10 +39,10 @@ spawnmenu {
 		}
 	}
 
-	.right {
+	> .right {
 		margin-left: 50px;
 		flex-direction: column;
-		min-width: 400px;
+		min-width: 500px;
 		flex-shrink: 0;
 		left: 500px;
 		transition: all 0.3s ease-in;
@@ -77,7 +77,8 @@ spawnmenu {
 
 			.inspector {
 				//background-color: rgba( #111, 0.7 );
-				flex-grow: 1;
+				flex-direction: column;
+				width: 350px;
 				margin-left: 5px;
 				border-radius: 0 3px 3px 0;
 			}
@@ -92,7 +93,8 @@ spawnmenu {
 	opacity: 1;
 	transform: scale( 1 );
 
-	.left, .right
+	> .left,
+	> .right
 	{
 		left: 0;
 		transition: all 0.1s ease-out;
@@ -100,7 +102,6 @@ spawnmenu {
 }
 
 
-.modelselector,
 .spawnpage
 {
 	display: none;
@@ -163,14 +164,53 @@ spawnmenu {
 	}
 }
 
-.modelselector {
-    max-width: 275px;
-    .canvas {
-        margin: 4px;
-        .cell {
-            padding: 2px;
-        }
-    }
+
+.modelselector
+{
+	.canvas
+	{
+		flex-grow: 1;
+		flex-wrap: wrap;
+		margin: 4px;
+		border-radius: 5px;
+		margin-bottom: 15px;
+
+		.cell
+		{
+			padding: 3px;
+		}
+
+		.icon
+		{
+			border-radius: 8px;
+			color: rgba( #fff, 0.5 );
+			font-size: 12px;
+			text-align: center;
+			cursor: pointer;
+			width: 100%;
+			height: 100%;
+			background-position: center;
+			background-size: cover;
+			background-color: rgba(black, 0.0);
+			background-image: url( /entity/spawnicon.png );
+
+			label
+			{
+				font-size: 9px;
+				position: absolute;
+				bottom: -17px;
+				left: 0;
+				right: 0;
+				pointer-events: none;
+			}
+
+			&:hover
+			{
+				color: #fff;
+				background-color: rgba(black, 0.1);
+			}
+		}
+	}
 }
 
 
@@ -217,8 +257,9 @@ spawnmenu .sidebar
 
         .icon {
             border-radius: 16px;
-            color: rgba( #fff, 0.5 );
+            color: #fff;
             font-size: 12px;
+            line-height: 10px;
             text-align: center;
             cursor: pointer;
             width: 100%;
@@ -227,7 +268,6 @@ spawnmenu .sidebar
             background-size: cover;
             background-color: rgba(black, 0.1);
             background-image: url( /entity/spawnicon.png );
-
         }
 
         .cell {
@@ -276,21 +316,6 @@ spawnmenu .sidebar
                 margin-left: 8px;
             }
         }
-        menutextentry {
-            pointer-events: all;
-            color: white;
-            padding: 10px;
-            margin: 4px;
-            background-color: rgba( black, 0.7 );
-            &:hover {
-                background-color: rgba( black, 0.9 );
-                cursor: text;
-            }
-            font-size: 14px;
-            flex-shrink: 0;
-            flex-grow: 0;
-            width: 100px;
-        }
         button {
             pointer-events: all;
             background-color: rgba( black, 0.7 );
@@ -307,4 +332,17 @@ spawnmenu .sidebar
 
 .flex-column {
     flex-direction: column;
+}
+
+menutextentry {
+    pointer-events: all;
+    color: white;
+    padding: 2px 6px;
+    margin: 4px;
+    background-color: rgba( black, 0.7 );
+    &:hover {
+        background-color: rgba( black, 0.9 );
+        cursor: text;
+    }
+    min-width: 100px;
 }

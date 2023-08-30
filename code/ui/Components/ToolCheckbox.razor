@@ -1,0 +1,67 @@
+@using System
+@using Sandbox.Razor
+@namespace Sandbox.UI
+
+<root>
+    @if (Value)
+    {
+        <icon>check</icon>
+    }
+    else
+    {
+        <icon>square</icon>
+    }
+    <text>@Label</text>
+</root>
+
+@code
+{
+    /// <summary>
+    /// The convar to bind to. Handles Value/OnValueChanged
+    /// </summary>
+    public string Convar { get; set; } = "";
+    public string Label = "";
+
+    public bool Value = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Convar != "")
+        {
+            Value = ConsoleSystem.GetValue(Convar, "0") != "0";
+        }
+    }
+
+    public virtual void OnValueChanged( )
+    {
+        if (Convar != "")
+        {
+            ConsoleSystem.Run( Convar, Value ? "1" : "0" );
+        }
+    }
+
+    protected override void OnClick( MousePanelEvent e )
+    {
+        base.OnClick( e );
+
+        Value = !Value;
+        OnValueChanged();
+        e.StopPropagation();
+    }
+
+    protected override void OnMouseDown( MousePanelEvent e )
+    {
+        e.StopPropagation();
+    }
+}
+
+<style>
+ToolCheckbox {
+    margin-bottom: 5px;
+    align-items: center;
+    icon {
+        flex-grow: 0;
+        margin-right: 4px;
+    }
+}
+</style>

@@ -1,0 +1,58 @@
+DuplicatorToolConfig {
+    flex-direction: column;
+
+    .file-list {
+        flex-direction: column;
+        min-width: 300px;
+        min-height: 175px;
+        max-height: 400px;
+        overflow-y: scroll;
+        background-color: rgba(#333, 0.7);
+        padding: 12px;
+        margin-bottom: 15px;
+        .textbutton {
+            color: #ddd;
+            background-color: rgba(#222, 0.7);
+            padding: 4px;
+            margin: 2px 0;
+            font-size: 11px;
+            min-height: 24px;
+            cursor: pointer;
+        }
+    }
+
+    .button {
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 18px;
+        min-width: 64px;
+        padding: 2px 4px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+            box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+            border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+            color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        border: 0.5px solid #000;
+        color: #000;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border: 1px solid #000;
+        }
+
+        &:active {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+    }
+    .input-label {
+        align-self: center;
+        margin-right: 10px;
+    }
+    menutextentry {
+        flex: 1;
+    }
+}

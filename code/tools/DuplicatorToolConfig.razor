@@ -1,0 +1,94 @@
+@using Sandbox.UI
+@namespace Sandbox.UI
+@inherits Panel
+@attribute [StyleSheet]
+
+<root>
+	<div class="file-list">
+		<div class="textbutton" onclick="@( () => OnFolderClicked("..") )">/@(Cwd != "" ? Cwd + ".." : "")</div>
+		@foreach (var folder in Folders)
+		{
+			<div class="textbutton" onclick="@( () => OnFolderClicked(folder) )">/@folder/</div>
+		}
+		@foreach (var file in Files)
+		{
+			<div class="textbutton" onclick="@( () => OnFileClicked(file) )">@file</div>
+		}
+	</div>
+	<button class="button" onclick="@( () => OnSaveClicked() )" disabled="@(!SaveEnabled ? "disabled" : "")">@(!ShowNameInput ? "Save" : "Confirm Save")</button>
+	@if (SaveEnabled && ShowNameInput) {
+		<div><label class="input-label">Save Name: </label><MenuTextEntry Value:bind=@SaveName /></div>
+	}
+
+	<Slider
+		Label="AreaCopy Range"
+		Min=@(50)
+		Max=@(2000)
+		OnValueChanged=@((float val) => ConsoleSystem.Run("tool_duplicator_area_size", ((int)val).ToString()))
+		Value=@(float.Parse(ConsoleSystem.GetValue("tool_duplicator_area_size", "250")))
+		style="margin-top: 20px;"
+	/>
+</root>
+
+@code {
+	public List<string> Files = new();
+	public List<string> Folders = new();
+	public string Cwd = "";
+	public bool SaveEnabled = true; // todo: disable when empty
+	public bool ShowNameInput = false; 
+	public string SaveName = "";
+
+	public DuplicatorToolConfig()
+	{
+		RefreshFiles();
+	}
+	private void RefreshFiles()
+	{
+		Files = FileSystem.OrganizationData.FindFile("dupes/" + Cwd, "*.dupe").ToList();
+		Folders = FileSystem.OrganizationData.FindDirectory("dupes/" + Cwd, "*").ToList();
+	}
+
+	public void OnFileClicked(string file)
+	{
+		ConsoleSystem.Run("tool_duplicator_openfile", Cwd + file);
+	}
+
+	public void OnFolderClicked(string folder)
+	{
+		if (folder == "..") {
+			Cwd = Cwd.Substring(0, Cwd.TrimEnd('/').LastIndexOf('/')+1);
+			RefreshFiles();
+			return;
+		}
+		Cwd += folder + "/";
+		RefreshFiles();
+	}
+
+	public async void OnSaveClicked()
+	{
+		if (!ShowNameInput)
+		{
+			ShowNameInput = true;
+			SpawnMenu.Instance.IgnoreMenuButton = true;
+		} else if (SaveName == "")
+		{
+			ShowNameInput = false;
+		} else
+		{
+			var name = SaveName;
+			if (!name.EndsWith(".dupe"))
+			{
+				name += ".dupe";
+			}
+			ConsoleSystem.Run("tool_duplicator_savefile", Cwd + name);
+			ShowNameInput = false;
+			SpawnMenu.Instance.IgnoreMenuButton = false;
+			
+			for (var i = 500; i < 4000; i += 500)
+			{
+				await Task.Delay( 500 );
+				RefreshFiles();
+			}
+		}
+	}
+}

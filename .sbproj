@@ -12,7 +12,8 @@
   "HasCode": true,
   "CodePath": "code",
   "PackageReferences": [
-    "wiremod.wirelib"
+    "wiremod.wirelib",
+    "wiremod.ndata"
   ],
   "EditorReferences": null,
   "Metadata": {
@@ -335,6 +336,16 @@
     "HttpAllowList": null,
     "TickRate": 50,
     "LaunchConfigs": [
+      {
+        "Name": "Wire",
+        "GameIdent": "wiremod.sandboxplus#local",
+        "MapName": "facepunch.square",
+        "MaxPlayers": 1,
+        "GameSettings": {},
+        "Addons": "wiremod.wireboxaddon#local; wiremod.sbox_tool_auto",
+        "PreLaunchCommand": "",
+        "PostLaunchCommand": ""
+      },
       {
         "Name": "WireGates",
         "GameIdent": "wiremod.sandboxplus#local",

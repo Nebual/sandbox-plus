@@ -1,0 +1,115 @@
+@using Sandbox.UI
+@using Sandbox.Tools
+@namespace Sandbox.UI
+@inherits Panel
+
+<root>
+	<div class="list">
+		@foreach ( var type in Enum.GetValues<ConstraintType>() )
+		{
+			<div
+				class="@(type.ToString() == ConsoleSystem.GetValue( "tool_constraint_type", "Weld" ) ? "list_option active" : "list_option")"
+				onclick="@( () => OnTypeClicked(type) )"
+			>
+				@(type.ToString())
+			</div>
+		}
+	</div>
+	@* todo: implement in tool
+	<Slider
+		Label="Nudge Distance"
+		Min=@(0.125f)
+		Max=@(100f)
+		Step=@(0.125f)
+		Convar="tool_constraint_nudge_distance"
+		style="margin-top: 20px;"
+	/>
+	<ToolCheckbox
+		Label="Nudge as Percent (%) of prop width"
+		Convar="tool_constraint_nudge_percent"
+	/>
+	<ToolCheckbox
+		Label="Move Target?"
+		Convar="tool_constraint_move_target"
+	/>
+	@if ( ConsoleSystem.GetValue( "tool_constraint_move_target", "0" ) != "0" )
+	{
+		<Slider
+			Label="Movement Offset"
+			Min=@(-100f)
+			Max=@(100f)
+			Step=@(1f)
+			Convar="tool_constraint_move_offset"
+		/>
+		<ToolCheckbox
+			Label="Offset as Percent (%) of prop width"
+			Convar="tool_constraint_move_percent"
+			style="margin-bottom: 20px;"
+		/>
+	}
+	<ToolCheckbox
+		Label="Rotate Target? (after moving)"
+		Convar="tool_constraint_rotate_target"
+	/>
+	@if ( ConsoleSystem.GetValue( "tool_constraint_rotate_target", "0" ) != "0" )
+	{
+		<Slider
+			Label="Rotation Snap Amount"
+			Min=@(0f)
+			Max=@(90f)
+			Step=@(5f)
+			Convar="tool_constraint_rotate_snap"
+		/>
+	}
+	*@
+	<ToolCheckbox
+		Label="Freeze Target"
+		Convar="tool_constraint_freeze_target"
+	/>
+	@if ( ConsoleSystem.GetValue( "tool_constraint_type", "Weld" ) != ConstraintType.Nocollide.ToString() )
+	{
+		<ToolCheckbox
+			Label="No Collide Targets"
+			Convar="tool_constraint_nocollide_target"
+		/>
+	}
+	<!-- Autorotate to World? -->
+</root>
+
+@code {
+	public void OnTypeClicked(ConstraintType constraintType)
+	{
+		ConsoleSystem.Run( "tool_constraint_type " + constraintType.ToString() );
+	}
+}
+
+<style>
+ConstraintToolConfig {
+	flex-direction: column;
+	.list {
+		flex-direction: column;
+		.list_option {
+			padding: 2px 0;
+			font-size: 12px;
+			align-items: center;
+			font-weight: 600;
+			opacity: 0.2;
+			color: #fff;
+			cursor: pointer;
+			label {
+				text-shadow: 1px 1px 4px rgba(black, 0.2);
+			}
+
+			&:hover {
+				opacity: 0.75;
+			}
+
+			&.active {
+				transform: scale(1);
+				opacity: 1;
+				color: #fff;
+			}
+		}
+	}
+}
+</style>
