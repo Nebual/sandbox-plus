@@ -42,8 +42,10 @@ namespace Sandbox.Tools
 							message += $" owned by {prop.GetPlayerOwner()}";
 						}
 					}
-					// todo: how do print to chat/etc?
+
+					// prints to console, and to chat (for us only)
 					Log.Info( message );
+					Chat.AddChatEntry( To.Single(Owner.Client), Owner.Client.Name, message, Owner.Client.SteamId );
 				}
 			}
 		}
