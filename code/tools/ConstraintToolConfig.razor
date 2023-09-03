@@ -15,6 +15,21 @@
 			</div>
 		}
 	</div>
+	@if (ConsoleSystem.GetValue("tool_constraint_type", "Weld") == ConstraintType.Rope.ToString())
+	{
+		<Slider
+			Label="Rope Length"
+			Min=@(0f)
+			Max=@(1000f)
+			Step=@(1f)
+			Convar="tool_constraint_rope_length"
+		/>
+		<ToolCheckbox
+			Label="Rigid Rope"
+			Convar="tool_constraint_rope_rigid"
+			style="margin-bottom: 20px;"
+		/>
+	}
 	<Slider
 		Label="Nudge Distance"
 		Min=@(0.125f)
