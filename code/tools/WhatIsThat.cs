@@ -1,4 +1,5 @@
 using Sandbox.UI;
+using System.Xml;
 
 namespace Sandbox.Tools
 {
@@ -37,9 +38,12 @@ namespace Sandbox.Tools
 						{
 							message += $" weighing {prop.PhysicsBody.Mass}";
 						}
-						if ( prop.GetPlayerOwner().IsValid() )
+
+						var playerOwner = prop.GetPlayerOwner();
+						if ( playerOwner.IsValid() )
 						{
-							message += $" owned by {prop.GetPlayerOwner()}";
+							var ownerClient = Game.Clients.FirstOrDefault( c => c.NetworkIdent == (playerOwner?.Owner?.NetworkIdent ?? playerOwner?.NetworkIdent) );
+							message += $" owned by {ownerClient?.Name ?? playerOwner.ToString()}";
 						}
 					}
 
