@@ -6,7 +6,7 @@ using Sandbox.UI.Construct;
 public partial class HintFeedEntry : Panel
 {
 	public IconPanel Icon { get; internal set; }
-	public Label Name { get; internal set; }
+	public Label Message { get; internal set; }
 
 	public RealTimeSince TimeSinceBorn = 0;
 

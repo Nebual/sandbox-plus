@@ -20,7 +20,7 @@ HintFeedEntry {
     flex-shrink: 0;
     flex-grow: 0;
     padding: 12px;
-    height: 45px;
+    min-height: 45px;
     position: relative;
 
     &:intro {
@@ -53,5 +53,8 @@ HintFeedEntry {
     }
     .redo {
         color: #00ff00;
+    }
+    .question {
+        color: #3399ff;
     }
 }

@@ -43,9 +43,9 @@ namespace Sandbox.Tools
 						}
 					}
 
-					// prints to console, and to chat (for us only)
+					// prints to console, and to hint feed (for us only)
 					Log.Info( message );
-					Chat.AddChatEntry( To.Single(Owner.Client), Owner.Client.Name, message, Owner.Client.SteamId );
+					HintFeed.AddHint( To.Single( Owner.Client ), "whatis", message );
 				}
 			}
 		}

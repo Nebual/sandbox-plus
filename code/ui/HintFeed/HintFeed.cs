@@ -16,12 +16,45 @@ public partial class HintFeed : Panel
 	}
 
 	[ClientRpc]
-	public static void AddHint( string msg, bool redo = false )
+	public static void AddHint(string type, string msg )
 	{
 		var e = Current.AddChild<HintFeedEntry>();
 
-		var undoRedo = redo ? "redo" : "undo";
-		e.Icon = e.Add.Icon(undoRedo, $"icon {undoRedo}");
-		e.Name = e.Add.Label( msg, "msg" );
+		var iconName = GetIconName( type );
+		var iconClasses = GetIconClasses( type );
+
+		if ( !string.IsNullOrEmpty( iconName ) )
+		{
+			e.Icon = e.Add.Icon( iconName, iconClasses );
+		}
+		e.Message = e.Add.Label( msg, "msg" );
+		Log.Info( $"AddHint iconName: {iconName} iconClasses: {iconClasses}" );
+	}
+
+	private static string GetIconName( string type )
+	{
+		string name = type switch
+		{
+			"undo" => type,
+			"redo" => type,
+			"whatis" => "question_mark",
+			_ => null,
+		};
+		return name;
+	}
+
+	private static string GetIconClasses(string type )
+	{
+		List<string> classes = new List<string> { "icon" };
+
+		if (type == "undo" || type == "redo")
+		{
+			classes.Add( type );
+		}
+		else if (type == "whatis")
+		{
+			classes.Add( "question" );
+		}
+		return string.Join(" ", classes);
 	}
 }

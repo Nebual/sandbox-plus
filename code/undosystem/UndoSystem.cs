@@ -60,7 +60,7 @@ namespace UndoManager
 					Undoer.DoUndo( creator, null, undo );
 					if ( undoMessage != "" )
 					{
-						HintFeed.AddHint( To.Single( creator ), undoMessage );
+						HintFeed.AddHint( To.Single( creator ), "undo", undoMessage );
 
 						Undoer.AddUndoPopup( To.Single( creator ), undoMessage );
 						CreateUndoParticles( To.Single( creator ), Vector3.Zero );
@@ -82,7 +82,7 @@ namespace UndoManager
 
 				// Display undo msg for props and some non props
 				var msg = GetPropName( prop );
-				HintFeed.AddHint( To.Single( creator ), msg );
+				HintFeed.AddHint( To.Single( creator ), "undo", msg );
 
 				if ( prop.GetType() != typeof( Prop ) )
 				{
@@ -132,7 +132,7 @@ namespace UndoManager
 				Redoer.Remove( creator, redo );
 
 				var msg = GetPropName( prop );
-				HintFeed.AddHint( To.Single( creator ), msg, true );
+				HintFeed.AddHint( To.Single( creator ), "redo", msg );
 
 				undo.Avoid = false;
 				undo.Time = Time.Now;
