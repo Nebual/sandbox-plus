@@ -28,7 +28,6 @@ public partial class HintFeed : Panel
 			e.Icon = e.Add.Icon( iconName, iconClasses );
 		}
 		e.Message = e.Add.Label( msg, "msg" );
-		Log.Info( $"AddHint iconName: {iconName} iconClasses: {iconClasses}" );
 	}
 
 	private static string GetIconName( string type )
