@@ -44,6 +44,16 @@ public partial class GravGun : Carriable
 	[Net]
 	private bool ProngsActive { get; set; } = false;
 
+	private bool hasPlayedProngsOpenSound = false;
+	private bool hasPlayedProngsCloseSound = false;
+	private bool hasPlayedTooHeavySound = false;
+	private Sound TooHeavySound;
+	private bool hasPlayedDryFireSound = false;
+	private Sound DryFireSound;
+
+	private Sound HoldLoopSound;
+	private bool shouldPlayHoldSound = false;
+
 	public override void Spawn()
 	{
 		base.Spawn();
@@ -187,6 +197,15 @@ public partial class GravGun : Carriable
 
 		using ( Prediction.Off() )
 		{
+			if ( shouldPlayHoldSound )
+			{
+				if ( !HoldLoopSound.IsPlaying ) HoldLoopSound = owner.PlaySound( "sounds/weapons/gravity_gun/hold_loop.sound" );
+			}
+			else
+			{
+				HoldLoopSound.Stop();
+			}
+
 			var eyePos = owner.EyePosition;
 			var eyeRot = owner.EyeRotation;
 			var eyeDir = owner.EyeRotation.Forward;
@@ -210,12 +229,16 @@ public partial class GravGun : Carriable
 					GrabEnd();
 
 					SetViewModelParam( To.Single( owner ), "altfire" );
+					owner.PlaySound( "sounds/weapons/gravity_gun/superphys_launch1.sound" );
+					shouldPlayHoldSound = false;
 				}
 				else if ( Input.Pressed( "attack2" ) )
 				{
 					GrabEnd();
 
 					SetViewModelParam( To.Single( owner ), "drop" );
+					owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_drop.sound" );
+					shouldPlayHoldSound = false;
 				}
 				else
 				{
@@ -230,6 +253,26 @@ public partial class GravGun : Carriable
 			if ( timeSinceDrop < DropCooldown )
 				return;
 
+			// Prongs open/close sounds (messy)
+			if ( ProngsActive )
+			{
+				if ( !hasPlayedProngsOpenSound )
+				{
+					owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_claws_open.sound" );
+					hasPlayedProngsOpenSound = true;
+					hasPlayedProngsCloseSound = false;
+				}
+			}
+			else
+			{
+				if ( !hasPlayedProngsCloseSound )
+				{
+					owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_claws_close.sound" );
+					hasPlayedProngsCloseSound = true;
+					hasPlayedProngsOpenSound = false;
+				}
+			}
+
 			ProngsActive = false;
 
 			var tr = Trace.Ray( eyePos, eyePos + eyeDir * MaxPullDistance )
@@ -240,22 +283,70 @@ public partial class GravGun : Carriable
 				.Run();
 
 			if ( !tr.Hit || !tr.Body.IsValid() || !tr.Entity.IsValid() || tr.Entity.IsWorld )
+			{
+				if ( Input.Down( "attack2" ) )
+				{
+					if ( !hasPlayedTooHeavySound )
+					{
+						if ( TooHeavySound.IsPlaying )
+						{
+							TooHeavySound.Stop();
+						}
+
+						TooHeavySound = owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_tooheavy.sound" );
+						hasPlayedTooHeavySound = true;
+					}
+				}
+				else if ( Input.Down("attack1") )
+				{
+					if ( !hasPlayedDryFireSound )
+					{
+						if ( DryFireSound.IsPlaying )
+						{
+							DryFireSound.Stop();
+						}
+
+						DryFireSound = owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_dryfire.sound" );
+						hasPlayedDryFireSound = true;
+						SetViewModelParam( To.Single( owner ), "fire" );
+					}
+				}
+				else
+				{
+					// TooHeavySound.Stop();
+					hasPlayedTooHeavySound = false;
+					hasPlayedDryFireSound = false;
+				}
+
 				return;
+			}
 
 			if ( tr.Entity.PhysicsGroup == null )
+			{
+				HoldLoopSound.Stop();
 				return;
+			}
 
 			var modelEnt = tr.Entity as ModelEntity;
 			if ( !modelEnt.IsValid() )
+			{
+				HoldLoopSound.Stop();
 				return;
+			}
 
 			if ( modelEnt.Tags.Has( grabbedTag ) )
+			{
+				HoldLoopSound.Stop();
 				return;
+			}
 
 			var body = tr.Body;
 
 			if ( body.BodyType != PhysicsBodyType.Dynamic )
+			{
+				HoldLoopSound.Stop();
 				return;
+			}
 
 			if ( eyePos.Distance( modelEnt.CollisionWorldSpaceCenter ) < AttachDistance )
 				ProngsActive = true;
@@ -269,6 +360,7 @@ public partial class GravGun : Carriable
 				}
 
 				SetViewModelParam( To.Single( owner ), "fire" );
+				owner.PlaySound( "sounds/weapons/gravity_gun/superphys_launch1.sound" );
 			}
 			else if ( Input.Down( "attack2" ) )
 			{
@@ -289,6 +381,8 @@ public partial class GravGun : Carriable
 					GrabStart( modelEnt, body, eyePos + eyeDir * holdDistance, eyeRot );
 
 					SetViewModelParam( To.Single( owner ), "hold" );
+					owner.PlaySound( "sounds/weapons/gravity_gun/physcannon_pickup.sound" );
+					shouldPlayHoldSound = true;
 				}
 				else
 				{
