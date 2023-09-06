@@ -20,7 +20,6 @@ namespace Sandbox.UI
 		public ModelSelector( IEnumerable<string> spawnListNames, bool showMaterialGroups = false )
 		{
 			AddClass( "modelselector" );
-			AddClass( "active" );
 			AddChild( out Canvas, "canvas" );
 
 			Canvas.Layout.AutoColumns = true;
@@ -64,6 +63,8 @@ namespace Sandbox.UI
 			{
 				Canvas.AddItem( file );
 			}
+			// VirtualScrollPanel doesn't have a valid height (subsequent children overlap it within flex-direction: column) so calculate it manually
+			Style.Height = (64 + 6) * (int)Math.Ceiling( spawnList.Count() / 5f );
 		}
 
 		/// To add models/materials to the spawnlists:

@@ -78,6 +78,7 @@ public partial class RopeTool : BaseTool
 			spring.SpringLinear = new( 5, 0.7f );
 			spring.Collisions = true;
 			spring.EnableAngularConstraint = false;
+			// Due to https://github.com/sboxgame/issues/issues/3949 OnBreak isn't called on Joint.Remove(), so the rope visuals stay around forever...
 			spring.OnBreak += () =>
 			{
 				rope?.Destroy( true );

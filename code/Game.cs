@@ -1,7 +1,8 @@
-using System.Threading.Tasks;
-using Sandbox;
-using System;
-using System.Linq;
+global using System.Threading.Tasks;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System;
+global using Sandbox;
 
 partial class SandboxGame : GameManager
 {
@@ -229,6 +230,7 @@ partial class SandboxGame : GameManager
 
 		ent.Position = tr.EndPosition;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) );
+		Event.Run( "entity.spawned", ent, owner );
 	}
 
 	[ClientRpc]

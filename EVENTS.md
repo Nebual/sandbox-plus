@@ -33,5 +33,6 @@
 - `spawnpackage wiremod.sbox_tool_auto` - extended to work on runtime addons beyond just 'npc' + 'entity', see `Event("package.mounted")`
 - `undo` + `redo`
 - `reload_hud`, though it typically hotreloads nicely in the editor
+- `tool_duplicator_savefile file.dupe` + `tool_duplicator_openfile file.dupe`
 
 For more usage examples, see [Wirebox](https://github.com/wiremod/wirebox).

@@ -7,6 +7,7 @@ It closely follows [Facepunch's Sandbox gamemode](https://github.com/Facepunch/s
 ### Gameplay
 
 - Constraint tool: an omni-tool with all your classic Gmod constraints (weld/axis/rope/elastic/slider/ballsocket)
+- Duplicator tool
 - Material tool
 - Toolgun model (wip)
 - Undo/Redo System
@@ -27,6 +28,10 @@ It closely follows [Facepunch's Sandbox gamemode](https://github.com/Facepunch/s
 - [AdminEssentials](https://asset.party/ryan/adminessentials), non-gamemode-specific, non-open-source.
 - [Napkins-Chat](https://github.com/Nebual/napkins-chat) (outdated)
 
+### Libraries
+
+- [Wirelib](https://asset.party/wiremod/wirelib)
+- [NData (ClientRPC substitute)](https://github.com/Nebual/sbox-ndata)
 
 ## Contributing
 
@@ -37,3 +42,4 @@ Message @Nebual on Discord with any questions :)
 
 - [Nebual](https://github.com/Nebual)
 - [Gmod4phun](https://github.com/gmod4phun)
+- [thegrb93](https://github.com/thegrb93) - Duplicator tool work

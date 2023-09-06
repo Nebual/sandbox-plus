@@ -43,6 +43,9 @@
 
 @code
 {
+    // maybe we can make this less biased later when there's more addons. For now, shill Wirebox
+    private static string[] DefaultAddons = new string[]{ "wiremod.wireboxaddon", "wiremod.sbox_tool_auto" };
+
     void LoadSavedGame()
     {
         this.Navigate( "/load" );
@@ -55,10 +58,14 @@
     
     async Task CreateNewLobby()
     {
-        var lobby = await Game.Menu.CreateLobbyAsync(64, "game", true);
+        var lobby = await Game.Menu.CreateLobbyAsync(64, "sandboxplus", true);
         lobby.Title = $"{Game.Menu.Package.Title} Server";
         lobby.Description = ":)";
         lobby.Map = "facepunch.construct";
+        if (lobby.Addons.Count() == 0)
+        {
+            lobby.Addons = lobby.Addons.AddRange(DefaultAddons);
+        }
     }
 
     void OpenServerList()
