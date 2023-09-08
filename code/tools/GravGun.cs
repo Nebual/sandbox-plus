@@ -357,10 +357,10 @@ public partial class GravGun : Carriable
 				{
 					var pushScale = 1.0f - Math.Clamp( tr.Distance / MaxPushDistance, 0.0f, 1.0f );
 					body.ApplyImpulseAt( tr.EndPosition, eyeDir * (body.Mass * (PushForce * pushScale)) );
-				}
 
-				SetViewModelParam( To.Single( owner ), "fire" );
-				owner.PlaySound( "sounds/weapons/gravity_gun/superphys_launch1.sound" );
+					SetViewModelParam( To.Single( owner ), "fire" );
+					owner.PlaySound( "sounds/weapons/gravity_gun/superphys_launch1.sound" );
+				}
 			}
 			else if ( Input.Down( "attack2" ) )
 			{
