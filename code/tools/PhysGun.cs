@@ -435,10 +435,6 @@ public partial class PhysGun : Carriable
 		BeamSound.Stop();
 	}
 
-	//public override void OnCarryDrop( Entity dropper )
-	//{
-	//}
-
 	private void GrabInit( PhysicsBody body, Vector3 startPos, Vector3 grabPos, Rotation rot )
 	{
 		if ( !body.IsValid() )

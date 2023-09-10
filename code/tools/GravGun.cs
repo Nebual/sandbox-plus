@@ -351,10 +351,6 @@ public partial class GravGun : Carriable
 		}
 	}
 
-	//public override void OnCarryDrop( Entity dropper )
-	//{
-	//}
-
 	[Event.Physics.PreStep]
 	public void OnPrePhysicsStep()
 	{
