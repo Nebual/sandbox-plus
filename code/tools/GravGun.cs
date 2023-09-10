@@ -180,6 +180,8 @@ public partial class GravGun : Carriable
 		SetAnimParameter( "prongs", ProngsState );
 		ViewModelEntity?.SetAnimParameter( "prongs", ProngsState );
 
+		ViewModelEntity?.SetAnimParameter( "moveback", 0.85f );
+
 		if ( !Game.IsServer )
 			return;
 
