@@ -1,0 +1,12 @@
+{
+  "UI": false,
+  "Volume": "0.15,0.15,0",
+  "Pitch": "1.00,1.00,0",
+  "Decibels": 105,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/weapons/gravity_gun/superphys_launch1.vsnd"
+  ],
+  "MaximumDistance": 2533.85,
+  "MinimumDistance": 126.692505
+}

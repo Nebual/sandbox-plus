@@ -1,0 +1,60 @@
+HintFeed {
+    position: absolute;
+    bottom: 100px;
+    left: 100px;
+    z-index: 100;
+    flex-direction: column-reverse;
+    width: 500px;
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 500;
+    align-items: flex-start;
+}
+
+HintFeedEntry {
+    background-color: rgba( black, 0.8 );
+    margin-bottom: 5px;
+    color: white;
+    transition: all 0.2s ease-out;
+    opacity: 1;
+    flex-shrink: 0;
+    flex-grow: 0;
+    padding: 12px;
+    min-height: 45px;
+    position: relative;
+
+    &:intro {
+        transform: scale( 2 );
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    &:outro {
+        top: -20px;
+        opacity: 0;
+        transform: scale( 1.1 );
+        transition: all 0.2s ease-in;
+    }
+
+    .icon {
+        font-size: 32px;
+    }
+
+    .icon, .msg {
+        align-self: center;
+        padding: 0 12px;
+    }
+
+    .undo {
+        color: #ff0000;
+    }
+    .redo {
+        color: #00ff00;
+    }
+    .question_mark {
+        color: #3399ff;
+    }
+}

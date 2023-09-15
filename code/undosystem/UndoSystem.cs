@@ -60,7 +60,7 @@ namespace UndoManager
 					Undoer.DoUndo( creator, null, undo );
 					if ( undoMessage != "" )
 					{
-						Undoer.AddUndoPopup( To.Single( creator ), undoMessage );
+						HintFeed.AddHint( To.Single( creator ), "undo", undoMessage );
 						CreateUndoParticles( To.Single( creator ), Vector3.Zero );
 						break;
 					}
@@ -78,6 +78,10 @@ namespace UndoManager
 
 				CreateUndoParticles( To.Single( creator ), prop.Position );
 
+				// Display undo msg for props and some non props
+				var msg = GetPropName( prop );
+				HintFeed.AddHint( To.Single( creator ), "undo", msg );
+
 				if ( prop.GetType() != typeof( Prop ) )
 				{
 					Undoer.DoUndo( creator, prop, undo );
@@ -88,7 +92,6 @@ namespace UndoManager
 
 				undo.Avoid = true;
 
-				Undoer.OnTrashbin( To.Single( creator ) );
 				Undoer.HideProp( undo );
 
 				await prop.Task.DelaySeconds( Redoer.Duration );
@@ -125,6 +128,9 @@ namespace UndoManager
 				Redoer.ResetProp( redo );
 				Redoer.Remove( creator, redo );
 
+				var msg = GetPropName( prop );
+				HintFeed.AddHint( To.Single( creator ), "redo", msg );
+
 				undo.Avoid = false;
 				undo.Time = Time.Now;
 
@@ -152,6 +158,28 @@ namespace UndoManager
 			{
 				Game.LocalPawn?.PlaySound( "drop_002" );
 			}
+		}
+
+		/// <summary>
+		/// Try to get a human readable name for an entity/prop.
+		/// </summary>
+		/// <param name="e"></param>
+		/// <returns></returns>
+		private static string GetPropName( Entity e )
+		{
+			var displayInfo = DisplayInfo.For( e );
+			var msg = displayInfo.Name;
+
+			// We can do better!
+			if ( e.GetType() == typeof( Prop ) )
+			{
+				if ( e is ModelEntity model )
+				{
+					msg += $" ({model.Model?.ResourceName})";
+				}
+			}
+
+			return msg;
 		}
 	}
 }

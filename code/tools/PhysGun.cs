@@ -1,14 +1,24 @@
 using Sandbox;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
+[Spawnable]
 [Library( "physgun" )]
 public partial class PhysGun : Carriable
 {
-	public override string ViewModelPath => Cloud.Asset( "wiremod.v_gravity_gun2" );
+	private static int ViewModelIndex = 0;
+	public override string ViewModelPath => ViewModelIndex == 0 ? Cloud.Asset( "katka/gravitygun" ) : Cloud.Asset( "wiremod.v_gravity_gun2" );
+	private AnimatedEntity ViewModelArms { get; set; }
+	private AnimatedEntity ArmsAdapter { get; set; }
+	public List<CapsuleLightEntity> LightsWorld;
+	public PointLightEntity LightView;
+	public Color CrystalColor { get; set; } = Color.Cyan;
 
 	public PhysicsBody HeldBody { get; private set; }
 	public Vector3 HeldPos { get; private set; }
 	public Rotation HeldRot { get; private set; }
+	public float HeldMass { get; private set; }
 	public Vector3 HoldPos { get; private set; }
 	public Rotation HoldRot { get; private set; }
 	public float HoldDistance { get; private set; }
@@ -21,7 +31,7 @@ public partial class PhysGun : Carriable
 	protected virtual float AngularFrequency => 20.0f;
 	protected virtual float AngularDampingRatio => 1.0f;
 	protected virtual float TargetDistanceSpeed => 25.0f;
-	protected virtual float RotateSpeed => 0.125f;
+	protected virtual float RotateSpeed => 0.25f;
 	protected virtual float RotateSnapAt => 45.0f;
 
 	public const string GrabbedTag = "grabbed";
@@ -33,21 +43,135 @@ public partial class PhysGun : Carriable
 	[Net] public Vector3 GrabbedPos { get; set; }
 
 	private Sound BeamSound;
-	private int BeamSoundPlaying;
+	private bool BeamSoundPlaying;
 
 	public override void Spawn()
 	{
 		base.Spawn();
 
-		Tags.Add( "weapon" );
-		Model = Cloud.Model( "wiremod.gravity_gun2" );
-		SetMaterialGroup( "physicsgun" );
+		SetModel( ViewModelPath );
+		SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
+
+		Tags.Add( "weapon", "solid" );
+	}
+
+	[ConCmd.Client( "physgun_model" )]
+	public static void ChangeModelCmd( string cmd )
+	{
+		ViewModelIndex = int.Parse( cmd ) % 2;
+		var gun = (Game.LocalPawn as SandboxPlayer).ActiveChild;
+		if ( gun.IsValid() && gun is PhysGun physGun )
+		{
+			physGun.ActiveEnd( physGun, false );
+			physGun.ActiveStart( physGun );
+		}
+	}
+
+	public void CreateLights()
+	{
+		LightsWorld = new();
+
+		for ( var i = 1; i <= 6; i++ )
+		{
+			var light = new CapsuleLightEntity();
+			light.CapsuleLength = 5.75f;
+			light.LightSize = 0.25f;
+			light.Brightness = 0.0005f;
+			light.Enabled = false;
+			LightsWorld.Add( light );
+		}
+
+		LightView = new PointLightEntity();
+		LightView.LightSize = 0.25f;
+		LightView.Brightness = 0.0005f;
+		LightView.Enabled = false;
+	}
+
+	public void DestroyLights()
+	{
+		if ( LightsWorld != null )
+		{
+			foreach ( var light in LightsWorld )
+			{
+				light.Delete();
+			}
+			LightsWorld.Clear();
+		}
+
+		LightView?.Delete();
 	}
 
 	public override void CreateViewModel()
 	{
 		base.CreateViewModel();
-		ViewModelEntity.SetMaterialGroup( "physicsgun" );
+
+		ViewModelEntity.EnableViewmodelRendering = true;
+		if ( ViewModelIndex == 0 )
+		{
+			ViewModelEntity.SetBodyGroup( "crystal_inside", 1 );
+
+			ArmsAdapter = new AnimatedEntity( Cloud.Asset( "katka/hand_adapter_valvebiped_to_sbox" ) );
+			ArmsAdapter.SetParent( ViewModelEntity, true );
+			ArmsAdapter.EnableViewmodelRendering = ViewModelEntity.EnableViewmodelRendering;
+
+			ViewModelArms = new AnimatedEntity( "models/first_person/first_person_arms.vmdl" );
+			ViewModelArms.SetParent( ArmsAdapter, true );
+			ViewModelArms.EnableViewmodelRendering = ViewModelEntity.EnableViewmodelRendering;
+		}
+		else if ( ViewModelIndex == 1 )
+		{
+			ViewModelEntity.SetMaterialGroup( "physicsgun" );
+		}
+	}
+
+	public override void DestroyViewModel()
+	{
+		base.DestroyViewModel();
+
+		ViewModelArms?.Delete();
+		ArmsAdapter?.Delete();
+	}
+
+	[GameEvent.Client.Frame]
+	public void ProcessLights()
+	{
+		if ( !this.IsValid() ) return;
+
+		SceneObject?.Attributes.Set( "colortint", CrystalColor );
+		ViewModelEntity?.SceneObject?.Attributes.Set( "colortint", CrystalColor );
+
+		if ( LightsWorld != null )
+		{
+			for ( var i = 1; i <= 6; i++ )
+			{
+				var t = (Transform)GetAttachment( $"glow{i}" );
+				if ( LightsWorld.Count >= i )
+				{
+					var light = LightsWorld.ElementAt( i - 1 );
+
+					if ( !light.IsValid() ) continue;
+
+					light.Color = CrystalColor;
+					light.Position = t.Position;
+					light.Rotation = t.Rotation;
+					light.Enabled = !IsFirstPersonMode && ViewModelEntity.IsValid();
+				}
+			}
+		}
+
+		if ( LightView.IsValid() )
+		{
+			if ( ViewModelEntity.IsValid() )
+			{
+				var m = (Transform)ViewModelEntity.GetAttachment( "muzzle" );
+				LightView.Color = CrystalColor;
+				LightView.Position = m.Position;
+				LightView.Rotation = m.Rotation;
+				LightView.Enabled = IsFirstPersonMode && ViewModelEntity.IsValid();
+				LightView.LightSize = 0.025f;
+				LightView.Brightness = 0.01f;
+			}
+		}
 	}
 
 	[GameEvent.Entity.PreCleanup]
@@ -56,9 +180,17 @@ public partial class PhysGun : Carriable
 		GrabEnd();
 	}
 
+	[ClientRpc]
+	public void SetViewModelParam( string param, bool value = true )
+	{
+		ViewModelEntity?.SetAnimParameter( param, value );
+	}
+
 	public override void Simulate( IClient client )
 	{
 		if ( Owner is not Player owner ) return;
+
+		ViewModelEntity?.SetAnimParameter( "moveback", 0.85f );
 
 		var eyePos = owner.EyePosition;
 		var eyeDir = owner.EyeRotation.Forward;
@@ -66,35 +198,12 @@ public partial class PhysGun : Carriable
 
 		if ( Input.Pressed( "attack1" ) )
 		{
-			(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
+			//(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
+
+			//ViewModelEntity?.SetAnimParameter( "fire", true );
 
 			if ( !Grabbing )
 				Grabbing = true;
-		}
-		if ( Input.Down( "attack1" ) )
-		{
-			if ( BeamSoundPlaying == 0 )
-			{
-				BeamSound = PlaySound( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" );
-				BeamSoundPlaying = 1;
-			}
-			if ( HeldBody.IsValid() && BeamSoundPlaying != 2 )
-			{
-				if ( BeamSoundPlaying == 1 )
-				{
-					BeamSound.Stop();
-				}
-				BeamSound = PlaySound( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" );
-				BeamSoundPlaying = 2;
-			}
-		}
-		else
-		{
-			if ( BeamSoundPlaying != 0 )
-			{
-				BeamSound.Stop();
-				BeamSoundPlaying = 0;
-			}
 		}
 
 		bool grabEnabled = Grabbing && Input.Down( "attack1" );
@@ -102,7 +211,8 @@ public partial class PhysGun : Carriable
 
 		if ( GrabbedEntity.IsValid() && wantsToFreeze )
 		{
-			(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
+			//(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
+			SetViewModelParam( To.Single( Owner ), "fire" );
 		}
 
 		BeamActive = grabEnabled;
@@ -125,6 +235,8 @@ public partial class PhysGun : Carriable
 				else if ( Grabbing )
 				{
 					GrabEnd();
+
+					SetViewModelParam( To.Single( owner ), "drop" );
 				}
 
 				if ( !Grabbing && Input.Pressed( "reload" ) )
@@ -134,9 +246,27 @@ public partial class PhysGun : Carriable
 			}
 		}
 
-		if ( BeamActive )
+		if ( Game.IsClient )
 		{
-			Input.MouseWheel = 0;
+			if ( BeamActive )
+			{
+				Input.MouseWheel = 0;
+
+				if ( !BeamSound.IsPlaying && !BeamSoundPlaying )
+				{
+					BeamSound = PlaySound( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" );
+					BeamSoundPlaying = true;
+				}
+			}
+			else
+			{
+				StopBeamSound();
+			}
+
+			if ( Input.Pressed( "drop" ) && Input.Down( "run" ) )
+			{
+				ChangeModelCmd( ((ViewModelIndex + 1) % 2).ToString() );
+			}
 		}
 	}
 
@@ -177,6 +307,8 @@ public partial class PhysGun : Carriable
 		{
 			var freezeEffect = Particles.Create( "particles/physgun_freeze.vpcf" );
 			freezeEffect.SetPosition( 0, tr.EndPosition );
+
+			SetViewModelParam( To.Single( Owner ), "fire" );
 		}
 	}
 
@@ -291,7 +423,14 @@ public partial class PhysGun : Carriable
 	{
 		base.ActiveStart( ent );
 
+		ViewModelEntity?.SetAnimParameter( "deploy", true );
+
 		Activate();
+
+		if ( Game.IsClient && ViewModelIndex == 0 )
+		{
+			CreateLights();
+		}
 	}
 
 	public override void ActiveEnd( Entity ent, bool dropped )
@@ -299,6 +438,12 @@ public partial class PhysGun : Carriable
 		base.ActiveEnd( ent, dropped );
 
 		Deactivate();
+
+		if ( Game.IsClient )
+		{
+			DestroyLights();
+			StopBeamSound();
+		}
 	}
 
 	protected override void OnDestroy()
@@ -306,10 +451,7 @@ public partial class PhysGun : Carriable
 		base.OnDestroy();
 
 		Deactivate();
-	}
-
-	public override void OnCarryDrop( Entity dropper )
-	{
+		StopBeamSound();
 	}
 
 	private void GrabInit( PhysicsBody body, Vector3 startPos, Vector3 grabPos, Rotation rot )
@@ -318,6 +460,8 @@ public partial class PhysGun : Carriable
 			return;
 
 		GrabEnd();
+
+		SetViewModelParam( To.Single( Owner ), "hold" );
 
 		Grabbing = true;
 		HeldBody = body;
@@ -330,6 +474,9 @@ public partial class PhysGun : Carriable
 		HoldPos = HeldBody.Position;
 		HoldRot = HeldBody.Rotation;
 
+		HeldMass = HeldBody.Mass;
+		HeldBody.Mass = 10000f;
+
 		HeldBody.Sleeping = false;
 		HeldBody.AutoSleep = false;
 	}
@@ -339,6 +486,7 @@ public partial class PhysGun : Carriable
 		if ( HeldBody.IsValid() )
 		{
 			HeldBody.AutoSleep = true;
+			HeldBody.Mass = HeldMass;
 		}
 
 		Client?.Pvs.Remove( GrabbedEntity );
@@ -443,5 +591,25 @@ public partial class PhysGun : Carriable
 	public override bool IsUsable( Entity user )
 	{
 		return Owner == null || HeldBody.IsValid();
+	}
+
+	[ClientRpc]
+	public void StopBeamSound()
+	{
+		BeamSound.Stop();
+		BeamSoundPlaying = false;
+	}
+
+	public override void OnCarryDrop( Entity dropper )
+	{
+		if ( Input.Pressed( "drop" ) && Input.Down( "run" ) )
+		{
+			return;
+		}
+		GrabEnd();
+
+		StopBeamSound( To.Single( dropper ) );
+
+		base.OnCarryDrop( dropper );
 	}
 }

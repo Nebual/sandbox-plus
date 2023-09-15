@@ -44,6 +44,7 @@
 	}
 	private void RefreshFiles()
 	{
+		FileSystem.OrganizationData.CreateDirectory( "dupes" );
 		Files = FileSystem.OrganizationData.FindFile("dupes/" + Cwd, "*.dupe").ToList();
 		Folders = FileSystem.OrganizationData.FindDirectory("dupes/" + Cwd, "*").ToList();
 	}

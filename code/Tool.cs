@@ -104,6 +104,11 @@ partial class Tool : Carriable
 		CurrentTool = null;
 	}
 
+	public override void BuildInput()
+	{
+		CurrentTool?.BuildInput();
+	}
+
 	public override void OnCarryDrop( Entity dropper )
 	{
 	}
@@ -167,6 +172,11 @@ namespace Sandbox.Tools
 		}
 
 		public virtual void Simulate()
+		{
+
+		}
+
+		public virtual void BuildInput()
 		{
 
 		}

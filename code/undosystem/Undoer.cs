@@ -62,8 +62,6 @@ namespace Sandbox
 
 			if ( !prop.IsValid() ) return;
 
-			OnUndone( To.Single( creator ) );
-
 			prop.Delete();
 		}
 
@@ -78,25 +76,6 @@ namespace Sandbox
 				modelProp.EnableAllCollisions = false;
 				modelProp.PhysicsEnabled = false; // todo: this isn't ideal for constrained ents (eg. wheels)
 			}
-		}
-
-		[ClientRpc]
-		public static void OnTrashbin()
-		{
-			// Todo: ChatBox.AddChatEntry seems to do nothing as of 2023
-			ChatBox.AddChatEntry( "Undo", "Successfully Moved to Trashbin. Use *redo* to revert.", $"avatar:{Game.LocalClient.SteamId}" );
-		}
-
-		[ClientRpc]
-		public static void OnUndone()
-		{
-			ChatBox.AddChatEntry( "Undo", "Successfully Undone.", $"avatar:{Game.LocalClient.SteamId}" );
-		}
-
-		[ClientRpc]
-		public static void AddUndoPopup( string message )
-		{
-			ChatBox.AddChatEntry( "Undo", message, $"avatar:{Game.LocalClient.SteamId}" );
 		}
 	}
 }

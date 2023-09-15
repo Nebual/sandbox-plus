@@ -37,7 +37,10 @@
 {
     void OnPackageSelected( Package package )
     {
-        Game.Menu.Lobby.Addons = Game.Menu.Lobby.Addons.Add(package.FullIdent);
+        if (!Game.Menu.Lobby.Addons.Contains(package.FullIdent))
+        {
+            Game.Menu.Lobby.Addons = Game.Menu.Lobby.Addons.Add(package.FullIdent);
+        }
         this.Navigate( "/lobby" );
     }
 }

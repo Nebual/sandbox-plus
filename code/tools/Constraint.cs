@@ -35,20 +35,49 @@ namespace Sandbox.Tools
 		[ConVar.ClientData( "tool_constraint_rotate_snap" )] public static string _8 { get; set; } = "15";
 		[ConVar.ClientData( "tool_constraint_freeze_target" )] public static string _9 { get; set; } = "1";
 		[ConVar.ClientData( "tool_constraint_nocollide_target" )] public static string _10 { get; set; } = "1";
+		[ConVar.ClientData( "tool_constraint_rope_extra_length" )] public static string _11 { get; set; } = "0";
+		[ConVar.ClientData( "tool_constraint_rope_rigid" )] public static string _12 { get; set; } = "0";
 
+		private enum ConstraintToolStage {
+			Waiting,
+			Moving,
+			Rotating,
+			Applying,
+			ConstraintController,
+			Removing,
+		}
+		
 		[Net, Predicted]
-		private int stage { get; set; } = 0;
+		private ConstraintToolStage stage { get; set; } = ConstraintToolStage.Waiting;
 		private TraceResult trace1;
 		private TraceResult trace2;
+		private PhysicsPoint point1;
+		private PhysicsPoint point2;
 		private PhysicsJoint createdJoint;
 		private Func<string> createdUndo;
-
+		private bool wasFrozen;
+		private bool wasSleeping;
+		private bool wasMotionEnabled;
+		private float rotationBuildUp;
+		private const float RotateSpeed = 30.0f;
 
 		// Dynamic entrypoint for optional Wirebox support, if installed
 		public static Action<Player, TraceResult, ConstraintType, PhysicsJoint, Func<string>> CreateWireboxConstraintController;
 		private static bool WireboxSupport
 		{
 			get => CreateWireboxConstraintController != null;
+		}
+
+		public override void BuildInput()
+		{
+			if ( stage == ConstraintToolStage.Rotating )
+			{
+				// Lock view angles while we're using the mouse to rotate a prop
+				if ( Owner is Player pl )
+				{
+					pl.ViewAngles = pl.OriginalViewAngles;
+				}
+			}
 		}
 
 		public override void Simulate()
@@ -65,9 +94,42 @@ namespace Sandbox.Tools
 
 			using ( Prediction.Off() )
 			{
-
 				if ( !Game.IsServer )
 					return;
+
+				if ( stage == ConstraintToolStage.Rotating )
+				{
+					if ( !trace1.Body.IsValid() || !trace2.Body.IsValid() )
+					{
+						Reset();
+					}
+
+					var rotationAmount = Input.MouseDelta.x * RotateSpeed * Time.Delta;
+					var rotationSnap = float.Parse( GetConvarValue( "tool_constraint_rotate_snap", "0" ) );
+					if ( rotationSnap >= 0.001 )
+					{
+						// todo: snap rotation relative to the base prop (or World angles I guess), rather than the target prop
+						rotationBuildUp += rotationAmount;
+
+						if ( rotationBuildUp <= -rotationSnap )
+						{
+							rotationBuildUp = 0;
+							var rotation = Rotation.FromAxis( trace2.Normal, -rotationSnap );
+							trace1.Entity.Transform = trace1.Entity.Transform.RotateAround( trace2.HitPosition, rotation );
+						}
+						else if (rotationBuildUp >= rotationSnap)
+						{
+							rotationBuildUp = 0;
+							var rotation = Rotation.FromAxis( trace2.Normal, rotationSnap );
+							trace1.Entity.Transform = trace1.Entity.Transform.RotateAround( trace2.HitPosition, rotation );
+						}
+					}
+					else
+					{
+						var rotation = Rotation.FromAxis( trace2.Normal, rotationAmount );
+						trace1.Entity.Transform = trace1.Entity.Transform.RotateAround( trace2.HitPosition, rotation );
+					}
+				}
 
 				var tr = DoTrace();
 
@@ -75,16 +137,18 @@ namespace Sandbox.Tools
 				{
 					return;
 				}
-
-
+				
 				if ( Input.Pressed( "attack1" ) )
 				{
-					if ( stage == 0 )
+					if ( stage == ConstraintToolStage.Waiting )
 					{
 						trace1 = tr;
-						stage++;
+						stage = ConstraintToolStage.Moving;
+						CreateHitEffects( tr.EndPosition, tr.Normal );
+						return;
 					}
-					else if ( stage == 1 )
+
+					if ( stage == ConstraintToolStage.Moving )
 					{
 						trace2 = tr;
 						if ( !trace1.Entity.IsValid() )
@@ -92,19 +156,93 @@ namespace Sandbox.Tools
 							Reset();
 							return;
 						}
+
 						if ( trace1.Entity.IsWorld && trace2.Entity.IsWorld )
 						{
 							return; // can't both be world
 						}
-						var point1 = PhysicsPoint.World( trace1.Body, trace1.EndPosition, Rotation.LookAt( -trace1.Normal, trace1.Direction ) );
-						var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, Rotation.LookAt( trace2.Normal, trace2.Direction ) );
-
-						trace1.Body.Sleeping = true;
-						if ( GetConvarValue( "tool_constraint_freeze_target" ) != "0" && !trace1.Entity.IsWorld )
+						
+						if ( GetConvarValue( "tool_constraint_move_target" ) != "0" )
 						{
-							trace1.Body.BodyType = PhysicsBodyType.Static;
+							var wantsRotation = GetConvarValue( "tool_constraint_rotate_target" ) != "0" && !trace1.Entity.IsWorld;
+						
+							wasFrozen = (trace1.Body.BodyType == PhysicsBodyType.Static);
+							wasMotionEnabled = trace1.Body.MotionEnabled;
+							wasSleeping = trace1.Body.Sleeping;
+
+							if ( wantsRotation )
+							{
+								trace1.Body.Sleeping = false;
+								trace1.Body.BodyType = PhysicsBodyType.Keyframed;
+								trace1.Body.MotionEnabled = false;
+							}
+							
+							var offset = float.Parse( GetConvarValue( "tool_constraint_move_offset" ) );
+							if ( GetConvarValue( "tool_constraint_move_percent" ) != "0" )
+							{
+								offset = GetEntityOffsetPercent( offset, trace1 );
+							}
+
+							// Calculate the new rotation
+							var transform = trace1.Entity.Transform;
+							var rotation = trace1.Entity.Rotation;
+							var axis1Rotation = transform.RotationToLocal(Rotation.LookAt( trace1.Normal ));
+							var axis2Rotation = transform.RotationToLocal(Rotation.LookAt( -trace2.Normal ));
+							var rotationDifference = Rotation.Difference( axis1Rotation, axis2Rotation );
+							var newRotation = rotation * rotationDifference;
+							
+							// The position offset has to be calculated before we apply the rotation
+							var offsetPosition = trace1.EndPosition + trace1.Normal * offset;
+							var localOffset = transform.PointToLocal( offsetPosition );
+							
+							transform.Rotation = newRotation;
+							
+							// Apply our offset and move to the new location
+							var newPosition = trace2.EndPosition - transform.PointToWorld( localOffset );
+							transform.Position += newPosition;
+
+							trace1.Entity.Transform = transform;
+							
+							if ( wantsRotation )
+							{
+								stage = ConstraintToolStage.Rotating;
+								rotationBuildUp = 0;
+								CreateHitEffects( tr.EndPosition, tr.Normal );
+								return;
+							}
 						}
 
+						// Don't return here because we can skip straight to applying
+						stage = ConstraintToolStage.Applying;
+					}
+
+					if ( stage == ConstraintToolStage.Rotating )
+					{
+						// Don't return here because we can skip straight to applying
+						stage = ConstraintToolStage.Applying;
+					}
+
+					if ( stage == ConstraintToolStage.Applying )
+					{
+						if ( !trace1.Entity.IsWorld )
+						{
+							if ( GetConvarValue( "tool_constraint_freeze_target" ) != "0" )
+							{
+								trace1.Body.Sleeping = true;
+								trace1.Body.MotionEnabled = wasMotionEnabled;
+								trace1.Body.BodyType = PhysicsBodyType.Static;
+							}
+							else
+							{
+								trace1.Body.MotionEnabled = wasMotionEnabled;
+								trace1.Body.Sleeping = wasSleeping;
+								trace1.Body.BodyType = wasFrozen ? PhysicsBodyType.Static : PhysicsBodyType.Dynamic;
+							}
+						}
+
+						point1 = PhysicsPoint.World( trace1.Body, trace2.EndPosition, trace2.Entity.Rotation );
+						point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Entity.Rotation );
+						
 						if ( Type == ConstraintType.Weld )
 						{
 							var joint = PhysicsJoint.CreateFixed(
@@ -112,7 +250,6 @@ namespace Sandbox.Tools
 								point2
 							);
 							joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
-							trace1.Body.Sleeping = false;
 
 							FinishConstraintCreation( joint, () =>
 							{
@@ -171,14 +308,21 @@ namespace Sandbox.Tools
 						}
 						else if ( Type == ConstraintType.Rope )
 						{
+							var lengthOffset = float.Parse( GetConvarValue( "tool_constraint_rope_extra_length" ) );
+							var length = trace1.EndPosition.Distance( trace2.EndPosition ) + lengthOffset;
 							var joint = PhysicsJoint.CreateLength(
 								point1,
 								point2,
-								trace1.EndPosition.Distance( trace2.EndPosition )
+								length
 							);
 							joint.SpringLinear = new( 1000.0f, 0.7f );
 							joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
 							joint.EnableAngularConstraint = false;
+
+							if ( GetConvarValue( "tool_constraint_rope_rigid" ) == "1" )
+							{
+								joint.MinLength = length;
+							}
 
 							var rope = MakeRope( trace1, trace2 );
 
@@ -206,7 +350,6 @@ namespace Sandbox.Tools
 								trace1.Normal
 							);
 							joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
-							trace1.Body.Sleeping = false;
 
 							FinishConstraintCreation( joint, () =>
 							{
@@ -230,7 +373,6 @@ namespace Sandbox.Tools
 								pivot
 							);
 							joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
-							trace1.Body.Sleeping = false;
 
 							FinishConstraintCreation( joint, () =>
 							{
@@ -268,7 +410,7 @@ namespace Sandbox.Tools
 							trace1.Body.Sleeping = false;
 						}
 					}
-					else if ( stage == 2 )
+					else if ( stage == ConstraintToolStage.ConstraintController )
 					{
 						// only reachable if Wirebox's installed
 						if ( WireboxSupport )
@@ -280,18 +422,37 @@ namespace Sandbox.Tools
 				}
 				else if ( Input.Pressed( "attack2" ) )
 				{
+					Nudge( tr, Input.Down( "run" ) ? 1 : -1 );
+
 					Reset();
 				}
 				else if ( Input.Pressed( "reload" ) )
 				{
-					if ( tr.Entity is not Prop prop )
+					if ( !tr.Entity.IsValid() )
 					{
 						return;
 					}
-
-					// todo: how to remove all constraints from X, where are they stored?
-
-					Reset();
+					if ( stage == ConstraintToolStage.Waiting )
+					{
+						trace1 = tr;
+						stage = ConstraintToolStage.Removing;
+						if ( Input.Down( "walk" ) )
+						{
+							RemoveConstraints( Type, tr );
+							Reset();
+						}
+					}
+					else if ( stage == ConstraintToolStage.Removing )
+					{
+						trace2 = tr;
+						if ( !trace1.Entity.IsValid() )
+						{
+							Reset();
+							return;
+						}
+						RemoveConstraintBetweenEnts( Type, trace1, trace2 );
+						Reset();
+					}
 				}
 				else
 				{
@@ -300,6 +461,62 @@ namespace Sandbox.Tools
 
 				CreateHitEffects( tr.EndPosition, tr.Normal );
 			}
+		}
+
+		private void Nudge( TraceResult tr, int direction )
+		{
+			if ( !tr.Entity.IsValid() || tr.Entity.IsWorld )
+			{
+				return;
+			}
+			var offset = float.Parse( GetConvarValue( "tool_constraint_nudge_distance" ) );
+			if ( GetConvarValue( "tool_constraint_nudge_percent" ) != "0" )
+			{
+				offset = GetEntityOffsetPercent( offset, tr );
+			}
+			tr.Entity.Position += tr.Normal * offset * direction;
+			tr.Body.Sleeping = true;
+		}
+
+		private float GetEntityOffsetPercent( float percent, TraceResult tr )
+		{
+			if ( Math.Abs( tr.Normal.Dot( tr.Entity.Rotation.Forward ) ) > 0.8f )
+			{
+				return tr.Entity.WorldSpaceBounds.Size.x * percent / 100f;
+			}
+			else if ( Math.Abs( tr.Normal.Dot( tr.Entity.Rotation.Left ) ) > 0.8f )
+			{
+				return tr.Entity.WorldSpaceBounds.Size.y * percent / 100f;
+			}
+			else
+			{
+				return tr.Entity.WorldSpaceBounds.Size.z * percent / 100f;
+			}
+		}
+
+		private void RemoveConstraints( ConstraintType type, TraceResult tr )
+		{
+			tr.Entity.GetJoints().ForEach( j =>
+			{
+				if ( j.GetConstraintType() == type )
+				{
+					j.Remove();
+				}
+			} );
+		}
+
+		private void RemoveConstraintBetweenEnts( ConstraintType type, TraceResult trace1, TraceResult trace2 )
+		{
+			trace1.Entity.GetJoints().ForEach( j =>
+			{
+				if ( (j.Body1 == trace1.Body || j.Body2 == trace1.Body) && (j.Body1 == trace2.Body || j.Body2 == trace2.Body) )
+				{
+					if ( j.GetConstraintType() == type )
+					{
+						j.Remove();
+					}
+				}
+			} );
 		}
 
 		private void SelectNextType()
@@ -314,32 +531,42 @@ namespace Sandbox.Tools
 
 		private string CalculateDescription()
 		{
-			var desc = $"Constraint entities together using a {Type} constraint";
+			var desc = $"Constraint entities together using {Type} constraint";
 			if ( Type == ConstraintType.Axis )
 			{
-				if ( stage == 0 )
+				if ( stage == ConstraintToolStage.Waiting )
 				{
-					desc += $"\nFirst, shoot the part that spins (eg. wheel).";
+					desc += $"\nFirst, {Input.GetButtonOrigin( "attack1" )} the part that spins (eg. wheel).";
 				}
-				else if ( stage == 1 )
+				else if ( stage == ConstraintToolStage.Moving )
 				{
-					desc += $"\nSecond, shoot the base. Hold shift to use wheel's center of mass.";
+					desc += $"\nSecond, {Input.GetButtonOrigin( "attack1" )} the base. Hold {Input.GetButtonOrigin( "run" )} to use wheel's center of mass.";
 				}
 			}
 			else
 			{
-				if ( stage == 1 )
+				if ( stage == ConstraintToolStage.Waiting )
 				{
-					desc += $"\nSecond, shoot the base.";
+					desc += $"\nFirst, {Input.GetButtonOrigin( "attack1" )} the part to attach.";
 				}
+				else if ( stage == ConstraintToolStage.Moving )
+				{
+					desc += $"\nSecond, {Input.GetButtonOrigin( "attack1" )} the base.";
+				}
+			}
+			if ( stage == ConstraintToolStage.Waiting )
+			{
+				desc += $"\n{Input.GetButtonOrigin( "attack2" )} to nudge ({Input.GetButtonOrigin( "run" )} for reverse)";
+				desc += $"\n{Input.GetButtonOrigin( "reload" )} to select an entity to remove {Type} constraint ({Input.GetButtonOrigin( "walk" )} to remove all {Type} constraints)";
+				desc += $"\n{Input.GetButtonOrigin( "drop" )} to cycle to next constraint type";
 			}
 			if ( WireboxSupport )
 			{
-				if ( stage == 1 )
+				if ( stage == ConstraintToolStage.Moving )
 				{
-					desc += $"\nHold alt to begin creating a Wire Constraint Controller";
+					desc += $"\nHold {Input.GetButtonOrigin( "walk" )} to begin creating a Wire Constraint Controller";
 				}
-				else if ( stage == 2 )
+				else if ( stage == ConstraintToolStage.ConstraintController )
 				{
 					desc += $"\nFinally, place the Wire Constraint Controller";
 				}
@@ -353,12 +580,13 @@ namespace Sandbox.Tools
 
 			Event.Run( "joint.spawned", joint, Owner );
 			Event.Run( "undo.add", undo, Owner );
+			Analytics.ServerIncrement( To.Single( Owner ), "constraint.created" );
 
 			if ( WireboxSupport && Input.Down( "walk" ) )
 			{
 				createdJoint = joint;
 				createdUndo = undo;
-				stage = 2;
+				stage = ConstraintToolStage.ConstraintController;
 				return;
 			}
 			Reset();
@@ -398,7 +626,7 @@ namespace Sandbox.Tools
 
 		private void Reset()
 		{
-			stage = 0;
+			stage = ConstraintToolStage.Waiting;
 		}
 
 		public override void Activate()
@@ -406,7 +634,6 @@ namespace Sandbox.Tools
 			base.Activate();
 
 			Reset();
-
 		}
 
 		public override void Deactivate()
@@ -426,6 +653,5 @@ namespace Sandbox.Tools
 		Rope,
 		Spring, // Winch/Hydraulic
 		Slider, // Prismatic
-				// Nudge, // not a constraint, but something this tool can independently do
 	}
 }

@@ -65,16 +65,17 @@
 
             <FormGroup>
                 <Label>Addons</Label>
-                <Control>
-
-                    @foreach (var addon in Game.Menu.Lobby.Addons)
-                    {
-                        <div>
-                            @addon
-                            <div class="button" style="font-size: 20px; height: 40px; margin-left: 4px;" onclick="@( () => Game.Menu.Lobby.Addons = Game.Menu.Lobby.Addons.Remove( addon ) )">X</div>
-                        </div>
-                    }
-                    <a class="button" style="margin-left: 16px;" href="/lobby/addons">+ Add</a>
+                <Control style="flex-direction: column;">
+                    <div class="selected-addon-list">
+                        @foreach (var addon in Game.Menu.Lobby.Addons)
+                        {
+                            <div>
+                                @addon
+                                <div class="button button--addon" onclick="@( () => Game.Menu.Lobby.Addons = Game.Menu.Lobby.Addons.Remove( addon ) )">X</div>
+                            </div>
+                        }
+                    </div>
+                    <a class="button" style="margin-right: auto; margin-top: 5px;" href="/lobby/addons">+ Add</a>
                 </Control>
             </FormGroup>
 
@@ -198,3 +199,16 @@
         Game.Menu.Lobby.ConVars = Game.Menu.Lobby.ConVars.SetItem(key, value);
     }
 }
+
+<style>
+    .selected-addon-list {
+        max-width: 1000px;
+        flex-wrap: wrap;
+    }
+    .button.button--addon {
+        font-size: 18px;
+        padding: 2px 8px;
+        margin: 2px 4px;
+        align-self: baseline;
+    }
+</style>

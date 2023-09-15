@@ -1,8 +1,6 @@
-using Sandbox.UI;
-
 namespace Sandbox.Tools
 {
-	[Library( "tool_whatisthat", Title = "What is that?", Description = "Prop identificationifier (prints to console because what is chat?)", Group = "construction" )]
+	[Library( "tool_whatisthat", Title = "What is that?", Description = "Prop identificationifier", Group = "construction" )]
 	public partial class WhatIsThatTool : BaseTool
 	{
 		public override void Simulate()
@@ -32,22 +30,31 @@ namespace Sandbox.Tools
 					var prop = tr.Entity as Prop;
 					if ( prop.IsValid() )
 					{
-						message += $" {prop.Model.Name}";
+						message += $" {prop.Model.Name},\n";
 						if ( prop.PhysicsBody.IsValid() )
 						{
-							message += $" weighing {prop.PhysicsBody.Mass}";
+							message += $" weighing {prop.PhysicsBody.Mass},";
 						}
-						if ( prop.GetPlayerOwner().IsValid() )
+
+						var playerOwner = prop.GetPlayerOwner();
+						if ( playerOwner.IsValid() )
 						{
-							message += $" owned by {prop.GetPlayerOwner()}";
+							var ownerClient = Game.Clients.FirstOrDefault( c => c.NetworkIdent == (playerOwner?.Owner?.NetworkIdent ?? playerOwner?.NetworkIdent) );
+							message += $" owned by {ownerClient?.Name ?? playerOwner.ToString()},";
 						}
 					}
+					message += $" trace position {tr.EndPosition}";
 
-					// prints to console, and to chat (for us only)
-					Log.Info( message );
-					Chat.AddChatEntry( To.Single(Owner.Client), Owner.Client.Name, message, Owner.Client.SteamId );
+					LogClientside( To.Single( Owner.Client ), message.Replace( "\n", "" ) );
+					HintFeed.AddHint( To.Single( Owner.Client ), "question_mark", message );
 				}
 			}
+		}
+
+		[ClientRpc]
+		public static void LogClientside( string message )
+		{
+			Log.Info( message );
 		}
 	}
 }

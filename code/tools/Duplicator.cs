@@ -764,12 +764,14 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 		static void OpenFile( string path )
 		{
 			NData.Client.SendToServer( "duplicator", FileSystem.OrganizationData.ReadAllBytes( "dupes/" + path ).ToArray() );
+			Analytics.Increment( "duplicator.load" );
 		}
 
 		[ConCmd.Client( "tool_duplicator_savefile", Help = "Saves a duplicator file" )]
 		static void SaveFile( string path )
 		{
 			SaveDuplicatorDataCmd( path );
+			Analytics.Increment( "duplicator.save" );
 		}
 
 		[ClientRpc]
@@ -869,6 +871,7 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 
 			DisplayGhosts( copied.getGhosts() );
 			Selected = copied.entities.Count > 0 ? copied : null;
+			Analytics.ServerIncrement( To.Single( Owner.Client ), "duplicator.copy" );
 		}
 
 		void Paste( TraceResult tr )
@@ -876,6 +879,7 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 			// We can add rotation back in once the ghosts also rotate
 			// var modelRotation = Rotation.From( new Angles( 0, Owner.EyeRotation.Angles().yaw, 0 ) );
 			Pasting[Owner] = new DuplicatorPasteJob( Owner, Selected, new Transform( tr.EndPosition + new Vector3( 0, 0, PasteHeightOffset ) ) );
+			Analytics.ServerIncrement( To.Single( Owner.Client ), "duplicator.paste" );
 		}
 
 		void OnTool( string input )

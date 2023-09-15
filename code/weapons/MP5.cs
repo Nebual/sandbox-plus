@@ -71,7 +71,10 @@ partial class MP5 : Weapon
 		Game.AssertClient();
 
 		Particles.Create( "particles/pistol_muzzleflash.vpcf", EffectEntity, "muzzle" );
-		Particles.Create( EjectBrass.ResourcePath, EffectEntity, "eject" );
+		if ( EjectBrass != null )
+		{
+			Particles.Create( EjectBrass.ResourcePath, EffectEntity, "eject" );
+		}
 	}
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )

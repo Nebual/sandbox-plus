@@ -105,7 +105,7 @@ public partial class SpawnMenu : Panel
 		}
 		menuWasPressed = Input.Down( "menu" );
 
-		if ( modelList.SearchInput.HasFocus )
+		if ( (bool)(modelList?.SearchInput?.HasFocus) )
 		{
 			isSearching = true;
 		}

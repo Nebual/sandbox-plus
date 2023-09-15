@@ -1,8 +1,8 @@
 {
-    "spawnmenu.props" : "Local Models",
-    "spawnmenu.entities" : "entities",
-    "spawnmenu.modellist": "Models",
+    "spawnmenu.props": "Local Models",
+    "spawnmenu.entities": "Cloud Entities",
+    "spawnmenu.modellist": "Cloud Models",
     "spawnmenu.tools": "tools",
     "spawnmenu.utility": "utility",
-    "spawnmenu.npclist": "NPC"
+    "spawnmenu.npclist": "Cloud NPCs"
 }

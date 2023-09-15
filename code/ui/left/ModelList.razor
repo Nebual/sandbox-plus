@@ -10,7 +10,7 @@
 
 	<div class="nav">
 		<div class="section">
-			<TextEntry @ref="SearchInput" onsubmit="@Search" Placeholder="Search..." />
+			<MenuTextEntry @ref="SearchInput" onsubmit="@Search" Placeholder="Search..." />
 		</div>
 
 		<div class="section grow">
@@ -49,6 +49,11 @@
 
 	void SpawnPackage(Package package)
 	{
+		if (Input.Down("run")) {
+			Clipboard.SetText(package.FullIdent);
+			Log.Info($"Copied to clipboard: {package.FullIdent}");
+			return;
+		}
 		ConsoleSystem.Run("spawn", package.FullIdent);
 	}
 

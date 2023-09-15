@@ -15,30 +15,41 @@
 			</div>
 		}
 	</div>
-	@* todo: implement in tool
+	@if (ConsoleSystem.GetValue("tool_constraint_type", "Weld") == ConstraintType.Rope.ToString())
+	{
+		<Slider
+			Label="Rope Extra Length"
+			Min=@(0f)
+			Max=@(1000f)
+			Step=@(1f)
+			Convar="tool_constraint_rope_extra_length"
+		/>
+		<ToolCheckbox
+			Label="Rigid Rope"
+			Convar="tool_constraint_rope_rigid"
+			style="margin-bottom: 15px;"
+		/>
+	}
 	<Slider
 		Label="Nudge Distance"
 		Min=@(0.125f)
 		Max=@(100f)
 		Step=@(0.125f)
 		Convar="tool_constraint_nudge_distance"
-		style="margin-top: 20px;"
 	/>
 	<ToolCheckbox
 		Label="Nudge as Percent (%) of prop width"
 		Convar="tool_constraint_nudge_percent"
+		style="margin-bottom: 15px;"
 	/>
-	<ToolCheckbox
-		Label="Move Target?"
-		Convar="tool_constraint_move_target"
-	/>
-	@if ( ConsoleSystem.GetValue( "tool_constraint_move_target", "0" ) != "0" )
+	<ToolCheckbox Label="Move Target?" Convar="tool_constraint_move_target" />
+	@if (ConsoleSystem.GetValue("tool_constraint_move_target", "0") != "0")
 	{
 		<Slider
 			Label="Movement Offset"
 			Min=@(-100f)
 			Max=@(100f)
-			Step=@(1f)
+			Step=@(5f)
 			Convar="tool_constraint_move_offset"
 		/>
 		<ToolCheckbox
@@ -61,7 +72,6 @@
 			Convar="tool_constraint_rotate_snap"
 		/>
 	}
-	*@
 	<ToolCheckbox
 		Label="Freeze Target"
 		Convar="tool_constraint_freeze_target"
@@ -88,6 +98,7 @@ ConstraintToolConfig {
 	flex-direction: column;
 	.list {
 		flex-direction: column;
+		margin-bottom: 15px;
 		.list_option {
 			padding: 2px 0;
 			font-size: 12px;
