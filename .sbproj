@@ -14,7 +14,8 @@
   "PackageReferences": [
     "wiremod.wirelib",
     "wiremod.ndata",
-    "sandmod.permission"
+    "sandmod.permission",
+    "sandmod.core"
   ],
   "EditorReferences": null,
   "Metadata": {

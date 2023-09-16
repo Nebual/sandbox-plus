@@ -1,5 +1,8 @@
 ﻿using Sandbox;
+using Sandmod.Core.Provider;
 using Sandmod.Permission;
+using Sandmod.Permission.Provider;
+using Sandmod.Permission.Target;
 using System.Numerics;
 
 public partial class SandboxPlayer : Player
@@ -346,5 +349,48 @@ public partial class SandboxPlayer : Player
 		{
 			spawned.SetPlayerOwner( player );
 		}
+	}
+}
+
+[DefaultProvider( ProviderPriority.Medium )]
+public class NebPermissionProvider : IPermissionProvider
+{
+	public IReadOnlyCollection<IPermissionComponent> Provide( IClient client )
+	{
+		return new List<IPermissionComponent> { new NebPermissionComponent( new List<string> {
+			"noclip",
+			"spawn.prop_physics",
+			"spawn.*",
+			"tool.*",
+			"package.mount.asset.*",
+			"package.mount.code.*",
+		} ) };
+	}
+}
+
+public partial class NebPermissionComponent : EntityComponent, IPermissionComponent
+{
+	public NebPermissionComponent()
+	{
+	}
+
+	public NebPermissionComponent( IReadOnlyCollection<string> permissions )
+	{
+		Permissions = new List<string>( permissions );
+	}
+	[Net]
+	[Local]
+	private List<string> Permissions { get; set; } = new();
+
+	public Permission.Result CheckPermission( string permission )
+	{
+		var result = Permission.Grants( Permissions.AsReadOnly(), permission ).ToResult();
+		Log.Info( $"NebPermissionComponent.CheckPermission {permission}: {result}" );
+		return result;
+	}
+
+	public Permission.Result CheckPermission( string permission, IPermissionTarget target )
+	{
+		return CheckPermission( permission + Permission.Separator + target.PermissionString );
 	}
 }
