@@ -40,7 +40,8 @@ namespace Sandbox
 		{
 			if ( ConsoleSystem.Caller == null )
 				return;
-			var entity = SpawnEntity( length, width, height, texScale );
+			var modelId = GenerateRectangleServer( length, width, height, texScale );
+			var entity = SpawnEntity( modelId );
 			SandboxPlayer pawn = ConsoleSystem.Caller.Pawn as SandboxPlayer;
 			TraceResult trace = Trace.Ray( pawn.EyePosition, pawn.EyePosition + pawn.EyeRotation.Forward * 5000.0f ).UseHitboxes().Ignore( pawn ).Run();
 
@@ -48,10 +49,9 @@ namespace Sandbox
 			Event.Run( "entity.spawned", entity, ConsoleSystem.Caller.Pawn );
 		}
 
-		public static MeshEntity SpawnEntity( int length, int width, int height, int texScale = 64 )
+		public static MeshEntity SpawnEntity( string modelId )
 		{
-			var vertexModel = GenerateRectangleServer( length, width, height, texScale );
-			MeshEntity entity = new() { ModelId = vertexModel };
+			MeshEntity entity = new() { ModelId = modelId };
 			entity.Tick();
 			return entity;
 		}
