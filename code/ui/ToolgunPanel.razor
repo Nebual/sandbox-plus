@@ -1,0 +1,69 @@
+﻿@using System
+@using Sandbox;
+@using Sandbox.UI;
+@inherits RootPanel
+
+<style>
+
+	.background {
+		position: absolute;
+		background-image: url("materials/weapons/v_toolgun/screen_bg_color.png");
+		background-repeat: no-repeat;
+		background-size: cover;
+		height: 100%;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.titleText {
+		position: absolute;
+		width: 100%;
+		color: white;
+		text-shadow: 1px 1px 8px black;
+		font-size: 256px;
+		text-align: center;
+		white-space: nowrap;
+		top: 25%;
+		overflow: visible;
+	}
+
+</style>
+
+<root>
+	<div class="background">
+		@{
+			var style = $"transform: translateX({-curTextOffset}%);";
+			<label class="titleText" style=@style @ref="titleLabel">@CurrentToolName</label>
+		}
+	</div>
+</root>
+
+@code {
+
+	public Rect ScreenBounds = new Rect(0, 0, 1024, 1024);
+	private float curTextOffset = 0;
+	public string CurrentToolName = "Current Tool";
+
+	private Panel titleLabel;
+
+	protected override void UpdateBounds(Rect rect)
+	{
+		PanelBounds = ScreenBounds;
+	}
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		base.OnAfterTreeRender(firstTime);
+
+		curTextOffset += Time.Delta * 120;
+
+		if (curTextOffset > 105)
+			curTextOffset = -curTextOffset;
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(Time.Now);
+	}
+
+}

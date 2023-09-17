@@ -13,14 +13,14 @@ namespace Sandbox.Tools
 		// ConVar.ClientData doesn't seem to network its wrapped property nicely, so lets make our own...
 		[ConVar.ClientData( "tool_constraint_type" )]
 		public static ConstraintType _ { get; set; } = ConstraintType.Weld;
-		private ConstraintType Type
+		public ConstraintType Type
 		{
 			get
 			{
 				var _ = Enum.TryParse( GetConvarValue( "tool_constraint_type" ), out ConstraintType val );
 				return val;
 			}
-			set
+			private set
 			{
 				ConsoleSystem.Run( "tool_constraint_type", value.ToString() );
 			}
