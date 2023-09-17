@@ -3,6 +3,7 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using System;
 global using Sandbox;
+using Sandmod.Permission;
 
 partial class SandboxGame : GameManager
 {
@@ -68,6 +69,12 @@ partial class SandboxGame : GameManager
 		if ( ConsoleSystem.Caller == null )
 			return;
 
+		if ( !owner.Client.HasPermission( "spawn.prop_physics" ) )
+		{
+			HintFeed.AddHint( To.Single( owner ), "block", "You don't have permission to spawn props" );
+			return;
+		}
+
 		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 500 )
 			.UseHitboxes()
 			.Ignore( owner )
@@ -117,13 +124,18 @@ partial class SandboxGame : GameManager
 		}
 
 		if ( !source.IsValid ) return null; // source entity died or disconnected or something
+		if ( !package.IsMounted() && source is Player player && !player.Client.HasPermission( $"package.mount.asset.{packageName}" ) )
+		{
+			HintFeed.AddHint( To.Single( player ), "block", "You don't have permission to mount Cloud models" );
+			return null;
+		}
 
 		var model = package.GetMeta( "PrimaryAsset", "models/dev/error.vmdl" );
 		var mins = package.GetMeta( "RenderMins", Vector3.Zero );
 		var maxs = package.GetMeta( "RenderMaxs", Vector3.Zero );
 
 		// downloads if not downloads, mounts if not mounted
-		await package.MountAsync();
+		await package.MountAsync( false );
 
 		return model;
 	}
@@ -142,6 +154,12 @@ partial class SandboxGame : GameManager
 
 		if ( !TypeLibrary.HasAttribute<SpawnableAttribute>( entityType ) )
 			return;
+
+		if ( !owner.Client.HasPermission( $"spawn.{entName}" ) )
+		{
+			HintFeed.AddHint( To.Single( owner ), "block", $"You don't have permission to spawn {entName}" );
+			return;
+		}
 
 		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 4096 )
 			.UseHitboxes()
@@ -183,6 +201,14 @@ partial class SandboxGame : GameManager
 		if ( package == null )
 		{
 			Log.Warning( $"Tried to spawn package {fullIdent} - which was not found" );
+			return;
+		}
+
+		if ( !package.IsMounted() && !owner.Client.HasPermission( $"package.mount.code.{fullIdent}" ) )
+		{
+			Log.Warning( $"Player not allowed to mount package {fullIdent}" );
+			HintFeed.AddHint( To.Single( owner ), "block", $"You don't have permission to mount Cloud package {fullIdent}" );
+
 			return;
 		}
 

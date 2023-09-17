@@ -27,12 +27,25 @@
 - "weapon.shootbullet": used to allow overriding bullet behaviour, such as when shooting through a Stargate
   - Takes a single ShootBulletParams parameter. Writing `params.preventDefault = true` will disable the default bullet behaviour.
 
+For more usage examples, see [Wirebox](https://github.com/wiremod/wirebox).
+
 # Custom Concommands
 
 - `weapon_switch physgun`
 - `spawnpackage wiremod.sbox_tool_auto` - extended to work on runtime addons beyond just 'npc' + 'entity', see `Event("package.mounted")`
 - `undo` + `redo`
 - `reload_hud`, though it typically hotreloads nicely in the editor
+- `reload_spawnlists` - for use after updating config/x.button.spawnlist files
 - `tool_duplicator_savefile file.dupe` + `tool_duplicator_openfile file.dupe`
+- `spawn_dynplate [length] [width] [height]`
+- `tool_cloud_model tool_wirebutton facepunch.button 0` - mounts a new Package and sets that tool to use it
 
-For more usage examples, see [Wirebox](https://github.com/wiremod/wirebox).
+# [Permissions](https://github.com/sandmod/permission)
+
+- `noclip`
+- `package.mount.asset.{packageIdent}` - allows client to mount codeless packages from asset.party (recommended for everyone)
+- `package.mount.code.{packageIdent}` - allows client to mount packages from asset.party with code, which could do anything (recommended admin-only)
+- `spawn.prop_physics`
+- `spawn.{entityName}`
+- `tool.{toolName}` `EntityTarget` - called for all Sandbox tools, eg. `tool.tool_constraint.Ent123`, `tool.tool_wirebutton.Ent123`, `tool.use.Ent123`, `tool.physgun.Ent123`, useful for Prop Protection
+

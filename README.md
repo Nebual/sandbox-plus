@@ -42,4 +42,5 @@ Message @Nebual on Discord with any questions :)
 
 - [Nebual](https://github.com/Nebual)
 - [Gmod4phun](https://github.com/gmod4phun)
-- [thegrb93](https://github.com/thegrb93) - Duplicator tool work
+- [thegrb93](https://github.com/thegrb93) - Duplicator tool
+- [LtBrandon](https://github.com/LtBrandon) - Constraints, DynShapes

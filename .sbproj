@@ -13,7 +13,8 @@
   "CodePath": "code",
   "PackageReferences": [
     "wiremod.wirelib",
-    "wiremod.ndata"
+    "wiremod.ndata",
+    "sandmod.permission"
   ],
   "EditorReferences": null,
   "Metadata": {

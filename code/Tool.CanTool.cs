@@ -1,3 +1,5 @@
+using Sandmod.Permission;
+
 namespace Sandbox
 {
 	public class CanToolParams
@@ -18,6 +20,11 @@ namespace Sandbox
 			{
 				return tr;
 			}
+			if ( !player.Client.HasPermission( $"tool.{toolName}", tr.Entity ) )
+			{
+				return new TraceResult();
+			}
+			// todo: do we still want the player.cantool event, or is the HasPermission check sufficient?
 			var canToolParams = new CanToolParams
 			{
 				player = player,

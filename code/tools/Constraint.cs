@@ -53,6 +53,10 @@ namespace Sandbox.Tools
 		private TraceResult trace2;
 		private PhysicsPoint point1;
 		private PhysicsPoint point2;
+		// TraceResult's aren't [Net]workable, so lets sync the parts we need for the Preview
+		[Net] private ModelEntity ent1 { get; set; }
+		[Net] private Vector3 normal1 { get; set; }
+		[Net] private Vector3 endPos1 { get; set; }
 		private PhysicsJoint createdJoint;
 		private Func<string> createdUndo;
 		private bool wasFrozen;
@@ -143,6 +147,12 @@ namespace Sandbox.Tools
 					if ( stage == ConstraintToolStage.Waiting )
 					{
 						trace1 = tr;
+						if ( tr.Entity is ModelEntity modelEnt )
+						{
+							ent1 = modelEnt;
+						}
+						normal1 = tr.Normal;
+						endPos1 = tr.EndPosition;
 						stage = ConstraintToolStage.Moving;
 						CreateHitEffects( tr.EndPosition, tr.Normal );
 						return;
@@ -183,26 +193,15 @@ namespace Sandbox.Tools
 								offset = GetEntityOffsetPercent( offset, trace1 );
 							}
 
-							// Calculate the new rotation
-							var transform = trace1.Entity.Transform;
-							var rotation = trace1.Entity.Rotation;
-							var axis1Rotation = transform.RotationToLocal(Rotation.LookAt( trace1.Normal ));
-							var axis2Rotation = transform.RotationToLocal(Rotation.LookAt( -trace2.Normal ));
-							var rotationDifference = Rotation.Difference( axis1Rotation, axis2Rotation );
-							var newRotation = rotation * rotationDifference;
-							
-							// The position offset has to be calculated before we apply the rotation
-							var offsetPosition = trace1.EndPosition + trace1.Normal * offset;
-							var localOffset = transform.PointToLocal( offsetPosition );
-							
-							transform.Rotation = newRotation;
-							
-							// Apply our offset and move to the new location
-							var newPosition = trace2.EndPosition - transform.PointToWorld( localOffset );
-							transform.Position += newPosition;
+							trace1.Entity.Transform = CalculateNewTransform(
+								trace1.Entity.Transform,
+								trace1.Normal,
+								trace1.EndPosition,
+								trace2.Normal,
+								trace2.EndPosition,
+								offset
+							);
 
-							trace1.Entity.Transform = transform;
-							
 							if ( wantsRotation )
 							{
 								stage = ConstraintToolStage.Rotating;
@@ -341,13 +340,13 @@ namespace Sandbox.Tools
 						{
 							var pivot = Input.Down( "run" )
 								? trace1.Body.MassCenter
-								: trace1.EndPosition;
+								: trace2.EndPosition;
 
 							var joint = PhysicsJoint.CreateHinge(
 								trace1.Body,
 								trace2.Body,
 								pivot,
-								trace1.Normal
+								trace2.Normal
 							);
 							joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
 
@@ -641,6 +640,68 @@ namespace Sandbox.Tools
 			base.Deactivate();
 
 			Reset();
+		}
+
+		PreviewEntity previewModel;
+
+		protected override bool IsPreviewTraceValid( TraceResult tr )
+		{
+			if ( stage != ConstraintToolStage.Moving || !ent1.IsValid() )
+				return false;
+
+			if ( !base.IsPreviewTraceValid( tr ) )
+				return false;
+
+			return true;
+		}
+
+		public override void CreatePreviews()
+		{
+			if ( !Game.IsClient )
+			{
+				return;
+			}
+			TryCreatePreview( ref previewModel, "models/citizen_props/crate01.vmdl" );
+		}
+
+		public override void UpdatePreviews()
+		{
+			if ( !Game.IsClient )
+			{
+				return;
+			}
+			CreatePreviews();
+			base.UpdatePreviews();
+
+			var tr2 = DoTrace();
+			if ( !IsPreviewTraceValid( tr2 ) )
+			{
+				return;
+			}
+			if ( previewModel.IsValid() )
+			{
+				previewModel.Model = ent1.Model;
+				previewModel.Transform = CalculateNewTransform( ent1.Transform, normal1, endPos1, tr2.Normal, tr2.EndPosition, float.Parse( GetConvarValue( "tool_constraint_move_offset" ) ) );
+			}
+		}
+
+		private static Transform CalculateNewTransform( Transform originalTransform, Vector3 normal1, Vector3 endPos1, Vector3 normal2, Vector3 endPos2, float offset = 0f )
+		{
+			// Calculate the new rotation
+			var transform = originalTransform;
+			var rotation = transform.Rotation;
+			var axis1Rotation = transform.RotationToLocal( Rotation.LookAt( normal1 ) );
+			var axis2Rotation = transform.RotationToLocal( Rotation.LookAt( -normal2 ) );
+			var rotationDifference = Rotation.Difference( axis1Rotation, axis2Rotation );
+			var newRotation = rotation * rotationDifference;
+
+			// The position offset has to be calculated before we apply the rotation
+			var localOffset = transform.PointToLocal( endPos1 + normal1 * offset );
+			transform.Rotation = newRotation;
+			var newPosition = endPos2 - transform.PointToWorld( localOffset );
+			transform.Position += newPosition;
+
+			return transform;
 		}
 	}
 

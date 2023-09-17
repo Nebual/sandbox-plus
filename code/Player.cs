@@ -1,4 +1,5 @@
 ﻿using Sandbox;
+using Sandmod.Permission;
 using System.Numerics;
 
 public partial class SandboxPlayer : Player
@@ -169,14 +170,7 @@ public partial class SandboxPlayer : Player
 		{
 			if ( timeSinceJumpReleased < 0.3f )
 			{
-				if ( DevController is NoclipController )
-				{
-					DevController = null;
-				}
-				else
-				{
-					DevController = new NoclipController();
-				}
+				ToggleNoclip();
 			}
 
 			timeSinceJumpReleased = 0;
@@ -184,14 +178,7 @@ public partial class SandboxPlayer : Player
 
 		if ( Input.Released( "noclip" ) )
 		{
-			if ( DevController is NoclipController )
-			{
-				DevController = null;
-			}
-			else
-			{
-				DevController = new NoclipController();
-			}
+			ToggleNoclip();
 		}
 
 		if ( InputDirection.y != 0 || InputDirection.x != 0f )
@@ -205,14 +192,19 @@ public partial class SandboxPlayer : Player
 	{
 		if ( ConsoleSystem.Caller.Pawn is SandboxPlayer basePlayer )
 		{
-			if ( basePlayer.DevController is NoclipController )
-			{
-				basePlayer.DevController = null;
-			}
-			else
-			{
-				basePlayer.DevController = new NoclipController();
-			}
+			basePlayer.ToggleNoclip();
+		}
+	}
+
+	public void ToggleNoclip()
+	{
+		if ( DevController is NoclipController )
+		{
+			DevController = null;
+		}
+		else if ( Client.HasPermission( "noclip" ) )
+		{
+			DevController = new NoclipController();
 		}
 	}
 
