@@ -11,7 +11,7 @@ It closely follows [Facepunch's Sandbox gamemode](https://github.com/Facepunch/s
 - Material tool
 - Toolgun model (wip)
 - Undo/Redo System
-- DynPlates spawnmenu: like PHX, but dynamic, fully customizable sizes using procedural meshes
+- DynShapes spawnmenu: like PHX, but dynamic, fully customizable sizes using procedural meshes. Rectangles, cylinders, spheres, gears!
 - UI tool panels, including ModelSelector with extendable `.spawnlist`'s
 
 ### Extensiblility
@@ -32,6 +32,7 @@ It closely follows [Facepunch's Sandbox gamemode](https://github.com/Facepunch/s
 
 - [Wirelib](https://asset.party/wiremod/wirelib)
 - [NData (ClientRPC substitute)](https://github.com/Nebual/sbox-ndata)
+- [Permission framework](https://github.com/sandmod/permission)
 
 ## Contributing
 

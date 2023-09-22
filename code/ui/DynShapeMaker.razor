@@ -1,0 +1,125 @@
+﻿@using Sandbox.UI;
+
+<root class="input-container">
+    <div class="dimensions-container">
+        <label class="header">Rectangles</label>
+        <div class="flex-column">
+            <label class="input-label">Length</label>
+            <Slider Value:bind=@PlateLength Step=@(1f) Min=@(1f) Max=@(500f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Plate) ) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Width</label>
+            <Slider Value:bind=@PlateWidth Step=@(1f) Min=@(1f) Max=@(500f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Plate)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Height</label>
+            <Slider Value:bind=@PlateHeight Step=@(1f) Min=@(1f) Max=@(500f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Plate)) />
+        </div>
+        <Button Text="Spawn DynPlate" onclick=@OnClickPlate />
+    </div>
+    <div class="dimensions-container">
+        <label class="header">Cylinder</label>
+        <div class="flex-column">
+            <label class="input-label">Radius</label>
+            <Slider Value:bind=@Radius Step=@(1f) Min=@(1f) Max=@(256f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Cylinder)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Height</label>
+            <Slider Value:bind=@Height Step=@(1f) Min=@(1f) Max=@(500f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Cylinder)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Number of Segments</label>
+            <Slider Value:bind=@NumSegments Step=@(1f) Min=@(3f) Max=@(64f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Cylinder)) />
+        </div>
+        <Button Text="Spawn DynCylinder" onclick=@OnClickCylinder />
+    </div>
+    <div class="dimensions-container">
+        <label class="header">Sphere</label>
+        <div class="flex-column">
+            <label class="input-label">Radius</label>
+            <Slider Value:bind=@Radius Step=@(1f) Min=@(1f) Max=@(256f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Sphere)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Number of Segments</label>
+            <Slider Value:bind=@NumSegments Step=@(1f) Min=@(3f) Max=@(64f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Sphere)) />
+        </div>
+        <Button Text="Spawn DynSphere" onclick=@OnClickSphere />
+    </div>
+    <div class="dimensions-container">
+        <label class="header">Gear</label>
+        <div class="flex-column">
+            <label class="input-label">Spoke Size</label>
+            <Slider Value:bind=@SpokeSize Step=@(0.25f) Min=@(0.25f) Max=@(8f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Gear)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Height</label>
+            <Slider Value:bind=@PlateHeight Step=@(1f) Min=@(1f) Max=@(100f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Gear)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Number of Spokes</label>
+            <Slider Value:bind=@NumSegments Step=@(1f) Min=@(3f) Max=@(64f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Gear)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Cut Depth</label>
+            <Slider Value:bind=@CutDepth Step=@(1f) Min=@(1f) Max=@(64f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Gear)) />
+        </div>
+        <div class="flex-column">
+            <label class="input-label">Spoke Spikiness</label>
+            <Slider Value:bind=@SpokeSpikiness Step=@(1f) Min=@(4f) Max=@(100f) OnValueChanged=@((float _) => OnUpdatePreview?.Invoke(Gear)) />
+        </div>
+        <Button Text="Spawn DynGear" onclick=@OnClickGear />
+    </div>
+    <div class="dimensions-container">
+        <label class="header"></label>
+        <div class="flex-column">
+            <label class="input-label">Texture Size</label>
+            <Slider Value:bind=@TextureSize Step=@(4f) Min=@(4f) Max=@(512f) style="max-width: 400px;"/>
+        </div>
+    </div>
+</root>
+
+@code {
+    public float PlateLength { get; set; } = 48f;
+    public float PlateWidth { get; set; } = 24f;
+    public float PlateHeight { get; set; } = 3f;
+    public float TextureSize { get; set; } = 64f;
+    public float Radius { get; set; } = 32f;
+    public float Height { get; set; } = 64f;
+    public int NumSegments { get; set; } = 16;
+    public float SpokeSize { get; set; } = 2f;
+    public float SpokeSpikiness { get; set; } = 50f;
+    public float CutDepth { get; set; } = 5f;
+
+    public Action<DynShapeSpawnMenu.DynShapeDimensions> OnCreateClicked;
+    public Action<DynShapeSpawnMenu.DynShapeDimensions> OnUpdatePreview;
+
+    public DynShapeSpawnMenu.DynShapeDimensions Plate => DynShapeSpawnMenu.DynShapeDimensions.Plate( PlateLength, PlateWidth, PlateHeight );
+    public DynShapeSpawnMenu.DynShapeDimensions Cylinder => DynShapeSpawnMenu.DynShapeDimensions.Cylinder( Radius, Height, NumSegments );
+    public DynShapeSpawnMenu.DynShapeDimensions Sphere => DynShapeSpawnMenu.DynShapeDimensions.Sphere( Radius, NumSegments );
+    public DynShapeSpawnMenu.DynShapeDimensions Gear {
+        get {
+            var maxCutAngle = 360f / NumSegments / 2;
+            var cutAngle = maxCutAngle * (SpokeSpikiness / 100f);
+            return DynShapeSpawnMenu.DynShapeDimensions.Gear(SpokeSize, PlateHeight, NumSegments, CutDepth, cutAngle);
+        }
+    }
+
+    protected void OnClickPlate()
+    {
+        OnCreateClicked?.Invoke(Plate);
+    }
+
+    protected void OnClickCylinder()
+    {
+        OnCreateClicked?.Invoke(Cylinder);
+    }
+
+    protected void OnClickSphere()
+    {
+        OnCreateClicked?.Invoke(Sphere);
+    }
+
+    protected void OnClickGear() {
+        OnCreateClicked?.Invoke(Gear);
+    }
+}

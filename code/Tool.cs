@@ -1,5 +1,6 @@
 ﻿using Sandbox;
 using Sandbox.Tools;
+using Sandbox.UI;
 
 [Library( "weapon_tool", Title = "Toolgun" )]
 partial class Tool : Carriable
@@ -11,6 +12,10 @@ partial class Tool : Carriable
 
 	[Net, Change]
 	public BaseTool CurrentTool { get; set; }
+
+	private Texture Texture;
+	private ToolgunPanel Panel;
+	private SceneCustomObject RenderObject;
 
 	public override void Spawn()
 	{
@@ -82,11 +87,54 @@ partial class Tool : Carriable
 		newTool?.Activate();
 	}
 
+	private void UpdateToolgunPanel()
+	{
+		var toolName = DisplayInfo.For( CurrentTool ).Name;
+		Panel.CurrentToolName = toolName;
+
+		//var type = DisplayInfo.For( CurrentTool ).
+
+		if (CurrentTool is ConstraintTool ctool)
+		{
+			Panel.CurrentToolName = $"{toolName} | {ctool.Type.ToString()}";
+		}
+	}
+
 	public override void ActiveStart( Entity ent )
 	{
 		base.ActiveStart( ent );
 
 		CurrentTool?.Activate();
+
+		if (Game.IsClient)
+		{
+			RenderObject = new SceneCustomObject( Game.SceneWorld )
+			{
+				RenderOverride = ToolgunScreenRender
+			};
+
+			Panel = new()
+			{
+				RenderedManually = true,
+				PanelBounds = new Rect( 0, 0, 1024, 1024 ),
+			};
+
+			UpdateToolgunPanel();
+
+			Texture = Texture.CreateRenderTarget().WithSize( Panel.PanelBounds.Size ).Create();
+		}
+	}
+
+	private void ToolgunScreenRender( SceneObject sceneObject )
+	{
+		Graphics.RenderTarget = RenderTarget.From( Texture );
+		Graphics.Attributes.SetCombo( "D_WORLDPANEL", 0 );
+		Graphics.Viewport = new Rect( 0, Panel.PanelBounds.Size );
+		Graphics.Clear();
+
+		Panel.RenderManual();
+
+		Graphics.RenderTarget = null;
 	}
 
 	public override void ActiveEnd( Entity ent, bool dropped )
@@ -94,6 +142,15 @@ partial class Tool : Carriable
 		base.ActiveEnd( ent, dropped );
 
 		CurrentTool?.Deactivate();
+
+		if (Game.IsClient)
+		{
+			RenderObject?.Delete();
+			RenderObject = null;
+
+			Panel?.Delete();
+			Panel = null;
+		}
 	}
 
 	protected override void OnDestroy()
@@ -120,6 +177,22 @@ partial class Tool : Carriable
 			return;
 
 		CurrentTool?.OnFrame();
+
+		UpdateToolgunPanel();
+
+		// world model screen
+		if ( SceneObject.IsValid() )
+		{
+			SceneObject.Batchable = false;
+			SceneObject.Attributes.Set( "screenTexture", Texture );
+		}
+
+		// view model screen
+		if ( ViewModelEntity.SceneObject.IsValid() )
+		{
+			ViewModelEntity.SceneObject.Batchable = false;
+			ViewModelEntity.SceneObject.Attributes.Set( "screenTexture", Texture );
+		}
 	}
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
@@ -216,4 +289,5 @@ namespace Sandbox.Tools
 				: ConsoleSystem.GetValue( name, default );
 		}
 	}
+
 }

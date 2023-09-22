@@ -80,7 +80,7 @@ namespace Sandbox
 			modelBuilder.AddMesh( mesh );
 			
 			// calculate the mass using the formula for a sphere
-			modelBuilder.WithMass( 4.0f / 3.0f * MathF.PI * radius * radius * radius * 0.0001f );
+			modelBuilder.WithMass( 4.0f / 3.0f * MathF.PI * radius * radius * radius * 0.001f );
 			
 			modelBuilder.AddCollisionSphere( radius );
 
@@ -93,15 +93,19 @@ namespace Sandbox
 		{
 			CreateSphereModel(radius, numSegments, texSize);
 		}
+		public static string CreateSphere(  float radius, int numSegments, int texSize )
+		{
+			CreateSphereModelClient(radius, numSegments, texSize);
+			return CreateSphereModel(radius, numSegments, texSize);
+		}
 		
 		[ConCmd.Server( "spawn_dynsphere" )]
-		public static void SpawnSphere( float radius, int numSegments = 16, int texScale = 100 )
+		public static void SpawnSphere( float radius, int numSegments = 16, int texSize = 100 )
 		{
 			if ( ConsoleSystem.Caller == null )
 				return;
 			
-			CreateSphereModelClient(radius, numSegments, texScale);
-			var modelId = CreateSphereModel(radius, numSegments, texScale);
+			var modelId = CreateSphere(radius, numSegments, texSize);
 			
 			var entity = SpawnEntity( modelId );
 			SandboxPlayer pawn = ConsoleSystem.Caller.Pawn as SandboxPlayer;

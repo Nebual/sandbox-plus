@@ -107,12 +107,13 @@ namespace Sandbox
 		
 			mesh.CreateVertexBuffer<MeshVertex>( vertexBuilder.vertices.Count, MeshVertex.Layout, vertexBuilder.vertices.ToArray() );
 			mesh.SetBounds( mins, maxs );
+			GenerateIndices( mesh, vertexBuilder.vertices.Count );
 
 			var modelBuilder = new ModelBuilder();
 			modelBuilder.AddMesh( mesh );
 			
 			// calculate the mass of the gear
-			modelBuilder.WithMass( MathF.PI * radius * radius * depth * 0.0001f );
+			modelBuilder.WithMass( MathF.PI * radius * radius * depth * 0.001f );
 			
 			// generate collision hulls for the cylinder and add them using modelBuilder.AddCollisionHull
 			modelBuilder.AddCollisionHull( collisionVertices.ToArray() );
@@ -126,6 +127,11 @@ namespace Sandbox
 		{
 			CreateCylinderModel(radius, depth, numFaces, texSize);
 		}
+		public static string CreateCylinder( float radius, float depth, int numFaces, int texSize )
+		{
+			CreateCylinderModelClient( radius, depth, numFaces, texSize );
+			return CreateCylinderModel( radius, depth, numFaces, texSize );
+		}
 		
 		[ConCmd.Server( "spawn_dyncylinder" )]
 		public static void SpawnCylinder( float radius, float depth, int numFaces = 16, int texScale = 100 )
@@ -133,8 +139,7 @@ namespace Sandbox
 			if ( ConsoleSystem.Caller == null )
 				return;
 			
-			CreateCylinderModelClient(radius, depth, numFaces, texScale);
-			var modelId = CreateCylinderModel(radius, depth, numFaces, texScale);
+			var modelId = CreateCylinder(radius, depth, numFaces, texScale);
 			
 			var entity = SpawnEntity( modelId );
 			SandboxPlayer pawn = ConsoleSystem.Caller.Pawn as SandboxPlayer;

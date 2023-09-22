@@ -1,0 +1,227 @@
+@using System.Collections.Generic
+@using System.Linq
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Sandbox
+@using Sandbox.UI
+@using Sandbox.UI.Construct
+@using Sandbox.UI.Tests
+@inherits Panel
+@attribute [StyleSheet]
+
+<root>
+	<VirtualScrollPanel @ref=Canvas class="canvas" />
+	<DynShapeMaker OnCreateClicked=@SpawnShape OnUpdatePreview=@UpdatePreview TextureSize:bind=@TextureSize />
+	<ScenePanel @ref=previewScenePanel class="spawnicon" />
+</root>
+
+@code {
+
+	private int TextureSize {
+		get => _textureSize;
+		set {
+			_textureSize = value;
+			if (previewShape.shape != "")
+				UpdatePreview(previewShape);
+		}
+	}
+
+	private VirtualScrollPanel Canvas;
+	private HashSet<DynShapeDimensions> shapes = new();
+
+	[Event( "sandbox.hud.loaded" )]
+	public static void Initialize()
+	{
+		Log.Info( "DynShapeSpawnMenu created" );
+		var plateList = SpawnMenu.Instance.SpawnMenuLeftBody.AddChild<DynShapeSpawnMenu>();
+		SpawnMenu.Instance.SpawnMenuLeftTabs
+			.AddButtonActive( "DynShapes", ( b ) => plateList.SetClass( "active", b ) );
+	}
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		base.OnAfterTreeRender(firstTime);
+
+		if (firstTime) {
+			SetupCanvas();
+		}
+	}
+	
+	private void SetupCanvas()
+	{
+		Canvas.Layout.Columns = 16;
+		Canvas.Layout.ItemWidth = 64;
+		Canvas.Layout.ItemHeight = 64;
+		Canvas.OnCreateCell = ( cell, data ) =>
+		{
+			AddShapeButton( cell, (DynShapeDimensions)data );
+		};
+
+		var storedSpawnListSerialized = FileSystem.Data.ReadAllText( "dynshape_spawnlist.json" );
+		if ( storedSpawnListSerialized != null )
+		{
+			shapes = JsonSerializer.Deserialize<HashSet<DynShapeDimensions>>( storedSpawnListSerialized );
+		}
+		if (!shapes.Any())
+		{
+			shapes.Add( DynShapeDimensions.Plate( 12, 12, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 12, 24, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 24, 24, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 24, 48, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 48, 48, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 48, 96, 1 ) );
+			shapes.Add( DynShapeDimensions.Plate( 96, 96, 1 ) );
+		}
+
+		Canvas.SetItems( GetOrderedShapes() );
+	}
+
+	private Button AddShapeButton(Panel cell, DynShapeDimensions shape)
+	{
+		var btn = cell.Add.Button( GetShapeButtonLabel(shape) );
+		btn.AddClass( "icon" );
+		btn.AddEventListener( "onclick", () =>
+			SpawnShape( shape )
+		);
+		return btn;
+	}
+	private string GetShapeButtonLabel( DynShapeDimensions shape )
+	{
+		switch (shape.shape) {
+			default:
+			case "plate":
+				return $"Plate\n{shape.x}x{shape.y}x{shape.z}";
+			case "cylinder":
+				return $"Cylinder\n{shape.radius}x{shape.z}:{shape.numSegments}";
+			case "sphere":
+				return $"Sphere\n{shape.radius}:{shape.numSegments}";
+			case "gear":
+				return $"Gear\n{(shape.radius/shape.numSegments)}x{shape.numSegments}\n{shape.z}h {shape.cutDepth}cut";
+		}
+	}
+
+	private void SpawnShape( DynShapeDimensions shape )
+	{
+		switch (shape.shape) {
+			case "plate":
+				ConsoleSystem.Run( "spawn_dynplate", shape.x, shape.y, shape.z, TextureSize );
+				break;
+			case "cylinder":
+				ConsoleSystem.Run( "spawn_dyncylinder", shape.radius, shape.z, shape.numSegments, TextureSize );
+				break;
+			case "sphere":
+				ConsoleSystem.Run( "spawn_dynsphere", shape.radius, shape.numSegments, TextureSize );
+				break;
+			case "gear":
+				ConsoleSystem.Run( "spawn_dyngear", shape.radius, shape.z, shape.numSegments, shape.cutDepth, shape.cutAngle, TextureSize );
+				break;
+		}
+		var added = shapes.Add( shape );
+		if ( added )
+		{
+			FileSystem.Data.WriteAllText( "dynshape_spawnlist.json", JsonSerializer.Serialize( shapes ) );
+			Canvas.SetItems( GetOrderedShapes() );
+		}
+	}
+
+	private Model GenerateShapeModel(DynShapeDimensions shape)
+	{
+		switch (shape.shape) {
+			case "plate":
+				return VertexMeshBuilder.Models[VertexMeshBuilder.CreateRectangleModel(shape.x, shape.y, shape.z, TextureSize )];
+			case "cylinder":
+				return VertexMeshBuilder.Models[VertexMeshBuilder.CreateCylinderModel( shape.radius, shape.z, shape.numSegments, TextureSize )];
+			case "sphere":
+				return VertexMeshBuilder.Models[VertexMeshBuilder.CreateSphereModel( shape.radius, shape.numSegments, TextureSize )];
+			case "gear":
+				return VertexMeshBuilder.Models[VertexMeshBuilder.CreateGearModel( shape.radius, shape.z, shape.numSegments, shape.cutDepth, shape.cutAngle, TextureSize )];
+		}
+		throw new Exception("Unknown shape type");
+	}
+
+	private SceneWorld previewSceneWorld;
+	private SceneLight previewSceneLight;
+	private SceneModel previewSceneModel;
+	private ScenePanel previewScenePanel;
+	private DynShapeDimensions previewShape;
+	private int _textureSize = 64;
+
+	private void UpdatePreview( DynShapeDimensions shape )
+	{
+		previewShape = shape;	
+		var model = GenerateShapeModel(previewShape);
+		if (!previewSceneWorld.IsValid()) {
+			previewSceneWorld = new SceneWorld();
+			previewSceneWorld.AmbientLightColor = Color.White * 0.8f;
+			// previewSceneLight = new SceneLight( previewSceneWorld, Vector3.Up * 75.0f, 200.0f, Color.White * 20.0f );
+			previewSceneModel = new SceneModel(previewSceneWorld, model, new Transform( Vector3.Zero, new Rotation( new Vector3( -0.25f, 0.25f, 0.7f ), 0f ) ) );
+			previewSceneModel.SetMaterialOverride(Cloud.Material("facepunch/corrugated_wall_a_doublesided"));
+			
+			previewScenePanel.World = previewSceneWorld;
+			previewScenePanel.Camera.Angles = Angles.Zero;
+			previewScenePanel.Camera.FieldOfView = 20.0f;
+			previewScenePanel.Camera.ZFar = 5000.0f;
+			previewScenePanel.AddEventListener( "onclick", () =>
+				SpawnShape( previewShape )
+			);
+		}
+		previewSceneModel.Model = model;
+		var distance = model.RenderBounds.Size.Length * 2 + 50;
+		previewScenePanel.Camera.Position = model.RenderBounds.Center + Vector3.Forward * -distance;
+		// previewSceneLight.Position = previewScenePanel.Camera.Position;
+	}
+
+	private IEnumerable<object> GetOrderedShapes()
+	{
+		return shapes
+			.OrderBy( shape => shape.shape)
+			.ThenBy( shape => shape.radius )
+			.ThenBy( shape => shape.x )
+			.ThenBy( shape => shape.y )
+			.ThenBy( shape => shape.z )
+			.ThenBy( shape => shape.numSegments )
+			.ThenBy( shape => shape.cutDepth )
+			.Select( shape => (object)shape );
+	}
+
+	public struct DynShapeDimensions
+	{
+		[JsonInclude] public string shape;
+		[JsonInclude] public float x; // used by plate
+		[JsonInclude] public float y; // used by plate
+		[JsonInclude] public float z; // used by plate, cylinder, gear
+		[JsonInclude] public float radius; // used by cylinder, sphere, gear
+		[JsonInclude] public int numSegments; // used by cylinder, sphere, gear
+		[JsonInclude] public float cutDepth; // used by gear
+		[JsonInclude] public float cutAngle; // used by gear
+		public DynShapeDimensions( string shape, float x, float y, float z, float radius, int numSegments = 0, float cutDepth = 0, float cutAngle = 0 )
+		{
+			this.shape = shape;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.radius = radius;
+			this.numSegments = numSegments;
+			this.cutDepth = cutDepth;
+			this.cutAngle = cutAngle;
+		}
+
+		public static DynShapeDimensions Plate(float x, float y, float z)
+		{
+			return new DynShapeDimensions( "plate", x, y, z, 0, 0 );
+		}
+		public static DynShapeDimensions Cylinder(float radius, float z, int numSegments)
+		{
+			return new DynShapeDimensions( "cylinder", 0, 0, z, radius, numSegments );
+		}
+		public static DynShapeDimensions Sphere(float radius, int numSegments)
+		{
+			return new DynShapeDimensions( "sphere", 0, 0, 0, radius, numSegments );
+		}
+		public static DynShapeDimensions Gear(float spokeSize, float z, int numSegments, float cutDepth, float cutAngle)
+		{
+			var radius = spokeSize * numSegments; // don't let the user directly set radius, or they're likely to get teeth that don't mesh
+			return new DynShapeDimensions( "gear", 0, 0, z, radius, numSegments, cutDepth, cutAngle );
+		}
+	}
+}

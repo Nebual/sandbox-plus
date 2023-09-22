@@ -1,0 +1,73 @@
+﻿@using System
+@using Sandbox;
+@using Sandbox.UI;
+@inherits RootPanel
+
+<style>
+
+	.background {
+		position: absolute;
+		background-image: url("materials/weapons/v_toolgun/screen_bg_color.png");
+		background-repeat: no-repeat;
+		background-size: cover;
+		height: 100%;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.marquee {
+		width: 100%;
+		white-space: nowrap; /* Prevents text from wrapping to the next line */
+		overflow: hidden; /* Hides any overflowing content */
+		position: relative; /* Enables positioning the text inside the div */
+	}
+
+	.marquee_p {
+		animation: scroll-left 2s linear infinite; /* Adjust the duration as needed */
+		position: absolute; /* Positions the text absolutely within the div */
+		top: 23%;
+		right: 100%; /* Start the text outside the div on the right */
+		color: white;
+		text-shadow: 1px 1px 8px black;
+		font-size: 256px;
+		font-family: Poppins;
+		text-align: center;
+	}
+
+	@@keyframes scroll-left {
+		0% {
+			right: -200%; /* Start position */
+		}
+		100% {
+			right: 100%; /* End position */
+		}
+	}
+
+</style>
+
+<root>
+	<div class="background">
+		<div class="marquee">
+			<p class="marquee_p">@CurrentToolName</p>
+		</div>
+	</div>
+</root>
+
+@code {
+
+	public Rect ScreenBounds = new Rect(0, 0, 1024, 1024);
+	public string CurrentToolName = "Current Tool";
+
+	private Panel titleLabel;
+
+	protected override void UpdateBounds(Rect rect)
+	{
+		PanelBounds = ScreenBounds;
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(Time.Now);
+	}
+
+}

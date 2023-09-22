@@ -202,12 +202,13 @@ namespace Sandbox
 
 			mesh.CreateVertexBuffer<MeshVertex>( vertexBuilder.vertices.Count, MeshVertex.Layout, vertexBuilder.vertices.ToArray() );
 			mesh.SetBounds( mins, maxs );
+			GenerateIndices( mesh, vertexBuilder.vertices.Count );
 
 			var modelBuilder = new ModelBuilder();
 			modelBuilder.AddMesh( mesh );
 
 			// calculate the mass of the gear
-			modelBuilder.WithMass( MathF.PI * radius * radius * depth * 0.0001f );
+			modelBuilder.WithMass( MathF.PI * radius * radius * depth * 0.001f );
 
 			// add the collision hulls
 			modelBuilder.AddCollisionHull( innerCollisionVertices.ToArray() );
@@ -222,6 +223,11 @@ namespace Sandbox
 		{
 			CreateGearModel( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
 		}
+		public static string CreateGear( float radius, float depth, int numTeeth, float cutDepth, float cutAngle, int texSize )
+		{
+			CreateGearModelClient( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
+			return CreateGearModel( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
+		}
 
 		[ConCmd.Server( "spawn_dyngear" )]
 		public static void SpawnGear( float radius, float depth, int numTeeth /* = 16*/, float cutDepth /* = 0.1f*/, float cutAngle /* = 5f*/, int texScale = 100 )
@@ -229,8 +235,7 @@ namespace Sandbox
 			if ( ConsoleSystem.Caller == null )
 				return;
 
-			CreateGearModelClient( radius, depth, numTeeth, cutDepth, cutAngle, texScale );
-			var modelId = CreateGearModel( radius, depth, numTeeth, cutDepth, cutAngle, texScale );
+			var modelId = CreateGear( radius, depth, numTeeth, cutDepth, cutAngle, texScale );
 
 			var entity = SpawnEntity( modelId );
 			SandboxPlayer pawn = ConsoleSystem.Caller.Pawn as SandboxPlayer;

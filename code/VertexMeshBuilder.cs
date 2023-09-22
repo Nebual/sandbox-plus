@@ -7,8 +7,9 @@ namespace Sandbox
 	{
 		public List<MeshVertex> vertices = new();
 		public static Dictionary<string, Model> Models = new();
-		public static string CreateRectangleModel( Vector3 size, int texSize = 64 )
+		public static string CreateRectangleModel( float length, float width, float height, int texSize = 64 )
 		{
+			var size = new Vector3( length, width, height );
 			var key = $"rect_{size.x}_{size.y}_{size.z}_{texSize}";
 			if ( Models.ContainsKey( key ) )
 			{
@@ -24,23 +25,36 @@ namespace Sandbox
 
 			mesh.CreateVertexBuffer<MeshVertex>( vertexBuilder.vertices.Count, MeshVertex.Layout, vertexBuilder.vertices.ToArray() );
 			mesh.SetBounds( mins, maxs );
+			GenerateIndices( mesh, vertexBuilder.vertices.Count );
 
 			var modelBuilder = new ModelBuilder();
 			modelBuilder.AddMesh( mesh );
 			var box = new BBox( mins, maxs );
 			modelBuilder.AddCollisionBox( box.Size * 0.5f, box.Center );
-			modelBuilder.WithMass( box.Size.x * box.Size.y * box.Size.z / 1000 );
+			modelBuilder.WithMass( box.Size.x * box.Size.y * box.Size.z * 0.001f );
 
 			Models[key] = modelBuilder.Create();
 			return key;
 		}
 
+		
+		// generate an IndexBuffer. Some meshes (Rectangles, Cylinders, Gears) don't seem to need them in-game, but then won't render in a ScenePanel without em
+		private static void GenerateIndices( Mesh mesh, int vertexCount )
+		{
+			var indices = new List<int>();
+			for ( int i = 0; i < vertexCount; i++ )
+			{
+				indices.Add( i );
+			}
+			mesh.CreateIndexBuffer( indices.Count, indices.ToArray() );
+		}
+
 		[ConCmd.Server( "spawn_dynplate" )]
-		public static void SpawnEntityCmd( int length, int width, int height, int texScale = 100 )
+		public static void SpawnPlate( float length, float width, float height, int texSize = 100 )
 		{
 			if ( ConsoleSystem.Caller == null )
 				return;
-			var modelId = GenerateRectangleServer( length, width, height, texScale );
+			var modelId = CreateRectangle( length, width, height, texSize );
 			var entity = SpawnEntity( modelId );
 			SandboxPlayer pawn = ConsoleSystem.Caller.Pawn as SandboxPlayer;
 			TraceResult trace = Trace.Ray( pawn.EyePosition, pawn.EyePosition + pawn.EyeRotation.Forward * 5000.0f ).UseHitboxes().Ignore( pawn ).Run();
@@ -57,18 +71,14 @@ namespace Sandbox
 		}
 
 		[ClientRpc]
-		public static void GenerateRectangleClient( int length, int width, int height, int texSize )
+		public static void CreateRectangleClient( float length, float width, float height, int texSize )
 		{
-			GenerateRectangle( length, width, height, texSize );
+			CreateRectangleModel( length, width, height, texSize );
 		}
-		public static string GenerateRectangleServer( int length, int width, int height, int texSize )
+		public static string CreateRectangle( float length, float width, float height, int texSize )
 		{
-			GenerateRectangleClient( length, width, height, texSize );
-			return GenerateRectangle( length, width, height, texSize );
-		}
-		public static string GenerateRectangle( int length, int width, int height, int texSize )
-		{
-			return CreateRectangleModel( new Vector3( length, width, height ), texSize );
+			CreateRectangleClient( length, width, height, texSize );
+			return CreateRectangleModel( length, width, height, texSize );
 		}
 
 		private void AddRectangle( Vector3 position, Vector3 size, int texSize, Color color = new Color() )
