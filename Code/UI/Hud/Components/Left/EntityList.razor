@@ -29,7 +29,7 @@
     {
         var sort = $"sort:{SortOrder}";
         var local = LocalOnly ? "local:true" : "";
-        var str = $"{sort} {local} type:addon +game:softsplit.sandbox +runtime +entity -npc";
+        var str = $"{sort} {local} type:addon +runtime +entity -npc";
 
         return str;
     }

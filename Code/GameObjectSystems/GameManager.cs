@@ -6,7 +6,7 @@ public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayer
 
 	void ISceneStartup.OnHostPreInitialize( SceneFile scene )
 	{
-		Log.Info( $"Sandbox Classic: Loading scene {scene.ResourceName}" );
+		Log.Info( $"{Package.GetCachedTitle(Game.Ident)}: Loading scene {scene.ResourceName}" );
 	}
 
 	void Component.INetworkListener.OnActive( Connection channel )

@@ -31,7 +31,12 @@
         var found = await Package.FindAsync(Query);
         if (found != null)
         {
-            Packages.AddRange(found.Packages);
+            Packages.AddRange(found.Packages.Where(x => {
+                if (x.IsMounted()) return true;
+                return true;
+                // var packageType = x.PackageType == Package.Type.Addon ? "code" : "asset";
+                // return Game.LocalClient.HasPermission($"package.mount.{packageType}.{x.FullIdent}");
+            }));
         }
 
         StateHasChanged();

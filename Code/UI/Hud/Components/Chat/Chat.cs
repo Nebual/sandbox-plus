@@ -24,6 +24,7 @@ public partial class Chat
 		if ( message.ToLower().Contains( "bloxwich" ) )
 			Sandbox.Services.Achievements.Unlock( "secret_phrase" );
 
+		// Event.Run( "client.say", ConsoleSystem.Caller, message );
 		Log.Info( $"{Connection.Local}: {message}" );
 		AddChatEntry( Connection.Local.DisplayName, message, Connection.Local.SteamId );
 	}

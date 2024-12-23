@@ -4,7 +4,7 @@
 
 <root style="flex-direction: column;">
     <div class="game-title">
-        Sandbox Classic
+        @Package.GetCachedTitle(Game.Ident)
     </div>
 
     <div class="controls">
@@ -21,18 +21,12 @@
         <a class="button" onclick="@OpenServerList">Find a Game</a>
         <a class="button" onclick="@Game.Overlay.ShowBinds">Settings</a>
         <span style="height: 20px;"></span>
-        <a class="button" onclick="@CopyInviteToClipboard">Join the Discord (Clipboard)</a>
         <a class="button" onclick=@Game.Close>Quit</a>
     </div>
 </root>
 
 @code
 {
-    void CopyInviteToClipboard()
-    {
-        Clipboard.SetText("https://discord.gg/rbCJdZjewf");
-    }
-
     void LeaveGame()
     {
         Networking.Disconnect();
@@ -47,7 +41,7 @@
     void OpenServerList()
     {
         var options = new Sandbox.Modals.ServerListConfig();
-        options.GamePackageFilter = "softsplit.sandbox";
+        options.GamePackageFilter = Game.Ident;
 
         Game.Overlay.ShowServerList(options);
     }
