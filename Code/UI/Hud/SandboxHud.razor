@@ -1,4 +1,5 @@
 @using Sandbox.UI
+@using Sandbox.Events
 
 @inherits PanelComponent
 @implements IHotloadManaged
@@ -24,7 +25,7 @@
 	{
 		Instance = this;
 
-		// Event.Run("sandbox.hud.loaded");
+		Game.ActiveScene.Dispatch( new SandboxHudLoaded() );
 	}
 
 	[Rpc.Owner]

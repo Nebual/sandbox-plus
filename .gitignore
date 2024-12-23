@@ -27,5 +27,5 @@ maps/editor/_bakeresourcecache/toolscene_default_baked/*
 # Exported / standalone games
 Exports/
 
-# Libraries
-Libraries/
+# Libraries (until these can be vendor'd more properly?) Ideally these wouldn't be checked into our repo...
+Libraries/*/.bin

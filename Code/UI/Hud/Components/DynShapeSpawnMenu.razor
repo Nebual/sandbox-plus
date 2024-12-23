@@ -3,10 +3,12 @@
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @using Sandbox
+@using Sandbox.Events
 @using Sandbox.UI
 @using Sandbox.UI.Construct
 @using Sandbox.UI.Tests
 @inherits Panel
+@implements IGameEventHandler<SandboxHudLoaded>
 @attribute [StyleSheet]
 
 <root class="DynSpawnShapeMenu">
@@ -29,14 +31,17 @@
 	private VirtualScrollPanel Canvas;
 	private HashSet<DynShapeDimensions> shapes = new();
 
-	// todo: this doesn't work anymore
-	//[Event( "sandbox.hud.loaded" )]
 	public static void Initialize()
 	{
 		Log.Info( "DynShapeSpawnMenu created" );
 		var plateList = SpawnMenu.Instance.SpawnMenuLeftBody.AddChild<DynShapeSpawnMenu>();
 		SpawnMenu.Instance.SpawnMenuLeftTabs
 			.AddButtonActive( "DynShapes", ( b ) => plateList.SetClass( "active", b ) );
+	}
+	// Todo: this doesn't work because there is no instance of DynShapeSpawnMenu so LibEvents can't find it, and LibEvents doesn't work with static's
+	public void OnGameEvent( SandboxHudLoaded e )
+	{
+		Initialize();
 	}
 
 	protected override void OnAfterTreeRender(bool firstTime)
