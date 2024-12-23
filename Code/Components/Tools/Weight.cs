@@ -74,7 +74,7 @@ public class WeightTool : BaseTool
 			WeightSlider.Value = weight;
 		}
 		OnWeightConvarChanged( weight );
-		// HintFeed.AddHint( "", $"Loaded weight of {weight}" );
+		HintFeed.AddHint( "", $"Loaded weight of {weight}" );
 	}
 	public void OnWeightConvarChanged( float weight )
 	{
