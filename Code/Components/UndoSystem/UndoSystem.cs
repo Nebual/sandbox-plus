@@ -1,6 +1,5 @@
 using Sandbox;
 using Sandbox.Diagnostics;
-using Sandbox.Events;
 
 public sealed class UndoSystem : GameObjectSystem<UndoSystem>
 {
