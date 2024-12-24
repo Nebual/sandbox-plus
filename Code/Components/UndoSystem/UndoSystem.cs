@@ -65,7 +65,10 @@ public sealed class UndoSystem : GameObjectSystem<UndoSystem>
 				if ( undoMessage != "" )
 				{
 					HintFeed.AddHint( "", undoMessage );
-					CreateUndoParticles( undo.Prop != null ? undo.Prop.WorldPosition : Vector3.Zero );
+
+					if ( undo.Prop != null) CreateUndoParticles( undo.Prop.WorldPosition );
+					// Nostalgia
+					Sound.Play( "drop_001", player.WorldPosition );
 				}
 			}
 		}
