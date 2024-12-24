@@ -145,6 +145,8 @@ namespace Sandbox
 			SceneTraceResult trace = pawn.Scene.Trace.Ray(eye.Position, eye.Position + eye.Forward * 5000.0f ).UseHitboxes().IgnoreGameObject(pawn).Run();
 			entity.WorldPosition = trace.EndPosition + trace.Normal;
 			// Event.Run( "entity.spawned", entity, ConsoleSystem.Caller.Pawn );
+
+			UndoSystem.Add( creator: player, callback: ReadyUndo( entity, "Cylinder" ), prop: entity );
 		}
 	}
 }

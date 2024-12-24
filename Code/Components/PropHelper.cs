@@ -335,7 +335,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		if ( IsProxy )
 			return;
 
-		PropHelper propHelper = to.Components.Get<PropHelper>();
 
 		var fixedJoint = Components.Create<FixedJoint>();
 		fixedJoint.Body = to;
@@ -346,6 +345,8 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		Welds.Add( fixedJoint );
 		Joints.Add( fixedJoint );
+
+		PropHelper propHelper = to.Components.Get<PropHelper>();
 		propHelper?.Welds.Add( fixedJoint );
 		propHelper?.Joints.Add( fixedJoint );
 	}
@@ -361,8 +362,27 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 			weld?.Destroy();
 		}
 
-		Welds.RemoveAll( item => !item.IsValid() );
-		Joints.RemoveAll( item => !item.IsValid() );
+		RemoveInvalidItemsFromLists();
+	}
+
+	[Rpc.Broadcast]
+	public void Unweld(GameObject from)
+	{
+		if ( IsProxy )
+			return;
+
+		foreach(var weld in Welds)
+		{
+			if ( weld?.Body == from )
+			{
+				weld?.Destroy();
+				break;
+			}
+		}
+
+		// Update the invalid items lists on the other entity, and ourselves
+		from.Components.Get<PropHelper>().RemoveInvalidItemsFromLists();
+		RemoveInvalidItemsFromLists();
 	}
 
 	[Rpc.Broadcast]
@@ -373,7 +393,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		if ( !to.IsValid() ) return;
 
-		PropHelper propHelper = to.Components.Get<PropHelper>();
 
 		var go = new GameObject
 		{
@@ -388,6 +407,35 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		Joints.Add( hingeJoint );
 
+		PropHelper propHelper = to.Components.Get<PropHelper>();
 		propHelper?.Joints.Add( hingeJoint );
+	}
+
+	// TODO: Figure out a way to also remove the GameObject from the 'from' target
+	//		 as well as removing the joint itself.
+	//[Rpc.Broadcast]
+	//public void UnHinge( GameObject from )
+	//{
+	//	if ( IsProxy )
+	//		return;
+
+	//	foreach ( var joint in Joints )
+	//	{
+	//		if ( joint?.Body == from )
+	//		{
+	//			joint?.Destroy();
+	//			break;
+	//		}
+	//	}
+
+	//	// Update the invalid items lists on the other entity, and ourselves
+	//	from.Components.Get<PropHelper>().RemoveInvalidItemsFromLists();
+	//	RemoveInvalidItemsFromLists();
+	//}
+
+	private void RemoveInvalidItemsFromLists()
+	{
+		Welds.RemoveAll( item => !item.IsValid() );
+		Joints.RemoveAll( item => !item.IsValid() );
 	}
 }
