@@ -47,7 +47,7 @@ partial class Fists : BaseWeapon
 
 		foreach ( var tr in TraceMelee( ray.Position, ray.Position + forward * 80, 20.0f ) )
 		{
-			tr.Surface.DoBulletImpact( tr );
+			tr.Surface.DoFistImpact( tr );
 
 			hit = true;
 
