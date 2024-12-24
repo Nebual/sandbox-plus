@@ -1,4 +1,6 @@
 using Sandbox.ModelEditor.Nodes;
+using Sandbox.Physics;
+
 
 /// <summary>
 /// A component to help deal with props.
@@ -20,8 +22,9 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	[Sync] public Rigidbody Rigidbody { get; set; }
 	[Sync] public NetDictionary<int, BodyInfo> NetworkedBodies { get; set; } = new();
 
-	public List<FixedJoint> Welds { get; set; } = new();
+	public List<Sandbox.FixedJoint> Welds { get; set; } = new();
 	public List<Joint> Joints { get; set; } = new();
+	public List<PhysicsJoint> PhysicsJoints { get; set; } = new();
 
 	private Vector3 lastPosition = Vector3.Zero;
 
@@ -336,7 +339,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 			return;
 
 
-		var fixedJoint = Components.Create<FixedJoint>();
+		var fixedJoint = Components.Create<Sandbox.FixedJoint>();
 		fixedJoint.Body = to;
 		fixedJoint.LinearDamping = 0;
 		fixedJoint.LinearFrequency = 0;
@@ -345,6 +348,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		Welds.Add( fixedJoint );
 		Joints.Add( fixedJoint );
+		// todo: PhysicsJoints ? Can we not access the PhysicsJoint from a Sandbox.FixedJoint? Facepunch what is this api
 
 		PropHelper propHelper = to.Components.Get<PropHelper>();
 		propHelper?.Welds.Add( fixedJoint );
@@ -402,7 +406,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		go.SetParent( to );
 
-		var hingeJoint = go.Components.Create<HingeJoint>();
+		var hingeJoint = go.Components.Create<Sandbox.HingeJoint>();
 		hingeJoint.Body = GameObject;
 
 		Joints.Add( hingeJoint );
@@ -437,5 +441,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	{
 		Welds.RemoveAll( item => !item.IsValid() );
 		Joints.RemoveAll( item => !item.IsValid() );
+		PhysicsJoints.RemoveAll( item => !item.IsValid() );
 	}
 }

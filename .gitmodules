@@ -1,3 +1,6 @@
 [submodule "Localization"]
 	path = Localization
 	url = https://github.com/Softsplit/sandbox-localizations
+[submodule "Diagnostics"]
+	path = Libraries/Diagnostics
+	url = https://github.com/trende2001/Diagnostics

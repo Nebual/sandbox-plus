@@ -42,41 +42,43 @@
 		Convar="tool_constraint_nudge_percent"
 		style="margin-bottom: 15px;"
 	/>
-	<ToolCheckbox Label="Move Target?" Convar="tool_constraint_move_target" />
-	@if (ConsoleSystem.GetValue("tool_constraint_move_target", "0") != "0")
-	{
-		<Slider
-			Label="Movement Offset"
-			Min=@(-100f)
-			Max=@(100f)
-			Step=@(5f)
-			Convar="tool_constraint_move_offset"
-		/>
+	@if (!IsTypeNocollide()) {
+		<ToolCheckbox Label="Move Target?" Convar="tool_constraint_move_target" />
+		@if (ConsoleSystem.GetValue("tool_constraint_move_target", "0") != "0")
+		{
+			<Slider
+				Label="Movement Offset"
+				Min=@(-100f)
+				Max=@(100f)
+				Step=@(5f)
+				Convar="tool_constraint_move_offset"
+			/>
+			<ToolCheckbox
+				Label="Offset as Percent (%) of prop width"
+				Convar="tool_constraint_move_percent"
+				style="margin-bottom: 20px;"
+			/>
+		}
 		<ToolCheckbox
-			Label="Offset as Percent (%) of prop width"
-			Convar="tool_constraint_move_percent"
-			style="margin-bottom: 20px;"
+			Label="Rotate Target? (after moving)"
+			Convar="tool_constraint_rotate_target"
 		/>
-	}
-	<ToolCheckbox
-		Label="Rotate Target? (after moving)"
-		Convar="tool_constraint_rotate_target"
-	/>
-	@if ( ConsoleSystem.GetValue( "tool_constraint_rotate_target", "0" ) != "0" )
-	{
-		<Slider
-			Label="Rotation Snap Amount"
-			Min=@(0f)
-			Max=@(90f)
-			Step=@(5f)
-			Convar="tool_constraint_rotate_snap"
-		/>
+		@if ( ConsoleSystem.GetValue( "tool_constraint_rotate_target", "0" ) != "0" )
+		{
+			<Slider
+				Label="Rotation Snap Amount"
+				Min=@(0f)
+				Max=@(90f)
+				Step=@(5f)
+				Convar="tool_constraint_rotate_snap"
+			/>
+		}
 	}
 	<ToolCheckbox
 		Label="Freeze Target"
 		Convar="tool_constraint_freeze_target"
 	/>
-	@if ( ConsoleSystem.GetValue( "tool_constraint_type", "Weld" ) != ConstraintType.Nocollide.ToString() )
+	@if ( !IsTypeNocollide() )
 	{
 		<ToolCheckbox
 			Label="No Collide Targets"
@@ -90,6 +92,11 @@
 	public void OnTypeClicked(ConstraintType constraintType)
 	{
 		ConsoleSystem.Run( "tool_constraint_type " + constraintType.ToString() );
+	}
+
+	public bool IsTypeNocollide()
+	{
+		return ConsoleSystem.GetValue( "tool_constraint_type", "Weld" ) == ConstraintType.Nocollide.ToString();
 	}
 }
 
