@@ -242,7 +242,7 @@ namespace Sandbox
 			entity.WorldPosition = trace.EndPosition + trace.Normal;
 			// Event.Run( "entity.spawned", entity, ConsoleSystem.Caller.Pawn );
 
-			UndoSystem.Add( player, ReadyUndo( entity, "Gear" ) );
+			UndoSystem.Add( creator: player, callback: ReadyUndo( entity, "Gear" ), prop: entity );
 		}
 	}
 }

@@ -62,7 +62,7 @@ namespace Sandbox
 			entity.WorldPosition = trace.EndPosition + trace.Normal;
 			// Event.Run( "entity.spawned", entity, ConsoleSystem.Caller.Pawn );
 
-			UndoSystem.Add( player, ReadyUndo( entity, "Plate" ) );
+			UndoSystem.Add( creator: player, callback: ReadyUndo( entity, "Plate" ), prop: entity );
 		}
 
 		private static Func<string> ReadyUndo(GameObject obj, string shape)

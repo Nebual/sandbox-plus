@@ -49,7 +49,7 @@ public class Wheel : BaseTool
 
 			propHelper.Hinge( trace.GameObject, trace.EndPosition, trace.Normal );
 
-			UndoSystem.Add( this.Owner, ReadyUndo( wheel, trace.GameObject ) );
+			UndoSystem.Add( creator: this.Owner, callback: ReadyUndo( wheel, trace.GameObject ), prop: trace.GameObject );
 
 			return true;
 		}

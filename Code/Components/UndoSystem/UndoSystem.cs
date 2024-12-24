@@ -30,7 +30,7 @@ public sealed class UndoSystem : GameObjectSystem<UndoSystem>
 		return undo;
 	}
 
-	private static void Add(SteamId id, Undo undo)
+	private static void AddUndo( SteamId id, Undo undo)
 	{
 		if ( !Undos.ContainsKey( id ) )
 		{
@@ -65,23 +65,19 @@ public sealed class UndoSystem : GameObjectSystem<UndoSystem>
 				if ( undoMessage != "" )
 				{
 					HintFeed.AddHint( "", undoMessage );
-					CreateUndoParticles( Vector3.Zero );
+					CreateUndoParticles( undo.Prop != null ? undo.Prop.WorldPosition : Vector3.Zero );
 				}
 			}
 		}
 	}
 
-	public static void Add( Player creator, Func<string> callback, bool avoid = false )
+	public static void Add( Player creator, Func<string> callback, GameObject prop= null)
 	{
 		if ( creator == null ) return;
 
-		var undo = new Undo( creator )
-		{
-			UndoCallback = callback,
-			Avoid = avoid
-		};
+		var undo = new Undo( creator: creator, callback: callback, prop: prop);
 
-		Add( creator.SteamId, undo );
+		AddUndo( creator.SteamId, undo );
 	}
 
 	[Rpc.Broadcast]

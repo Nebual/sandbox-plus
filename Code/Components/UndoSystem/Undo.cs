@@ -7,16 +7,12 @@ public class Undo
 	public GameObject Prop;
 	public Func<string> UndoCallback;
 	public float Time;
-	public bool Avoid;
 
-	public Undo( Player creator )
+	public Undo( Player creator, GameObject prop, Func<string> callback )
 	{
 		Creator = creator;
-		Time = Sandbox.Time.Now;
-		Avoid = false;
-	}
-	public Undo( Player creator, GameObject prop ) : this( creator )
-	{
 		Prop = prop;
+		UndoCallback = callback;
+		Time = Sandbox.Time.Now;
 	}
 }

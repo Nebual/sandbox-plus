@@ -21,7 +21,7 @@ public class Weld : BaseTool
 
 			propHelper.Weld( welded );
 
-			UndoSystem.Add( this.Owner, ReadyUndo( propHelper, welded ));
+			UndoSystem.Add( creator: this.Owner, callback: ReadyUndo( propHelper, welded ), prop: propHelper.GameObject);
 
 			welded = null;
 			return true;
