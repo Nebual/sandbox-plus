@@ -10,6 +10,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 	[Property] public float PushForce => 1000.0f;
 	[Property] public float ThrowForce => 2000.0f;
 	[Property] public float HoldDistance => 50.0f;
+	[Property] public float MaxHoldDistanceBeforeDrop = 100f;
 	[Property] public float AttachDistance => 150.0f;
 	[Property] public float DropCooldown => 0.5f;
 	[Property] public float BreakLinearForce => 2000.0f;
@@ -307,6 +308,13 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 			return;
 
 		var attachPos = HeldBody.FindClosestPoint( startPos );
+
+		if (startPos.Distance(attachPos) > MaxHoldDistanceBeforeDrop)
+		{
+			GrabEnd();
+			return;
+		}
+
 		var holdDistance = HoldDistance + attachPos.Distance( HeldBody.MassCenter );
 
 		HoldPos = startPos - heldPos * HeldBody.Rotation + dir * holdDistance;
