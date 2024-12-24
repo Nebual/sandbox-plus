@@ -112,6 +112,8 @@ namespace Sandbox
 
 			entity.WorldPosition = trace.EndPosition + trace.Normal;
 			// Event.Run( "entity.spawned", entity, ConsoleSystem.Caller.Pawn );
+
+			UndoSystem.Add( player, ReadyUndo( entity, "Sphere" ) );
 		}
 	}
 }
