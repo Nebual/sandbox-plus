@@ -14,9 +14,18 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 	[Property] public GameObject Body { get; set; }
 	[Property, Range( 0, 100 ), Sync] public float Health { get; set; } = 100;
 
+	[Property] public string Name { get; set; } = "Unknown";
+	[Property] public SteamId SteamId { get; set; } = 0UL;
+	[Property] public SteamId PartyId { get; set; } = 0UL;
+
 	public bool IsDead => Health <= 0;
 	public Transform EyeTransform => Controller.EyeTransform;
 	public Ray AimRay => new( EyeTransform.Position, EyeTransform.Rotation.Forward );
+
+	public bool isInParty()
+	{
+		return PartyId != 0UL;
+	}
 
 	/// <summary>
 	/// Creates a ragdoll but it isn't enabled

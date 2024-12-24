@@ -21,6 +21,8 @@ public class Weld : BaseTool
 
 			propHelper.Weld( welded );
 
+			UndoSystem.Add( this.Owner, ReadyUndo( propHelper, welded ));
+
 			welded = null;
 			return true;
 		}
@@ -28,12 +30,12 @@ public class Weld : BaseTool
 		return false;
 	}
 
-	public override bool Secondary( SceneTraceResult trace )
+	public override bool Reload( SceneTraceResult trace )
 	{
 		if ( !trace.Hit )
 			return false;
 
-		if ( Input.Pressed( "attack2" ) && trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
+		if ( Input.Pressed( "reload" ) && trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
 		{
 			propHelper.Unweld();
 
@@ -42,5 +44,15 @@ public class Weld : BaseTool
 		}
 
 		return false;
+	}
+
+	private Func<string> ReadyUndo( PropHelper propHelper, GameObject from)
+	{
+		return () =>
+		{
+			propHelper.Unweld( from );
+
+			return "Un-welded two objects";
+		};
 	}
 }

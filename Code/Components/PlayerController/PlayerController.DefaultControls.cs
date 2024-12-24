@@ -75,6 +75,19 @@ public sealed partial class PlayerController : Component
 		InputMove();
 		UpdateDucking( Input.Down( "duck" ) );
 		InputJump();
+
+		if ( Input.Pressed( "undo" ) ) TriggerUndo();
+		if ( Input.Pressed( "redo" ) ) TriggerRedo();
+	}
+
+	private void TriggerUndo()
+	{
+		ConsoleSystem.Run( "undo" );
+	}
+
+	private void TriggerRedo()
+	{
+		Log.Info( "REDO, not yet implemented" );
 	}
 
 	void UpdateHeadroom()

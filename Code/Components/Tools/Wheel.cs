@@ -49,6 +49,8 @@ public class Wheel : BaseTool
 
 			propHelper.Hinge( trace.GameObject, trace.EndPosition, trace.Normal );
 
+			UndoSystem.Add( this.Owner, ReadyUndo( wheel, trace.GameObject ) );
+
 			return true;
 		}
 
@@ -71,6 +73,17 @@ public class Wheel : BaseTool
 	{
 		timeSinceDisabled = 0;
 		PreviewModel?.Destroy();
+	}
+
+	private Func<string> ReadyUndo(GameObject wheel, GameObject other)
+	{
+		return () =>
+		{
+			// TODO: When UnHinge works, uncomment this
+			//wheel.GetComponent<PropHelper>().UnHinge( other );
+			wheel.Destroy();
+			return "Undid wheel creation";
+		};
 	}
 
 	GameObject SpawnWheel( SceneTraceResult trace )
