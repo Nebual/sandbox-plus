@@ -1,0 +1,12 @@
+menutextentry {
+    pointer-events: all;
+    color: white;
+    padding: 2px 6px;
+    margin: 4px;
+    background-color: rgba( black, 0.7 );
+    &:hover {
+        background-color: rgba( black, 0.9 );
+        cursor: text;
+    }
+    min-width: 100px;
+}
