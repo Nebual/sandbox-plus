@@ -1,54 +1,55 @@
 namespace Sandbox.Movement;
 
 [Icon( "flight" ), Group( "Movement" ), Title( "MoveMode - Noclip" )]
-public partial class MoveModeNoclip : MoveMode
+public class MoveModeNoclip : MoveMode
 {
-	[Property] public int Priority { get; set; } = 1;
+	[Property]
+	public int Priority { get; set; } = 100;
+
+	protected override void OnFixedUpdate()
+	{
+		if ( Input.Pressed( "noclip" ) ) Tags.Toggle( "noclip" );
+	}
 
 	public override int Score( PlayerController controller )
 	{
-		if ( Controller.IsNoclipping ) return Priority;
+		if ( Tags.Has( "noclip" ) ) return Priority;
 		return -100;
 	}
 
 	public override void UpdateRigidBody( Rigidbody body )
 	{
-		body.Enabled = !Controller.IsNoclipping;
-		Controller.ColliderObject.Enabled = !Controller.IsNoclipping;
+		Controller.ColliderObject.Enabled = !Controller.Tags.Has( "noclip" );
+
+		body.Gravity = !Controller.Tags.Has( "noclip" );
+		body.Velocity = Controller.WishVelocity;
 	}
 
-	public override void AddVelocity()
+	public override Vector3 UpdateMove( Rotation eyes, Vector3 input )
 	{
-		var fwd = Input.AnalogMove.x.Clamp( -1f, 1f );
-		var left = Input.AnalogMove.y.Clamp( -1f, 1f );
-		var rotation = Controller.EyeAngles.ToRotation();
+		// don't normalize, because analog input might want to go slow
+		input = input.ClampLength( 1 );
 
-		var vel = (rotation.Forward * fwd) + (rotation.Left * left);
+		var wishVelocity = eyes * input * Controller.RunSpeed;
 
 		if ( Input.Down( "jump" ) )
 		{
-			vel += Vector3.Up * 1;
+			wishVelocity += Vector3.Up * Controller.JumpSpeed;
 		}
 
-		vel = vel.Normal * 20000;
+		if ( Input.Down( "run" ) ) wishVelocity *= 5.0f;
+		if ( Input.Down( "duck" ) ) wishVelocity *= 0.2f;
 
-		if ( Input.Down( "run" ) )
-			vel *= 5.0f;
+		return wishVelocity;
+	}
 
-		if ( Input.Down( "duck" ) )
-			vel *= 0.2f;
+	public override void OnModeBegin()
+	{
+		Controller.Renderer.Set( "b_noclip", true );
+	}
 
-		Controller.Velocity += vel * Time.Delta;
-
-		if ( Controller.Velocity.LengthSquared > 0.01f )
-		{
-			WorldPosition += Controller.Velocity * Time.Delta;
-		}
-
-		Controller.Velocity = Controller.Velocity.Approach( 0, Controller.Velocity.Length * Time.Delta * 5.0f );
-		Controller.EyeAngles = rotation;
-		Controller.WishVelocity = Controller.Velocity;
-		Controller.GroundObject = null;
-		Controller.GroundVelocity = Vector3.Zero;
+	public override void OnModeEnd( MoveMode next )
+	{
+		Controller.Renderer.Set( "b_noclip", false );
 	}
 }

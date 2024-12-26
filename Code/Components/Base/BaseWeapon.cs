@@ -159,12 +159,9 @@ public partial class BaseWeapon : Component
 		ViewModel?.Renderer?.Set( "b_reload", true );
 	}
 
-	// TODO: Probably should unify these particle methods + make it work for world models
-
 	protected virtual void ShootEffects()
 	{
 		AttachParticleSystem( "particles/pistol_muzzleflash.vpcf", "muzzle" );
-
 		ViewModel?.Renderer?.Set( "fire", true );
 	}
 

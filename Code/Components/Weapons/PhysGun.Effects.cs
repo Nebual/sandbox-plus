@@ -8,23 +8,23 @@
 	[Rpc.Broadcast]
 	protected virtual void KillEffects()
 	{
-		if (beam.IsValid())
+		if ( beam.IsValid() )
 		{
 			beam?.GameObject.Destroy();
 			beam = null;
 		}
 
-		if (endNoHit.IsValid())
+		if ( endNoHit.IsValid() )
 		{
 			endNoHit?.GameObject?.Destroy();
 			endNoHit = null;
 		}
 
-		DisableHighlights(lastGrabbedObject);
+		DisableHighlights( lastGrabbedObject );
 		lastGrabbedObject = null;
 	}
 
-	void DisableHighlights( GameObject gameObject )
+	private void DisableHighlights( GameObject gameObject )
 	{
 		if ( gameObject.IsValid() )
 		{
@@ -93,6 +93,9 @@
 			}
 			else
 			{
+				if ( !HeldBody.IsValid() )
+					return;
+
 				beam?.SceneObject.SetControlPoint( 1, HeldBody.Transform.PointToWorld( GrabbedPos ) );
 			}
 
@@ -135,12 +138,11 @@
 		}
 	}
 
-	LegacyParticleSystem CreateBeam( Vector3 endPos )
-	{
-		LegacyParticleSystem beam = Particles.MakeParticleSystem( "particles/physgun_beam.vpcf", new Transform( endPos ), 0 );
+	private LegacyParticleSystem CreateBeam( Vector3 endPos ) =>
+		Particles.MakeParticleSystem( "particles/physgun_beam.vpcf", new Transform( endPos ), 0 );
 
-		return beam;
-	}
+	private void FreezeEffects() =>
+		Particles.MakeParticleSystem( "particles/physgun_freeze.vpcf", new Transform( lastBeamPos ), 4 );
 
 	protected override void OnDestroy()
 	{
@@ -150,11 +152,7 @@
 
 	void INetworkListener.OnDisconnected( Connection channel )
 	{
-		KillEffects();
-	}
-
-	void FreezeEffects()
-	{
-		Particles.MakeParticleSystem( "particles/physgun_freeze.vpcf", new Transform( lastBeamPos ), 4 );
+		if ( channel == Owner.Network.Owner )
+			KillEffects();
 	}
 }
