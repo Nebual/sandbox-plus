@@ -284,7 +284,7 @@ namespace Sandbox.Tools
 				point1,
 				point2
 			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
 			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
@@ -337,10 +337,9 @@ namespace Sandbox.Tools
 				length
 			);
 			joint.SpringLinear = new( 5.0f, 0.7f );
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
-			var rope = MakeRope( position1, trace1, trace2 );
-
+			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
 			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			FinishConstraintCreation( joint, () =>
@@ -368,17 +367,16 @@ namespace Sandbox.Tools
 				length
 			);
 			joint.SpringLinear = new( 1000.0f, 0.7f );
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
 			if ( GetConvarValue( "tool_constraint_rope_rigid" ) == "1" )
 			{
 				joint.MinLength = length;
 			}
 
-			var rope = MakeRope( position1, trace1, trace2 );
-
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
+			trace1.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
+			trace2.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
 			FinishConstraintCreation( joint, () =>
 			{
 				rope?.Destroy();
@@ -405,7 +403,7 @@ namespace Sandbox.Tools
 				trace1.Body.Transform.ToLocal( pivotTransform ),
 				trace2.Body.Transform.ToLocal( pivotTransform )
 			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
 			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
@@ -431,7 +429,7 @@ namespace Sandbox.Tools
 				PhysicsPoint.World( trace1.Body, pivot, trace1.Body.Rotation ),
 				PhysicsPoint.World( trace2.Body, pivot, trace2.Body.Rotation )
 			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
 			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
@@ -457,9 +455,9 @@ namespace Sandbox.Tools
 				0,
 				0 // can be used like a rope hybrid, to limit max length
 			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0";
+			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
-			var rope = MakeRope( position1, trace1, trace2 );
+			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
 			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			FinishConstraintCreation( joint, () =>
@@ -546,6 +544,11 @@ namespace Sandbox.Tools
 			{
 				return tr.GameObject.GetBounds().Size.z * percent / 100f;
 			}
+		}
+
+		private bool ConnectedToWorld()
+		{
+			return trace1.GameObject.IsWorld() || trace2.GameObject.IsWorld();
 		}
 
 		private void RemoveConstraints( ConstraintType type, SceneTraceResult tr )
@@ -646,33 +649,39 @@ namespace Sandbox.Tools
 			Reset();
 		}
 
-		private static LegacyParticleSystem MakeRope( Vector3 position1, SceneTraceResult trace1, SceneTraceResult trace2 )
+		public static LegacyParticleSystem MakeRope( PhysicsBody body1, Vector3 position1, PhysicsBody body2, Vector3 position2 )
 		{
-			var rope = Particles.MakeParticleSystem( "particles/entity/rope.vpcf", trace1.GameObject.WorldTransform, 0, trace1.GameObject );
+			var go1 = body1.GetGameObject();
+			var go2 = body2.GetGameObject();
+			var rope = Particles.MakeParticleSystem( "particles/entity/rope.vpcf", go1.WorldTransform, 0, go1 );
+			rope.GameObject.SetParent( go1 );
+			var propHelper2 = go2.GetComponent<PropHelper>();
+			if ( propHelper2.IsValid() )
+			{
+				propHelper2.OnComponentDestroy += () => rope?.Destroy();
+			}
 			var RopePoints = new List<ParticleControlPoint>();
-
-			if ( trace1.GameObject.IsWorld() )
+			if ( go1.IsWorld() )
 			{
 				RopePoints.Add( new() { StringCP = "0", Value = ParticleControlPoint.ControlPointValueInput.Vector3, VectorValue = position1 } );
 			}
 			else
 			{
 				var p = new GameObject();
-				p.SetParent( trace1.GameObject );
-				p.LocalPosition = trace1.Body.Transform.PointToLocal( position1 );
+				p.SetParent( go1 );
+				p.LocalPosition = body1.Transform.PointToLocal( position1 );
 
 				RopePoints.Add( new() { StringCP = "0", Value = ParticleControlPoint.ControlPointValueInput.GameObject, GameObjectValue = p } );
 			}
-			if ( trace2.GameObject.IsWorld() )
+			if ( go2.IsWorld() )
 			{
-				RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.Vector3, VectorValue = trace2.EndPosition } );
+				RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.Vector3, VectorValue = position2 } );
 			}
 			else
 			{
 				var p = new GameObject();
-				p.SetParent( trace2.GameObject );
-				p.LocalPosition = trace2.Body.Transform.PointToLocal( trace2.EndPosition );
-
+				p.SetParent( go2 );
+				p.LocalPosition = body2.Transform.PointToLocal( position2 );
 				RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.GameObject, GameObjectValue = p } );
 			}
 			rope.ControlPoints = RopePoints;

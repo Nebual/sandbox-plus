@@ -73,6 +73,9 @@ spawnmenu {
             }
 
             .inspector {
+                > * {
+                    flex-direction: column;
+                }
                 // background-color: rgba( #111, 0.7 );
                 color: #aaa;
                 flex-direction: column;

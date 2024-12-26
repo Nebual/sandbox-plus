@@ -37,7 +37,7 @@ public abstract class BaseTool : Component
 
 	protected string GetConvarValue( string name, string defaultValue = null )
 	{
-		return ConsoleSystem.GetValue( name, default );
+		return ConsoleSystem.GetValue( name, defaultValue );
 		// in SandboxPlus this wrapper allowed accessing client convars on the server... what does that mean in Scene system?
 		// return Game.IsServer
 		// 	? Owner.Client.GetClientData<string>( name, defaultValue )
