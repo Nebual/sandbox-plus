@@ -1,66 +1,69 @@
-﻿using Sandbox;
-using Sandbox.UI;
+﻿using Sandbox.UI;
 
 namespace Sandbox.Tools
 {
 	[Library( "tool_material", Title = "Material", Description = "Primary: Set Material Override\nSecondary: Change Model's MaterialGroup (if supported)\nReload: Clear Material Override", Group = "construction" )]
 	public partial class MaterialTool : BaseTool
 	{
-		[ConVar.ClientData( "tool_material_material" )]
+		[ConVar( "tool_material_material" )]
 		public static string _ { get; set; } = "";
 
-		[ConVar.ClientData( "tool_material_materialindex" )] public static string _2 { get; set; } = "-1";
-		public override void Simulate()
+		[ConVar( "tool_material_materialindex" )] public static string _2 { get; set; } = "-1";
+		protected override void OnUpdate()
 		{
-			using ( Prediction.Off() )
+			base.OnUpdate();
+			var tr = Parent.BasicTraceTool();
+			if ( tr.GameObject.IsValid() )
 			{
-
-				var tr = DoTrace();
-
-				if ( !tr.Hit || !tr.Entity.IsValid() )
-					return;
-
-				if ( tr.Entity is not ModelEntity modelEnt )
+				var modelEnt = tr.GameObject.GetComponent<ModelRenderer>();
+				if ( !modelEnt.IsValid() )
 					return;
 
 				if ( Input.Pressed( "attack1" ) )
 				{
 					modelEnt.SetClientMaterialOverride( GetConvarValue( "tool_material_material" ), int.Parse( GetConvarValue( "tool_material_materialindex" ) ) );
 
-					CreateHitEffects( tr.EndPosition, tr.Normal );
+					Parent.ToolEffects( tr.EndPosition );
 				}
 				else if ( Input.Pressed( "attack2" ) )
 				{
-					if ( modelEnt.MaterialGroupCount == 0 )
+					if ( modelEnt.Model.MaterialGroupCount < 2 )
 					{
 						return;
 					}
-					modelEnt.SetMaterialGroup( modelEnt.GetMaterialGroup() + 1 );
-					if ( modelEnt.GetMaterialGroup() == 0 )
+					var materialIndex = modelEnt.Model.GetMaterialGroupIndex( modelEnt.MaterialGroup );
+					if ( materialIndex == -1 )
+					{
+						// skip the first (default) one
+						materialIndex = 1;
+					}
+					else if ( materialIndex < (modelEnt.Model.MaterialGroupCount - 1) )
+					{
+						materialIndex++;
+					}
+					else
 					{
 						// cycle back to start
-						modelEnt.SetMaterialGroup( 0 );
+						materialIndex = 0;
 					}
+					modelEnt.MaterialGroup = modelEnt.Model.GetMaterialGroupName( materialIndex );
 
-					CreateHitEffects( tr.EndPosition, tr.Normal, true );
+					Parent.ToolEffects( tr.EndPosition ); // was once passing 3rd param true
 				}
 				else if ( Input.Pressed( "reload" ) )
 				{
-					if ( Game.IsClient )
-					{
-						ConsoleSystem.Run( "tool_material_materialindex", "-1" ); // for now, until there's ui
-					}
+					ConsoleSystem.Run( "tool_material_materialindex", "-1" ); // for now, until there's ui
 					modelEnt.SetClientMaterialOverride( "" );
 
-					CreateHitEffects( tr.EndPosition, tr.Normal );
+					Parent.ToolEffects( tr.EndPosition );
 				}
 			}
 		}
 
-		[ClientRpc]
-		public static async void SetEntityMaterialOverride( ModelEntity modelEnt, string material, int materialIndex = -1 )
+		[Rpc.Broadcast]
+		public static async void SetEntityMaterialOverride( ModelRenderer modelEnt, string material, int materialIndex = -1 )
 		{
-			if ( Game.IsClient )
+			if ( modelEnt.IsValid() )
 			{
 				if ( material != "" && !material.EndsWith( ".vmat" ) )
 				{
@@ -71,7 +74,7 @@ namespace Sandbox.Tools
 						return;
 					}
 
-					await package.MountAsync( false );
+					await package.MountAsync();
 					material = package.GetCachedMeta( "SingleAssetSource", "" );
 					if ( material == "" )
 					{
@@ -79,18 +82,23 @@ namespace Sandbox.Tools
 						return;
 					}
 				}
-				// modelEnt.SetMaterialOverride does not seem to work until the prop is touched, yet SceneObject.SetMaterialOverride only works _until_ its touched, so set both
 				if ( material == "" )
 				{
-					modelEnt?.ClearMaterialOverride();
-					modelEnt?.SceneObject?.ClearMaterialOverride();
+					if ( materialIndex == -1 )
+					{
+						modelEnt?.SetMaterialOverride( null, "" );
+						modelEnt.ClearMaterialOverrides();
+					}
+					else
+					{
+						modelEnt?.SetMaterialOverride( null, "materialIndex" + materialIndex );
+					}
 				}
 				else
 				{
 					if ( materialIndex == -1 || modelEnt.Model == null )
 					{
-						modelEnt?.SetMaterialOverride( material );
-						modelEnt?.SceneObject?.SetMaterialOverride( Material.Load( material ) );
+						modelEnt?.SetMaterialOverride( Material.Load( material ), "" );
 					}
 					else
 					{
@@ -100,13 +108,11 @@ namespace Sandbox.Tools
 							mats[i].Attributes.Set( "materialIndex" + i, 1 );
 						}
 						modelEnt?.SetMaterialOverride( Material.Load( material ), "materialIndex" + materialIndex );
-						modelEnt?.SceneObject?.SetMaterialOverride( Material.Load( material ), "materialIndex" + materialIndex, 1 );
 					}
 				}
 			}
 		}
 
-		[Event( "spawnlists.initialize" )]
 		public static async void SpawnlistsInitialize()
 		{
 			var collectionLookup = await Package.FetchAsync( "sugmatextures/sugmatextures", false, true );
@@ -115,11 +121,8 @@ namespace Sandbox.Tools
 
 		public override void CreateToolPanel()
 		{
-			if ( Game.IsClient )
-			{
-				var materialSelector = new MaterialSelector();
-				SpawnMenu.Instance?.ToolPanel?.AddChild( materialSelector );
-			}
+			var materialSelector = new MaterialSelector();
+			SpawnMenu.Instance?.ToolPanel?.AddChild( materialSelector );
 		}
 	}
 }
@@ -127,7 +130,7 @@ namespace Sandbox.Tools
 
 public static partial class ModelEntityExtensions
 {
-	public static void SetClientMaterialOverride( this ModelEntity instance, string material, int materialIndex = -1 )
+	public static void SetClientMaterialOverride( this ModelRenderer instance, string material, int materialIndex = -1 )
 	{
 		Sandbox.Tools.MaterialTool.SetEntityMaterialOverride( instance, material, materialIndex );
 	}
