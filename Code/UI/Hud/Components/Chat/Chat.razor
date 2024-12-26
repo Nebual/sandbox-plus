@@ -84,9 +84,6 @@
     {
         var e = Canvas.AddChild<ChatRow>();
 
-        var player = Player.FindLocalPlayer();
-        if (!player.IsValid()) return;
-
         if (playerId > 0)
             e.PlayerId = playerId;
 
