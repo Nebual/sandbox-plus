@@ -1,40 +1,37 @@
 [Library( "tool_color", Title = "Color", Description = "Change render color and alpha of entities", Group = "construction" )]
 public partial class ColorTool : BaseTool
 {
+	[ConVar( "tool_color_color" )]
+	public static string _ { get; set; } = "";
+
 	public override bool Primary( SceneTraceResult trace )
 	{
-		if ( Input.Pressed( "attack1" ) )
-		{
-			if ( !trace.Hit || !trace.GameObject.IsValid() )
-				return false;
+		if ( !Input.Pressed( "attack1" ) ) return false;
+		
+		if ( !trace.Hit || !trace.GameObject.IsValid() )
+			return false;
 
-			if ( !trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
-				return false;
+		if ( !trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
+			return false;
 
-			BroadcastColor( propHelper, Color.Random );
+		BroadcastColor( propHelper, GetConvarValue( "tool_color_color" ) );
 
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	public override bool Secondary( SceneTraceResult trace )
 	{
-		if ( Input.Pressed( "attack2" ) )
-		{
-			if ( !trace.Hit || !trace.GameObject.IsValid() )
-				return false;
+		if ( !Input.Pressed( "attack2" ) ) return false;
+		
+		if ( !trace.Hit || !trace.GameObject.IsValid() )
+			return false;
 
-			if ( !trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
-				return false;
+		if ( !trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
+			return false;
 
-			BroadcastColor( propHelper, Color.White );
+		BroadcastColor( propHelper, Color.White );
 
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	[Rpc.Broadcast]
@@ -43,5 +40,11 @@ public partial class ColorTool : BaseTool
 		// TODO: Fix this for other clients
 
 		propHelper.Prop.Tint = color;
+	}
+
+	public override void CreateToolPanel()
+	{
+		var colorSelector = new Sandbox.UI.ColorSelector();
+		SpawnMenu.Instance?.ToolPanel?.AddChild( colorSelector );
 	}
 }

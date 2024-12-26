@@ -16,7 +16,7 @@
 	}
 
 	[Rpc.Owner]
-	public static void AddHint( string icon, string msg )
+	public static void AddHint( string icon, string msg, float duration = 3 )
 	{
 		var e = Current.AddChild<HintFeedEntry>();
 
@@ -27,6 +27,7 @@
 			e.Icon = e.Add.Icon( icon, iconClasses );
 		}
 		e.Message = e.Add.Label( msg, "msg" );
+		e.Duration = duration;
 	}
 
 	private static string GetIconClasses( string icon )

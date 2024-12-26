@@ -1,20 +1,39 @@
-// TODO: I can't get this to work with ModelPhysics so I'm leaving it here
-// for someone else
-
-/*
 [Library( "tool_resizer", Title = "Resizer", Description = "Change the scale of things", Group = "construction" )]
 public partial class ResizerTool : BaseTool
 {
 	public override bool Primary( SceneTraceResult trace )
 	{
-		int resizeDir = 0;
-		var reset = false;
+		return IncrementScale( trace, 1 );
+	}
+	public override bool Secondary( SceneTraceResult trace )
+	{
+		return IncrementScale( trace, -1 );
+	}
 
-		if ( Input.Down( "attack1" ) ) resizeDir = 1;
-		else if ( Input.Down( "attack2" ) ) resizeDir = -1;
-		else if ( Input.Pressed( "reload" ) ) reset = true;
-		else return false;
+	protected bool IncrementScale( SceneTraceResult trace, int resizeDir )
+	{
+		var go = trace.GameObject.Root;
+		if ( !go.IsValid() )
+			return false;
 
+		var scale = new Vector3(
+			MathX.Clamp( go.WorldScale.x + (0.5f * resizeDir), 0.4f, 4.0f ),
+			MathX.Clamp( go.WorldScale.y + (0.5f * resizeDir), 0.4f, 4.0f ),
+			MathX.Clamp( go.WorldScale.z + (0.5f * resizeDir), 0.4f, 4.0f )
+		);
+		var rescaled = Rescale( trace, scale );
+		return rescaled && (Input.Pressed( "attack1" ) || Input.Pressed( "attack2" ));
+	}
+
+	public override bool Reload( SceneTraceResult trace )
+	{
+		if ( !Input.Pressed( "reload" ) )
+			return false;
+		return Rescale( trace, Vector3.One );
+	}
+
+	protected bool Rescale( SceneTraceResult trace, Vector3 scale )
+	{
 		if ( !trace.Hit || !trace.GameObject.IsValid() )
 			return false;
 
@@ -25,17 +44,11 @@ public partial class ResizerTool : BaseTool
 		if ( !go.Components.TryGet<PropHelper>( out var propHelper ) )
 			return false;
 
-		var scale = reset ? 1.0f : new Vector3(
-			MathX.Clamp( go.WorldScale.x + (0.5f * Time.Delta * resizeDir), 0.4f, 4.0f ),
-			MathX.Clamp( go.WorldScale.y + (0.5f * Time.Delta * resizeDir), 0.4f, 4.0f ),
-			MathX.Clamp( go.WorldScale.z + (0.5f * Time.Delta * resizeDir), 0.4f, 4.0f )
-		);
-
 		if ( go.WorldScale != scale )
 		{
 			go.WorldScale = scale;
 
-			if ( !propHelper.Rigidbody.IsValid() || !propHelper.ModelPhysics.IsValid() )
+			if ( !propHelper.Rigidbody.IsValid() ) // && !propHelper.ModelPhysics.IsValid() ) // ragdolls probably can't be scaled yet, at least without recreating them like in https://github.com/Facepunch/sbox-scenestaging/commit/6aa3fe89335fece800414c8f1104ecb0c171b7d3
 				return false;
 
 			if ( propHelper.Rigidbody.IsValid() )
@@ -55,8 +68,8 @@ public partial class ResizerTool : BaseTool
 				if ( !child.IsValid() )
 					continue;
 
-				if ( go.Components.TryGet<PropHelper>( out var childPropHelper ) )
-					return false;
+				if ( !go.Components.TryGet<PropHelper>( out var childPropHelper ) )
+					continue;
 
 				if ( !childPropHelper.Rigidbody.IsValid() || !childPropHelper.ModelPhysics.IsValid() )
 					continue;
@@ -73,14 +86,8 @@ public partial class ResizerTool : BaseTool
 					childPropHelper.ModelPhysics.PhysicsGroup.Sleeping = false;
 				}
 			}
-		}
-
-		if ( Input.Pressed( "attack1" ) || Input.Pressed( "attack2" ) || reset )
-		{
 			return true;
 		}
-
 		return false;
 	}
 }
-*/

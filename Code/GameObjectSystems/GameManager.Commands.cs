@@ -71,6 +71,16 @@ public sealed partial class GameManager
 
 		go.NetworkSpawn( playerObject.Network.Owner );
 		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
+
+		// Send undo event for spawning this prop
+		UndoSystem.Add(creator: playerObject.GetComponent<Player>(), callback: () => UndoSpawn(go), prop: go );
+	}
+
+	static string UndoSpawn(GameObject obj)
+	{
+		obj.Destroy();
+
+		return "Undone spawning of object";
 	}
 
 	static async Task<string> SpawnPackageModel( string packageName, GameObject source )

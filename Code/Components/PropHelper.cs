@@ -1,4 +1,6 @@
 using Sandbox.ModelEditor.Nodes;
+using Sandbox.Physics;
+
 
 /// <summary>
 /// A component to help deal with props.
@@ -20,8 +22,9 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	[Sync] public Rigidbody Rigidbody { get; set; }
 	[Sync] public NetDictionary<int, BodyInfo> NetworkedBodies { get; set; } = new();
 
-	public List<FixedJoint> Welds { get; set; } = new();
+	public List<Sandbox.FixedJoint> Welds { get; set; } = new();
 	public List<Joint> Joints { get; set; } = new();
+	public List<PhysicsJoint> PhysicsJoints { get; set; } = new();
 
 	private Vector3 lastPosition = Vector3.Zero;
 
@@ -335,9 +338,8 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		if ( IsProxy )
 			return;
 
-		PropHelper propHelper = to.Components.Get<PropHelper>();
 
-		var fixedJoint = Components.Create<FixedJoint>();
+		var fixedJoint = Components.Create<Sandbox.FixedJoint>();
 		fixedJoint.Body = to;
 		fixedJoint.LinearDamping = 0;
 		fixedJoint.LinearFrequency = 0;
@@ -346,6 +348,9 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		Welds.Add( fixedJoint );
 		Joints.Add( fixedJoint );
+		// todo: PhysicsJoints ? Can we not access the PhysicsJoint from a Sandbox.FixedJoint? Facepunch what is this api
+
+		PropHelper propHelper = to.Components.Get<PropHelper>();
 		propHelper?.Welds.Add( fixedJoint );
 		propHelper?.Joints.Add( fixedJoint );
 	}
@@ -361,8 +366,27 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 			weld?.Destroy();
 		}
 
-		Welds.RemoveAll( item => !item.IsValid() );
-		Joints.RemoveAll( item => !item.IsValid() );
+		RemoveInvalidItemsFromLists();
+	}
+
+	[Rpc.Broadcast]
+	public void Unweld(GameObject from)
+	{
+		if ( IsProxy )
+			return;
+
+		foreach(var weld in Welds)
+		{
+			if ( weld?.Body == from )
+			{
+				weld?.Destroy();
+				break;
+			}
+		}
+
+		// Update the invalid items lists on the other entity, and ourselves
+		from.Components.Get<PropHelper>().RemoveInvalidItemsFromLists();
+		RemoveInvalidItemsFromLists();
 	}
 
 	[Rpc.Broadcast]
@@ -373,7 +397,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		if ( !to.IsValid() ) return;
 
-		PropHelper propHelper = to.Components.Get<PropHelper>();
 
 		var go = new GameObject
 		{
@@ -383,11 +406,41 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		go.SetParent( to );
 
-		var hingeJoint = go.Components.Create<HingeJoint>();
+		var hingeJoint = go.Components.Create<Sandbox.HingeJoint>();
 		hingeJoint.Body = GameObject;
 
 		Joints.Add( hingeJoint );
 
+		PropHelper propHelper = to.Components.Get<PropHelper>();
 		propHelper?.Joints.Add( hingeJoint );
+	}
+
+	// TODO: Figure out a way to also remove the GameObject from the 'from' target
+	//		 as well as removing the joint itself.
+	//[Rpc.Broadcast]
+	//public void UnHinge( GameObject from )
+	//{
+	//	if ( IsProxy )
+	//		return;
+
+	//	foreach ( var joint in Joints )
+	//	{
+	//		if ( joint?.Body == from )
+	//		{
+	//			joint?.Destroy();
+	//			break;
+	//		}
+	//	}
+
+	//	// Update the invalid items lists on the other entity, and ourselves
+	//	from.Components.Get<PropHelper>().RemoveInvalidItemsFromLists();
+	//	RemoveInvalidItemsFromLists();
+	//}
+
+	private void RemoveInvalidItemsFromLists()
+	{
+		Welds.RemoveAll( item => !item.IsValid() );
+		Joints.RemoveAll( item => !item.IsValid() );
+		PhysicsJoints.RemoveAll( item => !item.IsValid() );
 	}
 }

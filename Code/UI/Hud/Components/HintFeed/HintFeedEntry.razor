@@ -9,6 +9,7 @@
 {
 	public IconPanel Icon { get; internal set; }
 	public Label Message { get; internal set; }
+	public float Duration = 3;
 
 	public RealTimeSince TimeSinceBorn = 0;
 
@@ -18,7 +19,7 @@
 	{
 		base.Tick();
 
-		if ( TimeSinceBorn > 3 )
+		if ( TimeSinceBorn > Duration )
 		{
 			Delete();
 		}

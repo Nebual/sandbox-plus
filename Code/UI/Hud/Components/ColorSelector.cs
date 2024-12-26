@@ -29,7 +29,7 @@ namespace Sandbox.UI
 				var color = colors[index];
 				mod.ColorTint = color;
 
-				var sceneLight = new SceneLight( sceneWorld, Vector3.Up * 45.0f, 300.0f, Color.White * 30.0f );
+				var sceneLight = new SceneLight( sceneWorld, Vector3.Up * 65.0f, 100.0f, Color.White * 5.0f );
 
 				ScenePanel panel = cell.Add.ScenePanel( sceneWorld, Vector3.Up * 68, new Angles( 90, 0, 0 ).ToRotation(), 45, "icon" );
 				panel.RenderOnce = true;
