@@ -76,7 +76,7 @@ public partial class BalloonTool : BaseTool
 			Tags = { "balloon" },
 		};
 		var prop = go.AddComponent<Prop>();
-		prop.Model = Model.Load( "models/citizen_props/balloonregular01.vmdl" );
+		prop.Model = Model.Load( GetModel() );
 		prop.Tint = Tint;
 		prop.OnPropBreak += () =>
 		{
