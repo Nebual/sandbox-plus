@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices.Swift;
-
-public partial class ThrusterComponent : Component, Component.IPressable
+﻿public partial class ThrusterComponent : Component, Component.IPressable
 {
 	[Property] public float ForceMultiplier { get; set; } = 1.0f;
 	[Property] public float Force = 100f;
@@ -8,6 +6,7 @@ public partial class ThrusterComponent : Component, Component.IPressable
 	[Property] public bool Massless { get; set; } = true;
 
 	public Rigidbody TargetBody { get; set; }
+	private LegacyParticleSystem effects;
 	
 	private bool _on = false;
 	protected bool On
@@ -21,23 +20,29 @@ public partial class ThrusterComponent : Component, Component.IPressable
 			_on = value;
 			if ( _on )
 			{
-				OnEnabled();
+				OnThrusterEnabled();
 			}
 			else
 			{
-				OnDisabled();
+				OnThrusterDisabled();
 			}
 		}
 	}
 
-	protected override void OnEnabled()
+	protected void OnThrusterEnabled()
 	{
 		// Turn emitter on
+		if ( effects != null )
+			return;
+
+		effects = Particles.MakeParticleSystem( "particles/physgun_end_nohit.vpcf", Transform.World, 0, GameObject );
 	}
 
-	protected override void OnDisabled()
+	protected void OnThrusterDisabled()
 	{
 		// Turn emitter off
+		effects.Destroy();
+		effects = null;
 	}
 
 	bool IPressable.CanPress( IPressable.Event e )
@@ -73,6 +78,8 @@ public partial class ThrusterComponent : Component, Component.IPressable
 						Force * (IsForward ? 1 : -1)
 				) 
 			);
+			var bounds = GetComponent<Prop>().Model.Bounds;
+			effects.WorldPosition = Transform.World.PointToWorld(bounds.Center + new Vector3(0,0,bounds.Extents.z));
 		}
 	}
 }
