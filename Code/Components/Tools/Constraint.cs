@@ -70,6 +70,7 @@ namespace Sandbox.Tools
 
 		protected override void OnUpdate()
 		{
+			base.OnUpdate();
 			if ( stage == ConstraintToolStage.Rotating )
 			{
 				// Lock view angles while we're using the mouse to rotate a prop

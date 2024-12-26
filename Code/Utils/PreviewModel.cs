@@ -6,17 +6,10 @@
 	public float NormalOffset { get; set; }
 	public bool FaceNormal { get; set; }
 
-	GameObject previewObject;
+	public GameObject previewObject;
 
 	public void Update( SceneTraceResult trace )
 	{
-		if ( !trace.Hit || trace.Tags.Contains( "wheel" ) )
-		{
-			previewObject?.DestroyImmediate();
-			previewObject = null;
-			return;
-		}
-
 		if ( !previewObject.IsValid() )
 		{
 			previewObject = new GameObject();
@@ -30,10 +23,33 @@
 
 		previewObject.WorldPosition = trace.HitPosition + PositionOffset + trace.Normal * NormalOffset;
 		previewObject.WorldRotation = (FaceNormal ? Rotation.LookAt( trace.Normal ) : Rotation.Identity) * RotationOffset;
+		SetEnabled( true );
 	}
 
 	public void Destroy()
 	{
-		previewObject?.DestroyImmediate();
+		previewObject?.Destroy();
+	}
+
+	public void SetEnabled( bool enabled )
+	{
+		if ( !previewObject.IsValid() )
+			return;
+		var modelRenderer = previewObject.GetComponent<ModelRenderer>();
+		if ( !modelRenderer.IsValid() )
+			return;
+
+		modelRenderer.Tint = modelRenderer.Tint.WithAlpha( enabled ? 0.5f : 0 );
+	}
+
+	public void SetTint( Color tint )
+	{
+		if ( !previewObject.IsValid() )
+			return;
+		var modelRenderer = previewObject.GetComponent<ModelRenderer>();
+		if ( !modelRenderer.IsValid() )
+			return;
+
+		modelRenderer.Tint = tint.WithAlpha( modelRenderer.Tint.a );
 	}
 }

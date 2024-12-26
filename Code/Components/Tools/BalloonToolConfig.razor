@@ -1,0 +1,21 @@
+@using Sandbox.UI
+@using Sandbox.Tools
+@namespace Sandbox.Tools
+@inherits Panel
+
+<root>
+	<Slider
+		Label="Balloon Strength"
+		Min=@(0.05f)
+		Max=@(2f)
+		Step=@(0.05f)
+		Convar="tool_balloon_strength"
+	/>
+	<Slider
+		Label="Balloon Rope Length"
+		Min=@(5f)
+		Max=@(500f)
+		Step=@(5f)
+		Convar="tool_balloon_rope_length"
+	/>
+</root>

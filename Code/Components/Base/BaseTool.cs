@@ -6,6 +6,8 @@ public abstract class BaseTool : Component
 	// Set this to override the [Library]'s class default
 	public string Description { get; set; } = null;
 
+	protected PreviewModel previewModel;
+
 	public virtual bool Primary( SceneTraceResult trace )
 	{
 		return false;
@@ -23,12 +25,41 @@ public abstract class BaseTool : Component
 
 	public virtual void Activate()
 	{
+		if ( previewModel != null )
+		{
+			previewModel.Destroy();
+		}
+		CreatePreview();
 		SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
 		CurrentTool.CreateToolPanel();
 	}
 
 	public virtual void Disabled()
 	{
+		previewModel?.Destroy();
+	}
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( previewModel != null )
+		{
+			var trace = Parent.BasicTraceTool();
+			if ( IsPreviewTraceValid( trace ) )
+			{
+				previewModel.Update( trace );
+			}
+			else
+			{
+				previewModel.SetEnabled( false );
+			}
+		}
+	}
+	protected override void OnDestroy()
+	{
+		base.OnDestroy();
+		previewModel?.Destroy();
 	}
 
 	public virtual void CreateToolPanel()
@@ -42,5 +73,38 @@ public abstract class BaseTool : Component
 		// return Game.IsServer
 		// 	? Owner.Client.GetClientData<string>( name, defaultValue )
 		// 	: ConsoleSystem.GetValue( name, default );
+	}
+
+	protected static bool IsTraceHit( SceneTraceResult tr )
+	{
+		if ( !tr.Hit )
+			return false;
+
+		if ( !tr.GameObject.IsValid() )
+			return false;
+
+		return true;
+	}
+	// Override this if you want to show a Preview in your tool
+	protected virtual bool IsPreviewTraceValid( SceneTraceResult tr )
+	{
+		return false;
+	}
+
+	protected virtual string GetModel()
+	{
+		var toolCurrent = GetConvarValue( "tool_current", "" );
+		return GetConvarValue( $"{toolCurrent}_model" ) ?? "models/citizen_props/coffeemug01.vmdl";
+	}
+
+	public virtual void CreatePreview()
+	{
+		previewModel = new PreviewModel
+		{
+			ModelPath = GetModel(),
+			// PositionOffset = 0,
+			// RotationOffset = Rotation.From( new Angles( 0, 0, 0 ) ),
+			// FaceNormal = true
+		};
 	}
 }
