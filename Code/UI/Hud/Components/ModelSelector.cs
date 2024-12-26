@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Linq;
-using System.Collections.Generic;
 using Sandbox.UI.Tests;
 using System.Text.RegularExpressions;
-using System;
 using Sandbox.UI.Construct;
 
 namespace Sandbox.UI
@@ -32,8 +28,8 @@ namespace Sandbox.UI
 
 				if ( FileSystem.Mounted.FileExists( file + "_c.png" ) )
 				{
-					panel = cell.Add.Panel( "icon" );
-					panel.Style.BackgroundImage = Texture.Load( $"/{file}_c.png", false );
+					Log.Info( $"ModelSelector: Loading spawnicon {file}_c.png" );
+					panel = cell.Add.Image( $"/{file}_c.png", "icon" );
 				}
 				else if ( file.EndsWith( ".vmdl" ) )
 				{
@@ -72,6 +68,7 @@ namespace Sandbox.UI
 
 			foreach ( var file in spawnList )
 			{
+				Log.Info( $"ModelSelector: Adding model {file}" );
 				Canvas.AddItem( file );
 			}
 			// VirtualScrollPanel doesn't have a valid height (subsequent children overlap it within flex-direction: column) so calculate it manually
@@ -91,9 +88,10 @@ namespace Sandbox.UI
 			return panel;
 		}
 
-		[ConCmd.Server( "tool_cloud_model" )]
+		[ConCmd( "tool_cloud_model" )]
 		public static async void SetToolCloudModel( string tool, string model, string materialGroup )
 		{
+			Log.Info( "Matgroup " + materialGroup );
 			if ( model == "" || model.EndsWith( ".vmdl" ) )
 				return;
 
@@ -115,11 +113,14 @@ namespace Sandbox.UI
 			SetToolModelClient( tool, model, materialGroup );
 		}
 
-		[ClientRpc]
+		[Rpc.Owner]
 		public static void SetToolModelClient( string tool, string model, string materialGroup )
 		{
 			ConsoleSystem.Run( $"{tool}_model", model );
-			ConsoleSystem.Run( $"{tool}_materialgroup", materialGroup );
+			if ( ConsoleSystem.GetValue( $"{tool}_materialgroup" ) != null )
+			{
+				ConsoleSystem.Run( $"{tool}_materialgroup", materialGroup );
+			}
 		}
 
 		/// To add models/materials to the spawnlists:
@@ -140,22 +141,29 @@ namespace Sandbox.UI
 			{
 				InitializeSpawnlists();
 			}
+			Log.Info( "Spawnlists " + string.Concat( SpawnLists.Keys, ", " ) );
 			return SpawnLists.GetOrCreate( list );
 		}
 
-		[ConCmd.Client( "reload_spawnlists" )]
+		[ConCmd( "reload_spawnlists" )]
 		public static void InitializeSpawnlists()
 		{
 			SpawnLists.Clear();
+			Log.Info( "ModelSelector: Loading spawnlists" );
 			spawnListsLoaded = true;
 			foreach ( var file in FileSystem.Mounted.FindFile( "/", "*.spawnlist", true ) )
 			{
+				Log.Info( $"ModelSelector: Loading spawnlist {file}" );
 				var match = reSpawnlistFile.Match( file );
 				var listName = match.Groups[1].Value;
 				var models = FileSystem.Mounted.ReadAllText( file ).Trim().Split( '\n' ).Select( x => x.Trim() );
 				AddToSpawnlist( listName, models );
 			}
-			Event.Run( "spawnlists.initialize" );
+			// formerly Event.Run( "spawnlists.initialize" );
+			foreach ( var method in TypeLibrary.FindStaticMethods( "SpawnlistsInitialize" ) )
+			{
+				method.Invoke( null );
+			}
 		}
 	}
 }

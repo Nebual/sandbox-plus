@@ -30,13 +30,6 @@ public abstract class BaseTool : Component
 			previewModel.Destroy();
 		}
 		CreatePreview();
-		SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
-		var current_tool = GetConvarValue( "tool_current" );
-		if ( GetConvarValue( $"{current_tool}_model" ) != null )
-		{
-			// var modelSelector = new ModelSelector( GetSpawnLists() );
-			// SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
-		}
 		CurrentTool.CreateToolPanel();
 	}
 
@@ -58,7 +51,9 @@ public abstract class BaseTool : Component
 
 				if ( previewModel?.previewObject != null && previewModel.previewObject.GetComponent<ModelRenderer>() is var previewRenderer && previewRenderer.IsValid() && GetModel() != previewRenderer.Model.Name )
 				{
-					previewRenderer.Model = Model.Load( GetModel() );
+					var model = Model.Load( GetModel() );
+					previewRenderer.Model = model;
+					OnUpdatePreviewModel( model );
 				}
 			}
 			else
@@ -71,6 +66,16 @@ public abstract class BaseTool : Component
 	{
 		base.OnDestroy();
 		previewModel?.Destroy();
+	}
+
+	public void LoadModelSelector()
+	{
+		var toolId = GetConvarValue( "tool_current" );
+		if ( GetConvarValue( $"{toolId}_model" ) != null )
+		{
+			var modelSelector = new Sandbox.UI.ModelSelector( GetSpawnLists() );
+			SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
+		}
 	}
 
 	public virtual void CreateToolPanel()
@@ -121,5 +126,10 @@ public abstract class BaseTool : Component
 			RotationOffset = Rotation.From( new Angles( 90, 0, 0 ) ),
 			FaceNormal = true,
 		};
+		previewModel.Update( Parent.BasicTraceTool() );
+		OnUpdatePreviewModel( previewModel.previewObject?.GetComponent<ModelRenderer>()?.Model );
+	}
+	protected virtual void OnUpdatePreviewModel( Model model )
+	{
 	}
 }
