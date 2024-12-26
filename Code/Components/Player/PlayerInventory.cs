@@ -36,7 +36,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		if ( Input.Pressed( "slot8" ) ) SetActiveSlot( 7 );
 		if ( Input.Pressed( "slot9" ) ) SetActiveSlot( 8 );
 
-		if ( Input.MouseWheel != 0 ) SwitchActiveSlot( (int)-Input.MouseWheel.y );
+		if ( Input.MouseWheel != 0 && !Owner.SuppressScrollWheelInventory ) SwitchActiveSlot( (int)-Input.MouseWheel.y );
 	}
 
 	private void Pickup( string prefabName )

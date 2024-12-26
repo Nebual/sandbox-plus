@@ -1,7 +1,7 @@
 ﻿public partial class LampComponent : SpotLight, Component.IPressable
 {
 	private bool _on = true;
-	protected bool On
+	public bool On
 	{
 		get
 		{
@@ -38,5 +38,21 @@
 	{
 		Press( e.Source.GameObject );
 		return true;
+	}
+}
+
+public partial class LampWireComponent : BaseWireInputComponent
+{
+	public override void WireInitialize()
+	{
+		var lamp = GetComponent<LampComponent>();
+		this.RegisterInputHandler( "On", ( bool value ) =>
+		{
+			lamp.On = value;
+		} );
+		this.RegisterInputHandler( "Color", ( Vector3 value ) =>
+		{
+			lamp.LightColor = value;
+		} );
 	}
 }

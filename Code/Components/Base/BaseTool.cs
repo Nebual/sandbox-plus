@@ -31,6 +31,12 @@ public abstract class BaseTool : Component
 		}
 		CreatePreview();
 		SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
+		var current_tool = GetConvarValue( "tool_current" );
+		if ( GetConvarValue( $"{current_tool}_model" ) != null )
+		{
+			// var modelSelector = new ModelSelector( GetSpawnLists() );
+			// SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
+		}
 		CurrentTool.CreateToolPanel();
 	}
 
@@ -49,6 +55,11 @@ public abstract class BaseTool : Component
 			if ( IsPreviewTraceValid( trace ) )
 			{
 				previewModel.Update( trace );
+
+				if ( previewModel?.previewObject != null && previewModel.previewObject.GetComponent<ModelRenderer>() is var previewRenderer && previewRenderer.IsValid() && GetModel() != previewRenderer.Model.Name )
+				{
+					previewRenderer.Model = Model.Load( GetModel() );
+				}
 			}
 			else
 			{
@@ -96,6 +107,10 @@ public abstract class BaseTool : Component
 		var toolCurrent = GetConvarValue( "tool_current", "" );
 		return GetConvarValue( $"{toolCurrent}_model" ) ?? "models/citizen_props/coffeemug01.vmdl";
 	}
+	protected virtual string[] GetSpawnLists()
+	{
+		return new string[] { GetConvarValue( "tool_current", "" )[5..] };
+	}
 
 	public virtual void CreatePreview()
 	{
@@ -103,8 +118,8 @@ public abstract class BaseTool : Component
 		{
 			ModelPath = GetModel(),
 			// PositionOffset = 0,
-			// RotationOffset = Rotation.From( new Angles( 0, 0, 0 ) ),
-			// FaceNormal = true
+			RotationOffset = Rotation.From( new Angles( 90, 0, 0 ) ),
+			FaceNormal = true,
 		};
 	}
 }

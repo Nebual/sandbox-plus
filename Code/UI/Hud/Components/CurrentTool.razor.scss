@@ -2,10 +2,13 @@ $blue: #3273eb;
 
 CurrentTool {
     border-left: 10px solid $blue;
-    position: absolute;
+    position: relative;
+    top: 0;
+    left: 0;
     background-color: rgba( #111, 0.5 );
-    top: 100px;
-    left: 100px;
+    margin-top: 100px;
+    margin-left: 100px;
+    min-width: 440px;
     padding: 20px 50px;
     flex-direction: column;
     opacity: 0.0;
@@ -32,6 +35,7 @@ CurrentTool {
         font-weight: 500;
         mix-blend-mode: lighten;
         text-transform: uppercase;
+        white-space: pre-line;
     }
 
     &.spawnmenuopen {
