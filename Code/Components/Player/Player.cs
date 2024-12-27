@@ -5,7 +5,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 {
 	public static Player FindLocalPlayer()
 	{
-		return Game.ActiveScene.GetAllComponents<Player>().Where( x => !x.IsProxy ).FirstOrDefault();
+		return Game.ActiveScene.GetAllComponents<Player>().FirstOrDefault( x => !x.IsProxy );
 	}
 
 	[RequireComponent] public PlayerController Controller { get; set; }

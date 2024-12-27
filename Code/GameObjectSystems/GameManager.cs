@@ -1,4 +1,6 @@
+using Sandbox.Citizen;
 using Sandbox.Network;
+using Sandbox.Services;
 
 public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayerEvent, Component.INetworkListener, ISceneStartup
 {
@@ -61,14 +63,28 @@ public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayer
 
 		// Spawn this object and make the client the owner
 		var playerGo = GameObject.Clone( "/prefabs/player.prefab", new CloneConfig { Name = $"Player - {channel.DisplayName}", StartEnabled = true, Transform = startLocation } );
-		var player = playerGo.Components.Get<Player>( true );
+		var player = playerGo.Components.GetOrCreate<Player>();
 
 		player.Name = channel.Name;
 		player.SteamId = channel.SteamId;
 		player.PartyId = channel.PartyId;
 
-		playerGo.NetworkSpawn( channel );
+		//Make sure all of these exist
+		var animHelper = playerGo.Components.GetInDescendantsOrSelf<CitizenAnimationHelper>();
+		var controller = playerGo.Components.GetOrCreate<PlayerController>();
+		var inventory = playerGo.Components.GetOrCreate<PlayerInventory>();
 
+		if ( animHelper.IsValid() )
+			player.Body = animHelper.GameObject;
+
+		if ( controller.IsValid() )
+			player.Controller = controller;
+
+		if ( inventory.IsValid() )
+			player.Inventory = inventory;
+
+		playerGo.NetworkSpawn( channel );
+		
 		IPlayerEvent.PostToGameObject( player.GameObject, x => x.OnSpawned() );
 	}
 
