@@ -9,12 +9,14 @@ public partial class ToolGun : BaseWeapon
 	{
 		base.OnEnabled();
 		UpdateTool();
+		SetupToolgunPanel();
 	}
 
 	protected override void OnDisabled()
 	{
 		base.OnDisabled();
 		CurrentTool?.Disabled();
+		DestroyToolgunPanel();
 	}
 
 	string lastTool;
@@ -32,6 +34,7 @@ public partial class ToolGun : BaseWeapon
 	{
 		base.OnUpdate();
 		UpdateEffects();
+		UpdateToolgunPanel();
 	}
 
 	public override void AttackPrimary()
