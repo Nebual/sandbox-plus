@@ -1,4 +1,5 @@
-﻿public partial class LampComponent : SpotLight, Component.IPressable
+﻿[Library( "ent_lamp", Title = "Lamp")]
+public partial class LampComponent : SpotLight, Component.IPressable
 {
 	private bool _on = true;
 	public bool On

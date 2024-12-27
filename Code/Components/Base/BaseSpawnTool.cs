@@ -64,6 +64,17 @@ namespace Sandbox.Tools
 			prop.Model = Model.Load( GetModel() );
 
 			go.AddComponent<PropHelper>();
+			if ( GetSpawnedComponent() != null )
+			{
+				go.Components.Create( GetSpawnedComponent() );
+
+				UndoSystem.Add( creator: this.Owner, callback: () =>
+				{
+					go.Destroy();
+					return $"Undid {GetSpawnedComponent().Title} creation";
+				}, prop: go );
+			}
+			UpdateEntity( go );
 
 			go.NetworkSpawn();
 			go.Network.SetOrphanedMode( NetworkOrphaned.Host );
@@ -73,7 +84,11 @@ namespace Sandbox.Tools
 
 		protected virtual bool IsMatchingEntity( GameObject go )
 		{
-			return false;
+			return GetSpawnedComponent() != null && go.Components.Get( GetSpawnedComponent().TargetType ) != null;
+		}
+		protected virtual TypeDescription GetSpawnedComponent()
+		{
+			return null;
 		}
 		protected override bool IsPreviewTraceValid( SceneTraceResult tr )
 		{

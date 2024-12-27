@@ -10,9 +10,9 @@ namespace Sandbox.Tools
 			return "models/torch/torch.vmdl";
 		}
 
-		protected override bool IsMatchingEntity( GameObject go )
+		protected override TypeDescription GetSpawnedComponent()
 		{
-			return go.GetComponent<LampComponent>().IsValid();
+			return TypeLibrary.GetType<LampComponent>();
 		}
 
 		public override void CreatePreview()
@@ -36,15 +36,11 @@ namespace Sandbox.Tools
 			return true;
 		}
 
-		protected override GameObject SpawnEntity( SceneTraceResult tr )
+		protected override void UpdateEntity( GameObject go )
 		{
-			var go = base.SpawnEntity( tr );
-			go.WorldRotation = Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 0, 90, 0 ) );
-			go.Tags.Add( "lamp" );
+			base.UpdateEntity( go );
 
-			var rigid = go.GetComponent<Rigidbody>();
-			var bounds = rigid.PhysicsBody.GetBounds();
-			var lamp = go.AddComponent<LampComponent>();
+			var lamp = go.GetComponent<LampComponent>();
 			lamp.Enabled = true;
 			lamp.Shadows = true;
 			lamp.ConeInner = 25;
@@ -52,15 +48,17 @@ namespace Sandbox.Tools
 			lamp.Radius = 512;
 			lamp.Attenuation = 0.2f;
 			lamp.Cookie = Texture.Load( "materials/effects/lightcookie.vtex" );
+		}
+
+		protected override GameObject SpawnEntity( SceneTraceResult tr )
+		{
+			var go = base.SpawnEntity( tr );
 			go.AddComponent<LampWireComponent>();
 
+			var rigid = go.GetComponent<Rigidbody>();
+			var bounds = rigid.PhysicsBody.GetBounds();
 			go.WorldPosition = tr.EndPosition + tr.Normal * bounds.Size * 0.5f;
-			UndoSystem.Add( creator: this.Owner, callback: () =>
-			{
-				go.Destroy();
-				return "Undid lamp creation";
-			}, prop: go );
-			// Event.Run( "entity.spawned", ent, Owner );
+			go.WorldRotation = Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 0, 90, 0 ) );
 			return go;
 		}
 		public GameObject SpawnEntity( SceneTraceResult tr, bool useRope )
