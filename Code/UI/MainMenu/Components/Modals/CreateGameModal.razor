@@ -68,9 +68,34 @@
         LaunchArguments.Map = "softsplit.gm_bigcity";
     }
 
-    void CreateGame()
+    async void CreateGame()
     {
-        Game.ActiveScene.Load(MainMenuPanel.Current.GameScene);
+        // NOTE: For some reason, ISceneStartup.OnHostInitialize isn't being called
+        // when starting from the menu scene. Shitty CTRL+C CTRL+V fix for now
+
+        Scene.Load(MainMenuPanel.Current.GameScene);
+
+        // If the map is a scene, load it
+        var mapPackage = await Package.FetchAsync(LaunchArguments.Map, false);
+        if (mapPackage == null) return;
+
+        var primaryAsset = mapPackage.GetMeta<string>("PrimaryAsset");
+        if (string.IsNullOrEmpty(primaryAsset)) return;
+
+        var sceneLoadOptions = new SceneLoadOptions { IsAdditive = true };
+
+        if (primaryAsset.EndsWith(".scene"))
+        {
+            await mapPackage.MountAsync();
+
+            var sceneFile = mapPackage.GetMeta<SceneFile>("PrimaryAsset");
+            sceneLoadOptions.SetScene(sceneFile);
+            Scene.Load(sceneLoadOptions);
+        }
+
+        sceneLoadOptions.SetScene("scenes/engine.scene");
+        Scene.Load(sceneLoadOptions);
+
         Networking.CreateLobby(CurrentConfig);
     }
 

@@ -10,132 +10,10 @@
         {
           "__type": "Sandbox.SceneInformation",
           "__guid": "167dbcbd-27c3-4e89-a409-90a1fa4b7a81",
+          "Changes": "",
+          "Description": "",
           "SceneTags": "",
           "Title": "game"
-        }
-      ]
-    },
-    {
-      "__guid": "4a39d35e-22d0-488a-b983-883cc40c8cb4",
-      "Flags": 0,
-      "Name": "Camera",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.CameraComponent",
-          "__guid": "6e5b6dad-2ab3-45e9-826b-06123aed1fcb",
-          "BackgroundColor": "0.33333,0.46275,0.52157,1",
-          "ClearFlags": "All",
-          "FieldOfView": 90,
-          "IsMainCamera": true,
-          "Orthographic": false,
-          "OrthographicHeight": 1204,
-          "Priority": 1,
-          "RenderExcludeTags": "",
-          "RenderTags": "",
-          "TargetEye": "None",
-          "Viewport": "0,0,1,1",
-          "ZFar": 100000,
-          "ZNear": 1
-        },
-        {
-          "__type": "Sandbox.Tonemapping",
-          "__guid": "0270a222-c81e-4017-b767-8cf0df452a2f",
-          "__version": 1,
-          "AutoExposureEnabled": true,
-          "ExposureBias": 2,
-          "ExposureCompensation": 0,
-          "ExposureMethod": "RGB",
-          "MaximumExposure": 3,
-          "MinimumExposure": 1,
-          "Mode": "Legacy",
-          "Rate": 1
-        },
-        {
-          "__type": "Sandbox.AmbientOcclusion",
-          "__guid": "d03ac478-6ae5-408f-985c-cb835b4241f1",
-          "FalloffDistance": 1,
-          "Intensity": 8,
-          "Quality": "High",
-          "Radius": 32
-        },
-        {
-          "__type": "Sandbox.Bloom",
-          "__guid": "7728317b-860c-4174-a208-48f287619a41",
-          "BloomColor": {
-            "color": [
-              {
-                "c": "1,1,1,1"
-              },
-              {
-                "t": 1,
-                "c": "1,1,1,1"
-              }
-            ]
-          },
-          "BloomCurve": [
-            {
-              "y": 0.5
-            },
-            {
-              "x": 1,
-              "y": 1
-            }
-          ],
-          "Mode": "Additive",
-          "Strength": 0.25,
-          "Threshold": 0.5,
-          "ThresholdWidth": 0
-        },
-        {
-          "__type": "Sandbox.Highlight",
-          "__guid": "c8938e43-95e4-458d-92c3-409d680715c1"
-        }
-      ]
-    },
-    {
-      "__guid": "dce791cc-1696-47f1-8fcb-8a4756b22ccd",
-      "Flags": 0,
-      "Name": "Main Menu",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.ScreenPanel",
-          "__guid": "19d5dc65-c553-46a4-b71e-2019147a254c",
-          "AutoScreenScale": true,
-          "Opacity": 1,
-          "Scale": 1,
-          "ScaleStrategy": "FollowDesktopScaling",
-          "ZIndex": 1000
-        },
-        {
-          "__type": "MainMenuPanel",
-          "__guid": "4579cdb6-6fdb-425a-a7ee-b0864a2103b5",
-          "GameScene": "scenes/game.scene",
-          "InGame": true,
-          "MenuScene": "scenes/menu.scene"
-        }
-      ]
-    },
-    {
-      "__guid": "ab55e785-4cc9-419a-8cac-a5678b7d2b42",
-      "Flags": 0,
-      "Name": "HUD",
-      "Enabled": true,
-      "NetworkMode": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.ScreenPanel",
-          "__guid": "c71159f2-7b07-49a9-98e7-4de6c54814fc",
-          "AutoScreenScale": true,
-          "Opacity": 1,
-          "Scale": 1,
-          "ScaleStrategy": "FollowDesktopScaling",
-          "ZIndex": 100
-        },
-        {
-          "__type": "SandboxHud",
-          "__guid": "d4a800ce-22d1-4ea2-a78d-34b780e117bc"
         }
       ]
     },
@@ -150,7 +28,7 @@
           "__guid": "053b9354-3f9b-4cbf-837b-932a5a04f3ae",
           "__version": 1,
           "EnableCollision": true,
-          "MapName": "facepunch.square",
+          "MapName": "softsplit.gm_bigcity",
           "NoOrigin": true,
           "OnMapLoaded": null,
           "OnMapUnloaded": null,

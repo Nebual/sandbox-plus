@@ -1,3 +1,5 @@
+using Sandbox.Network;
+
 public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayerEvent, Component.INetworkListener, ISceneStartup
 {
 	public GameManager( Scene scene ) : base( scene )
@@ -9,6 +11,39 @@ public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayer
 		Log.Info( $"{Package.GetCachedTitle(Game.Ident)}: Loading scene {scene.ResourceName}" );
 	}
 
+	async void ISceneStartup.OnHostInitialize()
+	{
+		// NOTE: See CreateGameModal.razor, line 73 for a related issue
+
+		var currentScene = Scene.Source as SceneFile;
+		if ( currentScene.GetMetadata( "Title" ) == "game" )
+		{
+			// If the map is a scene, load it
+			var mapPackage = await Package.FetchAsync( CustomMapInstance.Current.MapName, false );
+			if ( mapPackage == null ) return;
+
+			var primaryAsset = mapPackage.GetMeta<string>( "PrimaryAsset" );
+			if ( string.IsNullOrEmpty( primaryAsset ) ) return;
+
+			var sceneLoadOptions = new SceneLoadOptions { IsAdditive = true };
+
+			if ( primaryAsset.EndsWith( ".scene" ) )
+			{
+				var sceneFile = mapPackage.GetMeta<SceneFile>( "PrimaryAsset" );
+				sceneLoadOptions.SetScene( sceneFile );
+				Scene.Load( sceneLoadOptions );
+			}
+
+			sceneLoadOptions.SetScene( "scenes/engine.scene" );
+			Scene.Load( sceneLoadOptions );
+
+			if ( !Networking.IsActive )
+			{
+				Networking.CreateLobby( new LobbyConfig { Name = $"{Package.GetCachedTitle(Game.Ident)} Server" } );
+			}
+		}
+	}
+
 	void Component.INetworkListener.OnActive( Connection channel )
 	{
 		SpawnPlayerForConnection( channel );
@@ -16,7 +51,7 @@ public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayer
 
 	public void SpawnPlayerForConnection( Connection channel )
 	{
-		if ( Game.ActiveScene.GetAllComponents<Player>().Any( x => x.Network.Owner == channel ) )
+		if ( Scene.GetAllComponents<Player>().Any( x => x.Network.Owner == channel ) )
 		{
 			Log.Info( "GameManager: Tried to spawn multiple instances of the same player! Ignoring." );
 			return;

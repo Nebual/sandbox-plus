@@ -1,5 +1,12 @@
 public sealed class CustomMapInstance : MapInstance
 {
+	public static CustomMapInstance Current { get; set; }
+
+	protected override void OnAwake()
+	{
+		Current = this;
+	}
+
 	protected override void OnCreateObject( GameObject go, MapLoader.ObjectEntry kv )
 	{
 		if ( Networking.IsClient )

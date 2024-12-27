@@ -1,0 +1,170 @@
+{
+  "__guid": "a3988112-2ff7-4098-976e-e5bd4da5c188",
+  "GameObjects": [
+    {
+      "__guid": "d47341a2-ba1e-497c-a20a-8b54ec3b1df9",
+      "Flags": 0,
+      "Name": "Main Menu",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.ScreenPanel",
+          "__guid": "c88bd9c4-2e04-4edf-9d91-5239a28fa41d",
+          "AutoScreenScale": true,
+          "Opacity": 1,
+          "Scale": 1,
+          "ScaleStrategy": "FollowDesktopScaling",
+          "ZIndex": 1000
+        },
+        {
+          "__type": "MainMenuPanel",
+          "__guid": "f5594105-484f-4bd5-a16b-9f5717cea3ed",
+          "GameScene": "scenes/game.scene",
+          "InGame": true,
+          "MenuScene": "scenes/menu.scene"
+        }
+      ]
+    },
+    {
+      "__guid": "5a497483-29d0-45e7-9dfe-8305a824f368",
+      "Flags": 0,
+      "Name": "Camera",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.CameraComponent",
+          "__guid": "831d9508-9173-40e5-81c3-7fc21ada2f38",
+          "BackgroundColor": "0.33333,0.46275,0.52157,1",
+          "ClearFlags": "All",
+          "FieldOfView": 90,
+          "IsMainCamera": true,
+          "Orthographic": false,
+          "OrthographicHeight": 1204,
+          "Priority": 1,
+          "RenderExcludeTags": "",
+          "RenderTags": "",
+          "TargetEye": "None",
+          "Viewport": "0,0,1,1",
+          "ZFar": 100000,
+          "ZNear": 1
+        },
+        {
+          "__type": "Sandbox.Tonemapping",
+          "__guid": "893177a1-72c7-47e2-a721-477ffa8052fa",
+          "__version": 1,
+          "AutoExposureEnabled": true,
+          "ExposureBias": 2,
+          "ExposureCompensation": 0,
+          "ExposureMethod": "RGB",
+          "MaximumExposure": 3,
+          "MinimumExposure": 1,
+          "Mode": "Legacy",
+          "Rate": 1
+        },
+        {
+          "__type": "Sandbox.AmbientOcclusion",
+          "__guid": "69fd191f-734e-48aa-9af3-6c53aa26b06b",
+          "__version": 1,
+          "DenoiseMode": "Temporal",
+          "FalloffRange": 0.75,
+          "Intensity": 0.15,
+          "Quality": "High",
+          "Radius": 128,
+          "ThinCompensation": 0
+        },
+        {
+          "__type": "Sandbox.Bloom",
+          "__guid": "51639b8c-0ffc-4211-829d-a1cd8215bec8",
+          "BloomColor": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0,
+                "c": "1,1,1,1"
+              },
+              {
+                "t": 1,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "BloomCurve": [
+            {
+              "x": 0,
+              "y": 0.5,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "Mode": "Additive",
+          "Strength": 0.25,
+          "Threshold": 0.5,
+          "ThresholdWidth": 0
+        },
+        {
+          "__type": "Sandbox.Highlight",
+          "__guid": "1e5d3cf2-1dec-416b-8227-5a2460da7311"
+        }
+      ]
+    },
+    {
+      "__guid": "d59cd902-9419-4cc9-9799-92146730f417",
+      "Flags": 0,
+      "Name": "HUD",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ScreenPanel",
+          "__guid": "a2b1bd7f-d5dd-4c45-9b10-25a2bc77dab8",
+          "AutoScreenScale": true,
+          "Opacity": 1,
+          "Scale": 1,
+          "ScaleStrategy": "FollowDesktopScaling",
+          "ZIndex": 100
+        },
+        {
+          "__type": "SandboxHud",
+          "__guid": "32a3df15-7065-4e57-8ac5-c47e47c4e99c"
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 50,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 30,
+    "NetworkInterpolation": true,
+    "PhysicsSubSteps": 1,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true,
+    "Metadata": {},
+    "NavMesh": {
+      "Enabled": false,
+      "IncludeStaticBodies": true,
+      "IncludeKeyframedBodies": true,
+      "EditorAutoUpdate": true,
+      "AgentHeight": 64,
+      "AgentRadius": 16,
+      "AgentStepSize": 18,
+      "AgentMaxSlope": 40,
+      "ExcludedBodies": "",
+      "IncludedBodies": ""
+    }
+  },
+  "ResourceVersion": 2,
+  "Title": null,
+  "Description": null,
+  "__references": [],
+  "__version": 2
+}
