@@ -52,8 +52,6 @@ public class Thruster : BaseTool
 		if ( Input.Pressed( "attack1" ) )
 		{
 			if ( !trace.Hit || !trace.GameObject.IsValid() || trace.Tags.Contains( "player" ) ) return false;
-			if ( trace.Tags.Contains( this.tagName() ) )
-				return true;
 
 			ThrusterComponent targetThruster = trace.GameObject.GetComponent<ThrusterComponent>();
 			if ( targetThruster.IsValid() )
