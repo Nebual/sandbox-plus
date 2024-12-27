@@ -44,16 +44,6 @@ public class Thruster : BaseTool
 		return true;
 	}
 
-	protected override void OnUpdate()
-	{
-		base.OnUpdate();
-		if ( IsProxy )
-			return;
-
-		if ( timeSinceDisabled < Time.Delta * 5f || !Parent.IsValid() )
-			return;
-	}
-
 	public override bool Primary( SceneTraceResult trace )
 	{
 		if ( !trace.Hit || !trace.GameObject.IsValid() )
