@@ -11,7 +11,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 	{
 		Pickup( "prefabs/weapons/physgun/w_physgun.prefab" );
 		Pickup( "prefabs/weapons/gravgun/w_gravgun.prefab" );
-		Pickup( "prefabs/weapons/toolgun/w_toolgun.prefab" );
+		Pickup( "prefabs/weapons/toolgun/w_toolgun-gmod.prefab" );
 		Pickup( "prefabs/weapons/pistol/w_pistol.prefab" );
 		Pickup( "prefabs/weapons/mp5/w_mp5.prefab" );
 		Pickup( "prefabs/weapons/flashlight/w_flashlight.prefab" );

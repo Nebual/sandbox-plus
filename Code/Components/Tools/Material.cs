@@ -23,7 +23,7 @@ namespace Sandbox.Tools
 				{
 					modelEnt.SetClientMaterialOverride( GetConvarValue( "tool_material_material" ), int.Parse( GetConvarValue( "tool_material_materialindex" ) ) );
 
-					Parent.ToolEffects( tr.EndPosition );
+					Parent.ToolEffects( tr.EndPosition, tr.Normal );
 				}
 				else if ( Input.Pressed( "attack2" ) )
 				{
@@ -48,14 +48,14 @@ namespace Sandbox.Tools
 					}
 					modelEnt.MaterialGroup = modelEnt.Model.GetMaterialGroupName( materialIndex );
 
-					Parent.ToolEffects( tr.EndPosition ); // was once passing 3rd param true
+					Parent.ToolEffects( tr.EndPosition, tr.Normal );
 				}
 				else if ( Input.Pressed( "reload" ) )
 				{
 					ConsoleSystem.Run( "tool_material_materialindex", "-1" ); // for now, until there's ui
 					modelEnt.SetClientMaterialOverride( "" );
 
-					Parent.ToolEffects( tr.EndPosition );
+					Parent.ToolEffects( tr.EndPosition, tr.Normal );
 				}
 			}
 		}

@@ -22,7 +22,18 @@ public partial class ResizerTool : BaseTool
 			MathX.Clamp( go.WorldScale.z + (0.5f * resizeDir), 0.4f, 4.0f )
 		);
 		var rescaled = Rescale( trace, scale );
-		return rescaled && (Input.Pressed( "attack1" ) || Input.Pressed( "attack2" ));
+		if ( rescaled )
+		{
+			if ( Input.Pressed( "attack1" ) || Input.Pressed( "attack2" ) )
+			{
+				return true;
+			}
+			else
+			{
+				Parent.ToolEffects( trace.EndPosition, trace.Normal, true );
+			}
+		}
+		return false;
 	}
 
 	public override bool Reload( SceneTraceResult trace )
