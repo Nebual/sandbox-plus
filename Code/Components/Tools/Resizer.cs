@@ -17,9 +17,9 @@ public partial class ResizerTool : BaseTool
 			return false;
 
 		var scale = new Vector3(
-			MathX.Clamp( go.WorldScale.x + (0.5f * resizeDir), 0.4f, 4.0f ),
-			MathX.Clamp( go.WorldScale.y + (0.5f * resizeDir), 0.4f, 4.0f ),
-			MathX.Clamp( go.WorldScale.z + (0.5f * resizeDir), 0.4f, 4.0f )
+			MathX.Clamp( go.WorldScale.x + (0.5f * resizeDir * Time.Delta), 0.4f, 4.0f ),
+			MathX.Clamp( go.WorldScale.y + (0.5f * resizeDir * Time.Delta), 0.4f, 4.0f ),
+			MathX.Clamp( go.WorldScale.z + (0.5f * resizeDir * Time.Delta), 0.4f, 4.0f )
 		);
 		var rescaled = Rescale( trace, scale );
 		if ( rescaled )
