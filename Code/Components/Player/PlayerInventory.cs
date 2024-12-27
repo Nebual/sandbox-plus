@@ -12,7 +12,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 	{
 		Pickup( "prefabs/weapons/physgun/w_physgun.prefab" );
 		Pickup( "prefabs/weapons/gravgun/w_gravgun.prefab" );
-		Pickup( "prefabs/weapons/toolgun/w_toolgun.prefab" );
+		Pickup( "prefabs/weapons/toolgun/w_toolgun-gmod.prefab" );
 		Pickup( "prefabs/weapons/pistol/w_pistol.prefab" );
 		Pickup( "prefabs/weapons/mp5/w_mp5.prefab" );
 		Pickup( "prefabs/weapons/flashlight/w_flashlight.prefab" );
@@ -39,7 +39,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 
 		if ( Input.Pressed( "PreviousWeapon" ) ) SwitchToPreviousWeapon();
 
-		if ( Input.MouseWheel != 0 ) SwitchActiveSlot( (int)-Input.MouseWheel.y );
+		if ( Input.MouseWheel != 0 && !Owner.SuppressScrollWheelInventory ) SwitchActiveSlot( (int)-Input.MouseWheel.y );
 	}
 
 	private void Pickup( string prefabName )

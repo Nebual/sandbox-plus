@@ -23,6 +23,8 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 
 	GameObject lastGrabbed = null;
 
+	private bool prongsActive = false;
+	private float ProngsState { get; set; } = 0;
 	PhysicsBody _heldBody;
 	PhysicsBody HeldBody
 	{
@@ -57,12 +59,20 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 		base.OnEnabled();
 
 		GrabbedObject = null;
+		ViewModel?.Renderer.Set( "deploy", true );
+		ViewModel?.Renderer.Set( "moveback", 1 );
 	}
 
 	protected override void OnUpdate()
 	{
 		Move();
 		base.OnUpdate();
+		if ( !IsProxy )
+		{
+			ProngsState = ProngsState.LerpTo( prongsActive ? 1 : 0, Time.Delta * 10f );
+			ViewModel?.Renderer.Set( "prongs", ProngsState );
+		}
+		ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.FromBytes( 172, 64, 0 ) );
 	}
 
 	TimeSince timeSinceImpulse;
@@ -123,21 +133,25 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 					ApplyImpulse( grabbedObject, grabbedBone, eyeDir * (heldBody.Mass * ThrowForce) );
 					ApplyAngularImpulse( grabbedObject, grabbedBone, Vector3.Random * (heldBody.Mass * ThrowForce) );
 				}
+				ViewModel?.Renderer.Set( "altfire", true );
 			}
 			else if ( Input.Pressed( "attack2" ) )
 			{
 				GrabEnd();
+				ViewModel?.Renderer.Set( "drop", true );
 			}
 			else
 			{
 				GrabMove( eyePos, eyeDir, eyeRot );
 			}
+			prongsActive = true;
 
 			return;
 		}
 
 		if ( timeSinceDrop < DropCooldown )
 			return;
+		prongsActive = false;
 
 		var tr = Scene.Trace.Ray( eyePos, eyePos + eyeDir * MaxPullDistance )
 			.UseHitboxes()
@@ -166,6 +180,9 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 		if ( body.BodyType != PhysicsBodyType.Dynamic )
 			return;
 
+		if ( eyePos.Distance( body.MassCenter ) < AttachDistance )
+			prongsActive = true;
+
 		if ( Input.Pressed( "attack1" ) )
 		{
 			if ( tr.Distance < MaxPushDistance )
@@ -173,6 +190,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 				var pushScale = 1.0f - Math.Clamp( tr.Distance / MaxPushDistance, 0.0f, 1.0f );
 				ApplyImpulseAt( tr.GameObject, modelPhysics.IsValid() ? body.GroupIndex : -1, tr.EndPosition, eyeDir * (body.Mass * (PushForce * pushScale)) );
 			}
+			ViewModel?.Renderer.Set( "fire", true );
 		}
 		else if ( Input.Down( "attack2" ) )
 		{
@@ -183,6 +201,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 				var holdDistance = HoldDistance + attachPos.Distance( body.MassCenter );
 
 				GrabStart( tr.GameObject, body, eyePos + eyeDir * holdDistance, eyeRot );
+				ViewModel?.Renderer.Set( "hold", true );
 			}
 			else
 			{
@@ -309,9 +328,10 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 
 		var attachPos = HeldBody.FindClosestPoint( startPos );
 
-		if (startPos.Distance(attachPos) > MaxHoldDistanceBeforeDrop)
+		if ( startPos.Distance( attachPos ) > MaxHoldDistanceBeforeDrop )
 		{
 			GrabEnd();
+			ViewModel?.Renderer.Set( "drop", true );
 			return;
 		}
 

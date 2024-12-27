@@ -30,7 +30,6 @@ public abstract class BaseTool : Component
 			previewModel.Destroy();
 		}
 		CreatePreview();
-		SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
 		CurrentTool.CreateToolPanel();
 	}
 
@@ -49,6 +48,13 @@ public abstract class BaseTool : Component
 			if ( IsPreviewTraceValid( trace ) )
 			{
 				previewModel.Update( trace );
+
+				if ( previewModel?.previewObject != null && previewModel.previewObject.GetComponent<ModelRenderer>() is var previewRenderer && previewRenderer.IsValid() && GetModel() != previewRenderer.Model.Name )
+				{
+					var model = Model.Load( GetModel() );
+					previewRenderer.Model = model;
+					OnUpdatePreviewModel( model );
+				}
 			}
 			else
 			{
@@ -60,6 +66,16 @@ public abstract class BaseTool : Component
 	{
 		base.OnDestroy();
 		previewModel?.Destroy();
+	}
+
+	public void LoadModelSelector()
+	{
+		var toolId = GetConvarValue( "tool_current" );
+		if ( GetConvarValue( $"{toolId}_model" ) != null )
+		{
+			var modelSelector = new Sandbox.UI.ModelSelector( GetSpawnLists() );
+			SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
+		}
 	}
 
 	public virtual void CreateToolPanel()
@@ -96,6 +112,10 @@ public abstract class BaseTool : Component
 		var toolCurrent = GetConvarValue( "tool_current", "" );
 		return GetConvarValue( $"{toolCurrent}_model" ) ?? "models/citizen_props/coffeemug01.vmdl";
 	}
+	protected virtual string[] GetSpawnLists()
+	{
+		return new string[] { GetConvarValue( "tool_current", "" )[5..] };
+	}
 
 	public virtual void CreatePreview()
 	{
@@ -103,8 +123,13 @@ public abstract class BaseTool : Component
 		{
 			ModelPath = GetModel(),
 			// PositionOffset = 0,
-			// RotationOffset = Rotation.From( new Angles( 0, 0, 0 ) ),
-			// FaceNormal = true
+			RotationOffset = Rotation.From( new Angles( 90, 0, 0 ) ),
+			FaceNormal = true,
 		};
+		previewModel.Update( Parent.BasicTraceTool() );
+		OnUpdatePreviewModel( previewModel.previewObject?.GetComponent<ModelRenderer>()?.Model );
+	}
+	protected virtual void OnUpdatePreviewModel( Model model )
+	{
 	}
 }

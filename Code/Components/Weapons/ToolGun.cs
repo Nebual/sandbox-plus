@@ -1,5 +1,5 @@
 [Library( "weapon_tool", Title = "Toolgun" )]
-public class ToolGun : BaseWeapon
+public partial class ToolGun : BaseWeapon
 {
 	[ConVar( "tool_current" )] public static string UserToolCurrent { get; set; } = "tool_boxgun";
 
@@ -28,6 +28,11 @@ public class ToolGun : BaseWeapon
 			UpdateTool();
 		}
 	}
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+		UpdateEffects();
+	}
 
 	public override void AttackPrimary()
 	{
@@ -36,7 +41,7 @@ public class ToolGun : BaseWeapon
 		if ( !(CurrentTool?.Primary( trace ) ?? false) )
 			return;
 
-		ToolEffects( trace.EndPosition );
+		ToolEffects( trace.EndPosition, trace.Normal );
 	}
 
 	public override void AttackSecondary()
@@ -46,7 +51,7 @@ public class ToolGun : BaseWeapon
 		if ( !(CurrentTool?.Secondary( trace ) ?? false) )
 			return;
 
-		ToolEffects( trace.EndPosition );
+		ToolEffects( trace.EndPosition, trace.Normal );
 	}
 
 	public override void Reload()
@@ -56,14 +61,7 @@ public class ToolGun : BaseWeapon
 		if ( !(CurrentTool?.Reload( trace ) ?? false) )
 			return;
 
-		ToolEffects( trace.EndPosition );
-	}
-
-	[Rpc.Broadcast]
-	void ToolEffects( Vector3 position )
-	{
-		Particles.MakeParticleSystem( "particles/tool_hit.vpcf", new Transform( position ) );
-		Sound.Play( "sounds/balloon_pop_cute.sound", WorldPosition );
+		ToolEffects( trace.EndPosition, trace.Normal );
 	}
 
 	public void UpdateTool()

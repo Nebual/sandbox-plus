@@ -29,3 +29,6 @@ Exports/
 
 # Libraries
 Libraries/
+External/
+Code/wirebox/
+Assets/*/wirebox/

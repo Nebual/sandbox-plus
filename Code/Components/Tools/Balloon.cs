@@ -3,7 +3,7 @@
 namespace Sandbox.Tools;
 
 [Library( "tool_balloon", Title = "Balloons", Description = "Create Balloons!", Group = "construction" )]
-public partial class BalloonTool : BaseTool
+public partial class BalloonTool : BaseSpawnTool
 {
 	[ConVar( "tool_balloon_strength" )] public static string _ { get; set; } = "0.65";
 	[ConVar( "tool_balloon_rope_length" )] public static string _2 { get; set; } = "100";
@@ -21,15 +21,9 @@ public partial class BalloonTool : BaseTool
 		return "models/citizen_props/balloonregular01.vmdl";
 	}
 
-	protected override bool IsPreviewTraceValid( SceneTraceResult tr )
+	protected override bool IsMatchingEntity( GameObject go )
 	{
-		if ( !IsTraceHit( tr ) )
-			return false;
-
-		if ( tr.GameObject.Tags.Has( "balloon" ) )
-			return false;
-
-		return true;
+		return go.Tags.Has( "balloon" );
 	}
 
 	protected override void OnUpdate()
@@ -48,14 +42,13 @@ public partial class BalloonTool : BaseTool
 		if ( !trace.Hit || !trace.GameObject.IsValid() || trace.Tags.Contains( "player" ) ) return false;
 		if ( !Input.Pressed( "attack1" ) ) return false;
 
-		if ( trace.Tags.Contains( "balloon" ) )
+		if ( IsMatchingEntity( trace.GameObject ) )
 		{
-			trace.GameObject.GetComponent<Rigidbody>().PhysicsBody.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
-			trace.GameObject.GetComponent<Prop>().Tint = Tint;
+			UpdateEntity( trace.GameObject );
 			Tint = Color.Random;
 			return true;
 		}
-		Spawn( trace, true );
+		SpawnEntity( trace, true );
 		return true;
 
 	}
@@ -64,19 +57,16 @@ public partial class BalloonTool : BaseTool
 		if ( !trace.Hit || !trace.GameObject.IsValid() || trace.Tags.Contains( "player" ) ) return false;
 		if ( !Input.Pressed( "attack2" ) ) return false;
 
-		Spawn( trace, false );
+		SpawnEntity( trace, false );
 		return true;
 	}
-	public void Spawn( SceneTraceResult tr, bool useRope )
+	protected override GameObject SpawnEntity( SceneTraceResult tr )
 	{
-		var go = new GameObject()
-		{
-			WorldPosition = tr.HitPosition + tr.Normal * 8f,
-			WorldRotation = Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 0, 90, 0 ) ),
-			Tags = { "balloon" },
-		};
-		var prop = go.AddComponent<Prop>();
-		prop.Model = Model.Load( "models/citizen_props/balloonregular01.vmdl" );
+		var go = base.SpawnEntity( tr );
+		go.WorldPosition = tr.HitPosition + tr.Normal * 8f;
+		go.WorldRotation = Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 0, 90, 0 ) );
+		go.Tags.Add( "balloon" );
+		var prop = go.GetComponent<Prop>();
 		prop.Tint = Tint;
 		prop.OnPropBreak += () =>
 		{
@@ -84,17 +74,23 @@ public partial class BalloonTool : BaseTool
 		};
 		Tint = Color.Random;
 
-		var propHelper = go.AddComponent<PropHelper>();
 		var rigid = go.GetComponent<Rigidbody>();
-		var body = rigid.PhysicsBody;
-		body.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
+		rigid.PhysicsBody.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
 
-		go.NetworkSpawn();
-		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
-
+		UndoSystem.Add( creator: this.Owner, callback: () =>
+		{
+			go.Destroy();
+			return "Undid balloon creation";
+		}, prop: go );
+		// Event.Run( "entity.spawned", ent, Owner );
+		return go;
+	}
+	protected GameObject SpawnEntity( SceneTraceResult tr, bool useRope )
+	{
+		var go = SpawnEntity( tr );
 		if ( useRope )
 		{
-
+			var body = go.GetComponent<Rigidbody>().PhysicsBody;
 			var point1 = PhysicsPoint.World( tr.Body, tr.EndPosition, tr.Body.Rotation );
 			var point2 = PhysicsPoint.World( body, tr.EndPosition, body.Rotation );
 			var lengthOffset = float.Parse( GetConvarValue( "tool_balloon_rope_length", "100" ) );
@@ -114,24 +110,25 @@ public partial class BalloonTool : BaseTool
 			{
 				trPropHelper.PhysicsJoints.Add( joint );
 			}
-			propHelper.PhysicsJoints.Add( joint );
+			go.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
 			joint.OnBreak += () =>
 			{
 				rope?.Destroy();
 				joint.Remove();
 			};
-			prop.OnPropBreak += () =>
+			go.GetComponent<Prop>().OnPropBreak += () =>
 			{
 				rope?.Destroy();
 				joint.Remove();
 			};
 		}
-		UndoSystem.Add( creator: this.Owner, callback: () =>
-		{
-			go.Destroy();
-			return "Undid balloon creation";
-		}, prop: go );
-		// Event.Run( "entity.spawned", ent, Owner );
+		return go;
+	}
+
+	protected override void UpdateEntity( GameObject go )
+	{
+		go.GetComponent<Rigidbody>().PhysicsBody.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
+		go.GetComponent<Prop>().Tint = Tint;
 	}
 
 	public override void CreateToolPanel()

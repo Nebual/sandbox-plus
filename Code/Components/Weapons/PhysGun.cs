@@ -17,6 +17,8 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	[Sync] public Vector3 GrabbedPos { get; set; }
 	[Sync] public int GrabbedBone { get; set; } = -1;
 
+	private SoundHandle BeamSound;
+	private bool BeamSoundPlaying;
 	GameObject lastGrabbed = null;
 
 	PhysicsBody _heldBody;
@@ -53,6 +55,15 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		base.OnEnabled();
 
 		GrabbedObject = null;
+		ViewModel?.Renderer.Set( "deploy", true );
+		ViewModel?.Renderer.Set( "moveback", 1 );
+	}
+
+	protected override void OnDisabled()
+	{
+		base.OnDisabled();
+		TryEndGrab();
+		StopBeamSound();
 	}
 
 	protected override void OnPreRender()
@@ -63,6 +74,13 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
+
+		ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.Cyan );
+		if ( !IsProxy )
+		{
+			ProngsState = ProngsState.LerpTo( grabbed ? 1 : 0, Time.Delta * 10f );
+			ViewModel?.Renderer.Set( "prongs", ProngsState );
+		}
 
 		if ( Owner.IsValid() && Owner.Controller.IsValid() )
 		{
@@ -88,6 +106,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		HeldBody.AngularVelocity = angularVelocity;
 	}
 
+	private float ProngsState { get; set; } = 0;
 	bool grabbed;
 
 	public override void OnControl()
@@ -98,7 +117,10 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 			BroadcastAttack();
 
 		if ( !GrabbedObject.IsValid() && Beaming && !grabbed && TryStartGrab() )
+		{
 			grabbed = true;
+			ViewModel?.Renderer.Set( "hold", true );
+		}
 
 		if ( Beaming && !GrabbedObject.IsValid() && !Grab().isValid )
 			grabbed = false;
@@ -106,12 +128,30 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		if ( Input.Released( "attack1" ) )
 		{
 			TryEndGrab();
+			ViewModel?.Renderer.Set( "drop", true );
 
 			grabbed = false;
 		}
 
 		if ( Input.Pressed( "reload" ) && Input.Down( "run" ) )
+		{
 			TryUnfreezeAll();
+			ViewModel?.Renderer.Set( "fire", true );
+		}
+
+		if ( Beaming )
+		{
+			if ( !(BeamSound?.IsPlaying ?? false) && !BeamSoundPlaying )
+			{
+				BeamSound = GameObject.PlaySound( ResourceLibrary.Get<SoundEvent>( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" ) );
+				BeamSound.Volume = 0.10f;
+				BeamSoundPlaying = true;
+			}
+		}
+		else
+		{
+			StopBeamSound();
+		}
 
 		if ( !GrabbedObject.IsValid() )
 			return;
@@ -120,8 +160,9 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		{
 			BroadcastAttack();
 			Freeze( GrabbedObject, GrabbedBone );
+			ViewModel?.Renderer.Set( "fire", true );
 
-			GrabbedObject = null;
+			TryEndGrab();
 			return;
 		}
 
@@ -250,6 +291,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 
 	Vector3 heldPos;
 	Rotation heldRot;
+	float heldMass;
 	float holdDistance;
 
 	private bool TryStartGrab()
@@ -276,6 +318,8 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 
 		heldRot = Owner.Controller.EyeAngles.ToRotation().Inverse * HeldBody.Rotation;
 		heldPos = HeldBody.Transform.PointToLocal( tr.EndPosition );
+		heldMass = HeldBody.Mass;
+		HeldBody.Mass = 10000f;
 
 		HoldPos = HeldBody.Position;
 		HoldRot = HeldBody.Rotation;
@@ -315,8 +359,18 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	[Rpc.Broadcast]
 	private void TryEndGrab()
 	{
+		if ( GrabbedObject.IsValid() && HeldBody.IsValid() )
+		{
+			HeldBody.Mass = heldMass;
+		}
 		GrabbedObject = null;
 		lastGrabbed = null;
+	}
+
+	protected void StopBeamSound()
+	{
+		BeamSound?.Stop();
+		BeamSoundPlaying = false;
 	}
 
 	private void MoveTargetDistance( float distance )

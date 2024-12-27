@@ -1,0 +1,101 @@
+{
+  "RootObject": {
+    "__guid": "03cfc644-ef9c-44a5-a593-586029f17d9d",
+    "Flags": 0,
+    "Name": "w_toolgun-gmod",
+    "Tags": "item,weapon",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "ToolGun",
+        "__guid": "10fa468b-939d-429c-99de-bc779121024b",
+        "BoneOffset": {
+          "Position": "0,0,0",
+          "Scale": "1,1,1",
+          "Rotation": "0,0,0,1"
+        },
+        "Handedness": "Right",
+        "HoldType": "Pistol",
+        "ParentBone": "hold_r",
+        "PrimaryRate": 0,
+        "ReloadTime": 0,
+        "SecondaryRate": 0,
+        "ViewModelPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/weapons/toolgun/v_toolgun-gmod.prefab"
+        }
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "788008b3-a9f5-476f-9bb5-4ffd77062eef",
+        "Flags": 0,
+        "Name": "toolgun",
+        "Position": "-3.900625,-0.3972819,0.3065274",
+        "Rotation": "0,0,0.7071068,0.7071068",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "e76ebef3-fe3f-4fbd-9a26-5ddc2e870116",
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "CreateBoneObjects": false,
+            "Model": "models/weapons/toolgun.vmdl",
+            "Morphs": {},
+            "Parameters": {
+              "bools": {},
+              "ints": {},
+              "floats": {},
+              "vectors": {},
+              "rotations": {}
+            },
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Sequence": {
+              "Name": null
+            },
+            "Tint": "1,1,1,1",
+            "UseAnimGraph": true
+          }
+        ]
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {},
+      "NavMesh": {
+        "Enabled": false,
+        "IncludeStaticBodies": true,
+        "IncludeKeyframedBodies": true,
+        "EditorAutoUpdate": true,
+        "AgentHeight": 64,
+        "AgentRadius": 16,
+        "AgentStepSize": 18,
+        "AgentMaxSlope": 40,
+        "ExcludedBodies": "",
+        "IncludedBodies": ""
+      }
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -1,6 +1,8 @@
 ﻿$blue: #3273eb;
 
-rootpanel {
+SandboxHud {
+    flex-direction: column;
+    align-items: flex-start;
     &.devcamera {
         display: none;
     }

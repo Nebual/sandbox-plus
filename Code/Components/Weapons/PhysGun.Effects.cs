@@ -79,7 +79,7 @@
 
 		if ( beam.IsValid() )
 		{
-			beam.WorldPosition = Attachment( "muzzle" ).Position;
+			beam.WorldPosition = Attachment( "muzzle" ).Position + dir * 10f;
 			beam.WorldRotation = Attachment( "muzzle" ).Rotation;
 		}
 

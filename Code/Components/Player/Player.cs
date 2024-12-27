@@ -21,6 +21,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 	public bool IsDead => Health <= 0;
 	public Transform EyeTransform => Controller.EyeTransform;
 	public Ray AimRay => new( EyeTransform.Position, EyeTransform.Rotation.Forward );
+	public bool SuppressScrollWheelInventory { get; set; } = false;
 
 	public bool isInParty()
 	{
