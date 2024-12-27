@@ -1,0 +1,173 @@
+@using Sandbox.UI
+@using Sandbox.Tools
+@using Stacker;
+@namespace Sandbox.UI
+@inherits Panel
+
+<root>
+    <h4>Stack Relative To</h4>
+	<div class="list">
+		@foreach ( var type in Enum.GetValues<StackRelatativeTo>() )
+		{
+			<div
+				class="@(type.ToString() == ConsoleSystem.GetValue( "tool_stacker_relative_to", "Weld" ) ? "list_option active" : "list_option")"
+				onclick="@( () => OnSelectorClicked("tool_stacker_relative_to", type.ToString()) )"
+			>
+				@(type.ToString())
+			</div>
+		}
+	</div>
+    <h4>Stack direction</h4>
+	<div class="list">
+		@foreach ( var type in Enum.GetValues<StackDirections>() )
+		{
+			<div
+				class="@(type.ToString() == ConsoleSystem.GetValue( "tool_stacker_direction", "Weld" ) ? "list_option active" : "list_option")"
+				onclick="@( () => OnSelectorClicked("tool_stacker_direction", type.ToString()) )"
+			>
+				@(type.ToString())
+			</div>
+		}
+	</div>
+
+    <Slider
+	 	Label="Stack Size"
+	 	Min=@(1f)
+	 	Max=@(20f)
+	 	Step=@(1f)
+	 	Convar="tool_stacker_amount"
+	/>
+
+    @* Offsets *@
+    <Button class="button" onclick="@( () => ResetOffsets() )">
+        <label class="label button-label">Reset Offsets</label>
+    </Button>
+    <Slider
+	 	Label="X (-back, +front)"
+	 	Min=@(-100f)
+	 	Max=@(100f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_x_offset"
+	/>
+    <Slider
+	 	Label="Y (-left, +right)"
+	 	Min=@(-100f)
+	 	Max=@(100f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_y_offset"
+	/>
+    <Slider
+	 	Label="Z (-down, +up)"
+	 	Min=@(-100f)
+	 	Max=@(100f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_z_offset"
+	/>
+    @* End Offsets *@
+
+    @* Angles *@
+    <Button class="button" onclick="@( () => ResetAngles() )">
+        <label class="label button-label">Reset Angles</label>
+    </Button>
+    <Slider
+	 	Label="Pitch (-down, +up)"
+	 	Min=@(-180f)
+	 	Max=@(180f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_pitch_offset"
+	/>
+    <Slider
+	 	Label="Yaw (-left, +right)"
+	 	Min=@(-180f)
+	 	Max=@(180f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_yaw_offset"
+	/>
+    <Slider
+	 	Label="Roll (-left, +right)"
+	 	Min=@(-180f)
+	 	Max=@(180f)
+	 	Step=@(0.1f)
+	 	Convar="tool_stacker_roll_offset"
+	/>
+    @* End Angles *@
+</root>
+
+@code {
+	public void OnSelectorClicked(string convarName, string selected)
+	{
+		ConsoleSystem.Run( convarName + " " + selected );
+
+        StateHasChanged();
+	}
+
+    public void ResetOffsets() 
+    {
+		ConsoleSystem.Run( "tool_stacker_x_offset 0" );
+		ConsoleSystem.Run( "tool_stacker_y_offset 0" );
+		ConsoleSystem.Run( "tool_stacker_z_offset 0" );
+
+        StateHasChanged();
+    }
+
+    public void ResetAngles() 
+    {
+		ConsoleSystem.Run( "tool_stacker_pitch_offset 0" );
+		ConsoleSystem.Run( "tool_stacker_yaw_offset 0" );
+		ConsoleSystem.Run( "tool_stacker_roll_offset 0" );
+
+        StateHasChanged();
+    }
+}
+
+<style>
+StackerToolConfig {
+	.list {
+		flex-direction: column;
+		margin-bottom: 15px;
+		.list_option {
+			padding: 2px 0;
+			font-size: 12px;
+			align-items: center;
+			font-weight: 600;
+			opacity: 0.2;
+			color: #fff;
+			cursor: pointer;
+			label {
+				text-shadow: 1px 1px 4px rgba(black, 0.2);
+			}
+
+			&:hover {
+				opacity: 0.75;
+			}
+
+			&.active {
+				transform: scale(1);
+				opacity: 1;
+				color: #fff;
+			}
+		}
+	}
+
+    button {
+        padding: 6px 10px;
+        margin-bottom: 8px;
+        /* font-size: 11px; */
+        transition: all 0.2s ease-out;
+        cursor: pointer;
+
+        border: 1px solid silver;
+
+        &:hover {
+            // border-left: 3px solid #3273eb;
+            color: white;
+
+            border: 2px solid silver;
+        }
+
+        &:active {
+            color: white;
+        }
+    }
+}
+</style>
