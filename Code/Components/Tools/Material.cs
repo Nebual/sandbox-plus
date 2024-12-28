@@ -63,10 +63,11 @@ namespace Sandbox.Tools
 		}
 
 		[Rpc.Broadcast]
-		public static async void SetEntityMaterialOverride( ModelRenderer modelEnt, string material, int materialIndex = -1 )
+		public static void SetEntityMaterialOverride( ModelRenderer modelEnt, string material, int materialIndex = -1 )
 		{
-			if ( modelEnt.IsValid() )
+			GameTask.MainThread().OnCompleted( async () =>
 			{
+				if ( !modelEnt.IsValid() ) return;
 				if ( material != "" && !material.EndsWith( ".vmat" ) )
 				{
 					var package = await Package.FetchAsync( material, false, true );
@@ -74,6 +75,10 @@ namespace Sandbox.Tools
 					{
 						Log.Warning( $"Material: Tried to load material package {material} - which was not found" );
 						return;
+					}
+					if ( !package.IsMounted() )
+					{
+						HintFeed.AddHint( "", "Material not loaded, mounting...", 2 );
 					}
 
 					await package.MountAsync();
@@ -112,7 +117,7 @@ namespace Sandbox.Tools
 						modelEnt?.SetMaterialOverride( Material.Load( material ), "materialIndex" + materialIndex );
 					}
 				}
-			}
+			} );
 		}
 
 		public static async void SpawnlistsInitialize()

@@ -12,14 +12,13 @@ For the old version using the Entity system, see [2023-entity-system](https://gi
 - Constraint tool: an omni-tool (like Precision Tool) with all your classic Gmod constraints (weld/axis/rope/elastic/slider/ballsocket) and nudge/rotate/move
 - Undo System
 - DynShapes spawnmenu: like PHX, but dynamic, fully customizable sizes using procedural meshes. Rectangles, cylinders, spheres, gears!
-- UI tool panels
+- Material tool
+- Toolgun model
+- UI tool panels, including ModelSelector with extendable `.spawnlist`'s
 - [Wirebox](https://github.com/wiremod/wirebox) support
 
 #### WIP (needs porting over from 2023-entity-system / CodeOld/)
 - Duplicator tool
-- Material tool
-- Toolgun model (wip)
-- UI tool panels, including ModelSelector with extendable `.spawnlist`'s
 - [Many new events](EVENTS.md) (aiming to reproduce many of Gmod 1's), including "entity.spawned" event, "undo.add" event
 
 ## Addons for SandboxPlus
@@ -40,6 +39,12 @@ For the old version using the Entity system, see [2023-entity-system](https://gi
 
 PR's are appreciated!  
 Message @Nebual on Discord with any questions :)
+
+### Setup Guide
+
+1. Clone the repo
+2. Open the project in SBox Dev Tools
+3. In the Asset Browser, right click Assets -> Recursively Recompile 300+ Assets
 
 ### Contributors
 

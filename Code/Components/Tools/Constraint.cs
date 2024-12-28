@@ -102,7 +102,7 @@ namespace Sandbox.Tools
 			{
 				if ( !trace1.Body.IsValid() || !trace2.Body.IsValid() )
 				{
-					Reset();
+					ResetTool();
 				}
 
 				var rotationAmount = Input.MouseDelta.x * RotateSpeed * Time.Delta;
@@ -149,7 +149,7 @@ namespace Sandbox.Tools
 				trace2 = trace;
 				if ( !trace1.Body.IsValid() )
 				{
-					Reset();
+					ResetTool();
 					return false;
 				}
 
@@ -218,7 +218,7 @@ namespace Sandbox.Tools
 				{
 					CreateWireboxConstraintController( Owner, trace, Type, createdJoint, createdUndo );
 				}
-				Reset();
+				ResetTool();
 				return true;
 			}
 			return false;
@@ -495,7 +495,7 @@ namespace Sandbox.Tools
 				if ( Input.Down( "walk" ) )
 				{
 					RemoveConstraints( Type, trace );
-					Reset();
+					ResetTool();
 					return true;
 				}
 			}
@@ -504,11 +504,11 @@ namespace Sandbox.Tools
 				trace2 = trace;
 				if ( !trace1.Body.IsValid() )
 				{
-					Reset();
+					ResetTool();
 					return false;
 				}
 				RemoveConstraintBetweenEnts( Type, trace1, trace2 );
-				Reset();
+				ResetTool();
 				return true;
 			}
 
@@ -647,7 +647,7 @@ namespace Sandbox.Tools
 				stage = ConstraintToolStage.ConstraintController;
 				return;
 			}
-			Reset();
+			ResetTool();
 		}
 
 		public static LegacyParticleSystem MakeRope( PhysicsBody body1, Vector3 position1, PhysicsBody body2, Vector3 position2 )
@@ -696,7 +696,7 @@ namespace Sandbox.Tools
 			SpawnMenu.Instance?.ToolPanel?.AddChild( toolConfigUi );
 		}
 
-		private void Reset()
+		protected void ResetTool()
 		{
 			stage = ConstraintToolStage.Waiting;
 			wasMoved = false;
@@ -706,14 +706,14 @@ namespace Sandbox.Tools
 		{
 			base.Activate();
 
-			Reset();
+			ResetTool();
 		}
 
 		public override void Disabled()
 		{
 			base.Disabled();
 
-			Reset();
+			ResetTool();
 		}
 		/*
 		PreviewEntity previewModel;

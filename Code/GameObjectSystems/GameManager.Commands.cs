@@ -98,10 +98,12 @@ public sealed partial class GameManager
 	}
 
 	[Rpc.Broadcast]
-	static async void BroadcastMount( string packageName )
+	static void BroadcastMount( string packageName )
 	{
-		Log.Info( $"BroadcastMount {packageName}" );
-		var package = await Package.Fetch( packageName, true );
-		await package.MountAsync();
+		GameTask.MainThread().OnCompleted( async () =>
+		{
+			var package = await Package.Fetch( packageName, true );
+			await package.MountAsync();
+		} );
 	}
 }

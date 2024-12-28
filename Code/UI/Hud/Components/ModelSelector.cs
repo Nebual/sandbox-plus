@@ -99,7 +99,7 @@ namespace Sandbox.UI
 				return;
 			}
 
-			await package.MountAsync( false );
+			await package.MountAsync();
 			model = package.GetCachedMeta( "SingleAssetSource", "" );
 			if ( model == "" )
 			{
