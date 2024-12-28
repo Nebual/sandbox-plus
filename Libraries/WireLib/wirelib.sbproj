@@ -1,0 +1,13 @@
+{
+  "Title": "WireLib",
+  "Type": "library",
+  "Org": "wiremod",
+  "Ident": "wirelib",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "IsWhitelistDisabled": false,
+  "Metadata": {}
+}
