@@ -20,6 +20,19 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	[Sync] public Prop Prop { get; set; }
 	[Sync] public ModelPhysics ModelPhysics { get; set; }
 	[Sync] public Rigidbody Rigidbody { get; set; }
+	private ModelRenderer _renderer;
+	public ModelRenderer Renderer
+	{
+		get
+		{
+			if ( _renderer == null )
+			{
+				_renderer = GetComponent<ModelRenderer>();
+			}
+			return _renderer;
+		}
+		set => _renderer = value;
+	}
 	[Sync] public NetDictionary<int, BodyInfo> NetworkedBodies { get; set; } = new();
 
 	public List<Sandbox.FixedJoint> Welds { get; set; } = new();
@@ -27,6 +40,22 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	public List<PhysicsJoint> PhysicsJoints { get; set; } = new();
 
 	private Vector3 lastPosition = Vector3.Zero;
+
+	public int MaterialGroupIndex
+	{
+		get => Renderer.Model.GetMaterialGroupIndex( Renderer.MaterialGroup );
+		set
+		{
+			if ( value < 0 )
+			{
+				Renderer.MaterialGroup = "";
+			}
+			else if ( value < Renderer.Model.MaterialGroupCount )
+			{
+				Renderer.MaterialGroup = Renderer.Model.GetMaterialGroupName( value );
+			}
+		}
+	}
 
 	protected override void OnStart()
 	{
@@ -36,6 +65,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 		ModelPhysics ??= GetComponent<ModelPhysics>();
 		Rigidbody ??= GetComponent<Rigidbody>();
+		Renderer ??= GetComponent<ModelRenderer>();
 
 		Health = Prop?.Health ?? 0f;
 		Velocity = 0f;

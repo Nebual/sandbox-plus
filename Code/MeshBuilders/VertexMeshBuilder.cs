@@ -77,7 +77,8 @@ namespace Sandbox
 		public static GameObject SpawnEntity( string modelId )
 		{
 			GameObject entity = new() {};
-			var renderer = entity.AddComponent<Prop>();
+			var renderer = entity.AddComponent<VertexMeshComponent>();
+			renderer.ModelId = modelId;
 			renderer.Model = Models[modelId];
 			
 			var helper = entity.AddComponent<PropHelper>();
@@ -101,6 +102,27 @@ namespace Sandbox
 		{
 			CreateRectangleClient( length, width, height, texSize );
 			return CreateRectangleModel( length, width, height, texSize );
+		}
+
+		public static void CreateModel( string modelId )
+		{
+			var split = modelId.Split( '_' );
+			if ( modelId.StartsWith( "rect_" ) )
+			{
+				CreateRectangleModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt() );
+			}
+			else if ( modelId.StartsWith( "cylinder_" ) )
+			{
+				CreateCylinderModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt() );
+			}
+			else if ( modelId.StartsWith( "sphere_" ) )
+			{
+				CreateSphereModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt() );
+			}
+			else if ( modelId.StartsWith( "gear_" ) )
+			{
+				CreateGearModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt(), split[5].ToInt(), split[6].ToInt() );
+			}
 		}
 
 		private void AddRectangle( Vector3 position, Vector3 size, int texSize, Color color = new Color() )

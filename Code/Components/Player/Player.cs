@@ -73,6 +73,12 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		}
 	}
 
+	[ConCmd( "kill" )]
+	public static void KillCommand()
+	{
+		Player.FindLocalPlayer().TakeDamage( 99999 );
+	}
+
 	void Death()
 	{
 		CreateRagdoll();
@@ -107,5 +113,27 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 	{
 		var player = Components.Get<Player>();
 		IPlayerEvent.PostToGameObject( GameObject, x => x.OnLand( distance, impactVelocity ) );
+	}
+
+	public static SceneTraceResult DoBasicTrace()
+	{
+		var player = Player.FindLocalPlayer();
+		var trace = player.Scene.Trace.Ray( player.AimRay.Position, player.AimRay.Position + player.AimRay.Forward * 5000 )
+				.UseHitboxes()
+				.WithAnyTags( "solid", "npc", "glass" )
+				.WithoutTags( "debris", "player" )
+				.IgnoreGameObjectHierarchy( player.GameObject )
+				.Size( 2 );
+
+		return trace.Run();
+	}
+
+	public static Player FindPlayerByConnection( Connection connection )
+	{
+		return Game.ActiveScene.GetAllComponents<Player>().FirstOrDefault( x => x.Network.Owner == connection );
+	}
+	public static Player FindPlayerOwner( GameObject go )
+	{
+		return FindPlayerByConnection( go.Network.Owner );
 	}
 }

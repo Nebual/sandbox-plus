@@ -75,6 +75,7 @@
             <label class="input-label">Texture Size</label>
             <Slider Value:bind=@TextureSize Step=@(4f) Min=@(4f) Max=@(512f) style="max-width: 400px;"/>
         </div>
+        <Button Text="Copy Aimed Shape" onclick=@CopyTarget />
     </div>
 </root>
 
@@ -103,6 +104,44 @@
             return DynShapeSpawnMenu.DynShapeDimensions.Gear(SpokeSize, PlateHeight, NumSegments, CutDepth, cutAngle);
         }
     }
+
+	protected void CopyTarget()
+	{
+		var tr = Player.DoBasicTrace();
+		if ( tr.GameObject.GetComponent<VertexMeshComponent>() is VertexMeshComponent meshComponent )
+		{
+			var split = meshComponent.ModelId.Split('_');
+			if ( meshComponent.ModelId.StartsWith("rect_") )
+			{
+				PlateLength = split[1].ToInt();
+				PlateWidth = split[2].ToInt();
+				PlateHeight = split[3].ToInt();
+				TextureSize = split[4].ToInt();
+			}
+			else if ( meshComponent.ModelId.StartsWith("cylinder_") )
+			{
+				Radius = split[1].ToInt();
+				Height = split[2].ToInt();
+				NumSegments = split[3].ToInt();
+				TextureSize = split[4].ToInt();
+			}
+			else if ( meshComponent.ModelId.StartsWith("sphere_") )
+			{
+				Radius = split[1].ToInt();
+				NumSegments = split[2].ToInt();
+				TextureSize = split[3].ToInt();
+			}
+			else if ( meshComponent.ModelId.StartsWith("gear_") )
+			{
+				SpokeSize = split[1].ToInt() / split[3].ToInt();
+				PlateHeight = split[2].ToInt();
+				NumSegments = split[3].ToInt();
+				CutDepth = split[4].ToInt();
+				SpokeSpikiness = split[5].ToInt();
+				TextureSize = split[6].ToInt();
+			}
+		}
+	}
 
     protected void OnClickPlate()
     {
