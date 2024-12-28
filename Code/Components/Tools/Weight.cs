@@ -87,7 +87,7 @@ public class WeightTool : BaseTool
 		{
 			Label = "Weight",
 			Min = 1f,
-			Max = 1000f,
+			Max = 50000f,
 			Step = 1f,
 			Convar = "tool_weight_weight",
 			OnValueChanged = OnWeightConvarChanged,

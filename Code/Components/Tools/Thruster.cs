@@ -6,7 +6,7 @@ public class Thruster : BaseTool
 	RealTimeSince timeSinceDisabled;
 
 	[ConVar( "tool_thruster_thrust" )]
-	public static float _ { get; set; } = 100f;
+	public static float _ { get; set; } = 1000f;
 
 	private static Slider WeightSlider;
 
@@ -174,7 +174,7 @@ public class Thruster : BaseTool
 		{
 			Label = "Thrust",
 			Min = 0f,
-			Max = 1000f,
+			Max = 10000f,
 			Value = 1f,
 			Step = 1f,
 			Convar = "tool_thruster_thrust",

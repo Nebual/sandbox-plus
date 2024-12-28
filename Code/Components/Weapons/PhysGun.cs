@@ -7,7 +7,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	[Property] public float AngularFrequency { get; set; } = 20.0f;
 	[Property] public float AngularDampingRatio { get; set; } = 1.0f;
 	[Property] public float TargetDistanceSpeed { get; set; } = 25.0f;
-	[Property] public float RotateSpeed { get; set; } = 0.125f;
+	[Property] public float RotateSpeed { get; set; } = 0.2f;
 	[Property] public float RotateSnapAt { get; set; } = 45.0f;
 
 	[Sync] public bool Beaming { get; set; }
