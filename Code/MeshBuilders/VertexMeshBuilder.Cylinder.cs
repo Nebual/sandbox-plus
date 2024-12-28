@@ -122,7 +122,7 @@ namespace Sandbox
 			return key;
 		}
 
-		[Rpc.Owner]
+		[Rpc.Broadcast]
 		public static void CreateCylinderModelClient( float radius, float depth, int numFaces, int texSize/* = 64*/ )
 		{
 			CreateCylinderModel(radius, depth, numFaces, texSize);

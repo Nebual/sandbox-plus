@@ -76,7 +76,7 @@ public class Wheel : BaseTool
 		}
 		else if ( extents.y < extents.x && extents.y < extents.z )
 		{
-			return Rotation.From( new Angles( 0, 90, 0 ) );
+			return Rotation.From( new Angles( 0, -90, 0 ) );
 		}
 		else
 		{

@@ -20,10 +20,8 @@ public class Remover : BaseTool
 	}
 
 	[Rpc.Broadcast]
-	void Remove( GameObject g )
+	static void Remove( GameObject g )
 	{
-		// TODO: Fix this for other clients
-
 		g.Destroy();
 
 		Particles.MakeParticleSystem( "particles/physgun_freeze.vpcf", g.WorldTransform );

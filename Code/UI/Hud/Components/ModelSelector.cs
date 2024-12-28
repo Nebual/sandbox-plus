@@ -28,7 +28,6 @@ namespace Sandbox.UI
 
 				if ( FileSystem.Mounted.FileExists( file + "_c.png" ) )
 				{
-					Log.Info( $"ModelSelector: Loading spawnicon {file}_c.png" );
 					panel = cell.Add.Image( $"/{file}_c.png", "icon" );
 				}
 				else if ( file.EndsWith( ".vmdl" ) )
@@ -68,7 +67,6 @@ namespace Sandbox.UI
 
 			foreach ( var file in spawnList )
 			{
-				Log.Info( $"ModelSelector: Adding model {file}" );
 				Canvas.AddItem( file );
 			}
 			// VirtualScrollPanel doesn't have a valid height (subsequent children overlap it within flex-direction: column) so calculate it manually
@@ -91,7 +89,6 @@ namespace Sandbox.UI
 		[ConCmd( "tool_cloud_model" )]
 		public static async void SetToolCloudModel( string tool, string model, string materialGroup )
 		{
-			Log.Info( "Matgroup " + materialGroup );
 			if ( model == "" || model.EndsWith( ".vmdl" ) )
 				return;
 
@@ -141,7 +138,6 @@ namespace Sandbox.UI
 			{
 				InitializeSpawnlists();
 			}
-			Log.Info( "Spawnlists " + string.Concat( SpawnLists.Keys, ", " ) );
 			return SpawnLists.GetOrCreate( list );
 		}
 
@@ -149,11 +145,9 @@ namespace Sandbox.UI
 		public static void InitializeSpawnlists()
 		{
 			SpawnLists.Clear();
-			Log.Info( "ModelSelector: Loading spawnlists" );
 			spawnListsLoaded = true;
 			foreach ( var file in FileSystem.Mounted.FindFile( "/", "*.spawnlist", true ) )
 			{
-				Log.Info( $"ModelSelector: Loading spawnlist {file}" );
 				var match = reSpawnlistFile.Match( file );
 				var listName = match.Groups[1].Value;
 				var models = FileSystem.Mounted.ReadAllText( file ).Trim().Split( '\n' ).Select( x => x.Trim() );

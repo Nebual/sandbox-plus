@@ -92,7 +92,7 @@ namespace Sandbox
 			return entity;
 		}
 
-		[Rpc.Owner]
+		[Rpc.Broadcast]
 		public static void CreateRectangleClient( float length, float width, float height, int texSize )
 		{
 			CreateRectangleModel( length, width, height, texSize );

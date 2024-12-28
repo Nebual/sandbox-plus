@@ -25,7 +25,10 @@ public class ViewModel : Component
 
 	protected override void OnEnabled()
 	{
-		Renderer?.Set( "b_deploy", true );
+		if ( !IsProxy )
+		{
+			Renderer?.Set( "b_deploy", true );
+		}
 	}
 
 	protected override void OnPreRender()

@@ -30,7 +30,12 @@ public abstract class BaseTool : Component
 			previewModel.Destroy();
 		}
 		CreatePreview();
-		CurrentTool.CreateToolPanel();
+		if ( !IsProxy )
+		{
+			SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
+			LoadModelSelector();
+			CreateToolPanel();
+		}
 	}
 
 	public virtual void Disabled()
@@ -70,8 +75,7 @@ public abstract class BaseTool : Component
 
 	public void LoadModelSelector()
 	{
-		var toolId = GetConvarValue( "tool_current" );
-		if ( GetConvarValue( $"{toolId}_model" ) != null )
+		if ( !IsProxy && HasModel() )
 		{
 			var modelSelector = new Sandbox.UI.ModelSelector( GetSpawnLists() );
 			SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
@@ -107,6 +111,11 @@ public abstract class BaseTool : Component
 		return false;
 	}
 
+	protected bool HasModel()
+	{
+		var toolId = GetConvarValue( "tool_current" );
+		return (GetConvarValue( $"{toolId}_model" ) ?? "") != "";
+	}
 	protected virtual string GetModel()
 	{
 		var toolCurrent = GetConvarValue( "tool_current", "" );
@@ -119,6 +128,7 @@ public abstract class BaseTool : Component
 
 	public virtual void CreatePreview()
 	{
+		if ( !HasModel() ) return;
 		previewModel = new PreviewModel
 		{
 			ModelPath = GetModel(),

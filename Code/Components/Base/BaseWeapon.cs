@@ -66,6 +66,21 @@ public partial class BaseWeapon : Component
 		Owner?.Controller?.Renderer?.Set( "b_deploy", true );
 	}
 
+	protected void SetRendererAnimParam( string param, bool value )
+	{
+		if ( !IsProxy )
+		{
+			ViewModel?.Renderer.Set( param, value );
+		}
+	}
+	protected void SetRendererAnimParam( string param, float value )
+	{
+		if ( !IsProxy )
+		{
+			ViewModel?.Renderer.Set( param, value );
+		}
+	}
+
 	protected override void OnDisabled()
 	{
 		if ( IsProxy ) return;

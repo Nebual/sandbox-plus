@@ -12,6 +12,8 @@ namespace Sandbox.Tools
 		protected override void OnUpdate()
 		{
 			base.OnUpdate();
+			if ( IsProxy ) return;
+
 			var tr = Parent.BasicTraceTool();
 			if ( tr.GameObject.IsValid() )
 			{

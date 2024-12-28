@@ -55,8 +55,8 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		base.OnEnabled();
 
 		GrabbedObject = null;
-		ViewModel?.Renderer.Set( "deploy", true );
-		ViewModel?.Renderer.Set( "moveback", 1 );
+		SetRendererAnimParam( "deploy", true );
+		SetRendererAnimParam( "moveback", 1 );
 	}
 
 	protected override void OnDisabled()
@@ -75,11 +75,11 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	{
 		base.OnUpdate();
 
-		ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.Cyan );
 		if ( !IsProxy )
 		{
+			ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.Cyan );
 			ProngsState = ProngsState.LerpTo( grabbed ? 1 : 0, Time.Delta * 10f );
-			ViewModel?.Renderer.Set( "prongs", ProngsState );
+			SetRendererAnimParam( "prongs", ProngsState );
 		}
 
 		if ( Owner.IsValid() && Owner.Controller.IsValid() )
@@ -119,7 +119,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		if ( !GrabbedObject.IsValid() && Beaming && !grabbed && TryStartGrab() )
 		{
 			grabbed = true;
-			ViewModel?.Renderer.Set( "hold", true );
+			SetRendererAnimParam( "hold", true );
 		}
 
 		if ( Beaming && !GrabbedObject.IsValid() && !Grab().isValid )
@@ -128,7 +128,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		if ( Input.Released( "attack1" ) )
 		{
 			TryEndGrab();
-			ViewModel?.Renderer.Set( "drop", true );
+			SetRendererAnimParam( "drop", true );
 
 			grabbed = false;
 		}
@@ -136,7 +136,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		if ( Input.Pressed( "reload" ) && Input.Down( "run" ) )
 		{
 			TryUnfreezeAll();
-			ViewModel?.Renderer.Set( "fire", true );
+			SetRendererAnimParam( "fire", true );
 		}
 
 		if ( Beaming )
@@ -160,7 +160,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		{
 			BroadcastAttack();
 			Freeze( GrabbedObject, GrabbedBone );
-			ViewModel?.Renderer.Set( "fire", true );
+			SetRendererAnimParam( "fire", true );
 
 			TryEndGrab();
 			return;
@@ -319,7 +319,10 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		heldRot = Owner.Controller.EyeAngles.ToRotation().Inverse * HeldBody.Rotation;
 		heldPos = HeldBody.Transform.PointToLocal( tr.EndPosition );
 		heldMass = HeldBody.Mass;
-		HeldBody.Mass = 10000f;
+		if ( !isRagdoll )
+		{
+			HeldBody.Mass = 10000f;
+		}
 
 		HoldPos = HeldBody.Position;
 		HoldRot = HeldBody.Rotation;

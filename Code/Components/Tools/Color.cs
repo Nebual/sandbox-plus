@@ -35,10 +35,8 @@ public partial class ColorTool : BaseTool
 	}
 
 	[Rpc.Broadcast]
-	private void BroadcastColor( PropHelper propHelper, Color color )
+	private static void BroadcastColor( PropHelper propHelper, Color color )
 	{
-		// TODO: Fix this for other clients
-
 		propHelper.Prop.Tint = color;
 	}
 

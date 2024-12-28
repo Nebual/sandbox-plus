@@ -35,10 +35,8 @@ public partial class ModelSkinTool : BaseTool
 	}
 
 	[Rpc.Broadcast]
-	private void BroadcastMaterialGroup( Prop prop, string materialGroup )
+	private static void BroadcastMaterialGroup( Prop prop, string materialGroup )
 	{
-		// TODO: Fix this for other clients
-
 		prop.MaterialGroup = materialGroup;
 	}
 }

@@ -52,7 +52,6 @@ namespace Sandbox.Tools
 			return true;
 		}
 
-		// All tools will need to override this, but some might be able to at least base.SpawnEntity() to get started
 		protected virtual GameObject SpawnEntity( SceneTraceResult tr )
 		{
 			var go = new GameObject()

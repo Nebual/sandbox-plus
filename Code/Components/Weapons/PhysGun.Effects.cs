@@ -8,10 +8,6 @@
 	[Rpc.Broadcast]
 	protected virtual void KillEffects()
 	{
-		// If Owner is not valid and not a proxy, proceed.
-		if (!Owner.IsValid() || !IsValid || IsProxy)
-			return;
-
 		if (beam.IsValid())
 		{
 			beam?.GameObject.Destroy();

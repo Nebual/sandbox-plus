@@ -36,7 +36,10 @@ public partial class ToolGun
 			beam.SceneObject.SetControlPoint( 1, Attachment( "muzzle" ) );
 			beam.SceneObject.SetControlPoint( 2, hitPos );
 
-			ViewModel?.Renderer?.Set( "b_attack", true );
+			if ( !IsProxy )
+			{
+				ViewModel?.Renderer?.Set( "b_attack", true );
+			}
 
 			int soundIndex = new Random().Next( 0, ShootSounds.Length );
 			Sound.Play( ShootSounds[soundIndex], WorldPosition ).Volume = 0.5f;

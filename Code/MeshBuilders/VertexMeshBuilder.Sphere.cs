@@ -88,7 +88,7 @@ namespace Sandbox
 			return key;
 		}
 
-		[Rpc.Owner]
+		[Rpc.Broadcast]
 		public static void CreateSphereModelClient( float radius, int numSegments, int texSize/* = 64*/ )
 		{
 			CreateSphereModel(radius, numSegments, texSize);

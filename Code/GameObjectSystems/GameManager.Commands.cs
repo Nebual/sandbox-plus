@@ -18,15 +18,9 @@ public sealed partial class GameManager
 		Sandbox.Services.Stats.Increment( "spawn.model", 1, modelname );
 	}
 
-	[Rpc.Broadcast]
 	static async void SpawnModel( string modelname, Vector3 endPos, Rotation modelRotation, GameObject playerObject )
 	{
-		if ( Networking.IsClient )
-			return;
-
-		//
 		// Does this look like a package?
-		//
 		if ( modelname.Count( x => x == '.' ) == 1 && !modelname.EndsWith( ".vmdl", StringComparison.OrdinalIgnoreCase ) && !modelname.EndsWith( ".vmdl_c", StringComparison.OrdinalIgnoreCase ) )
 		{
 			modelname = await SpawnPackageModel( modelname, playerObject );
@@ -72,15 +66,14 @@ public sealed partial class GameManager
 		go.NetworkSpawn( playerObject.Network.Owner );
 		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
 
-		// Send undo event for spawning this prop
-		UndoSystem.Add(creator: playerObject.GetComponent<Player>(), callback: () => UndoSpawn(go), prop: go );
+		UndoSystem.Add( creator: playerObject.GetComponent<Player>(), callback: () => UndoSpawn( go, modelname ), prop: go );
 	}
 
-	static string UndoSpawn(GameObject obj)
+	static string UndoSpawn( GameObject obj, string modelName )
 	{
-		obj.Destroy();
+		obj?.Destroy();
 
-		return "Undone spawning of object";
+		return $"Undone spawning {modelName.Split( '/' ).Last().Replace( ".vmdl", "" )}";
 	}
 
 	static async Task<string> SpawnPackageModel( string packageName, GameObject source )
@@ -96,9 +89,19 @@ public sealed partial class GameManager
 
 		var model = package.GetMeta( "PrimaryAsset", "models/dev/error.vmdl" );
 
-		// downloads if not downloads, mounts if not mounted
+		// Download and mount the package (if needed)
 		await package.MountAsync();
+		using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+			BroadcastMount( packageName ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
 
 		return model;
+	}
+
+	[Rpc.Broadcast]
+	static async void BroadcastMount( string packageName )
+	{
+		Log.Info( $"BroadcastMount {packageName}" );
+		var package = await Package.Fetch( packageName, true );
+		await package.MountAsync();
 	}
 }

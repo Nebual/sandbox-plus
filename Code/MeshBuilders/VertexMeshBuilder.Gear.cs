@@ -218,7 +218,7 @@ namespace Sandbox
 			return key;
 		}
 
-		[Rpc.Owner]
+		[Rpc.Broadcast]
 		public static void CreateGearModelClient( float radius, float depth, int numTeeth /* = 16*/, float cutDepth /* = 0.1f*/, float cutAngle /* = 5f*/, int texSize /* = 64*/ )
 		{
 			CreateGearModel( radius, depth, numTeeth, cutDepth, cutAngle, texSize );

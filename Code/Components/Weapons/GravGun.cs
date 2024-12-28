@@ -59,8 +59,8 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 		base.OnEnabled();
 
 		GrabbedObject = null;
-		ViewModel?.Renderer.Set( "deploy", true );
-		ViewModel?.Renderer.Set( "moveback", 1 );
+		SetRendererAnimParam( "deploy", true );
+		SetRendererAnimParam( "moveback", 1 );
 	}
 
 	protected override void OnUpdate()
@@ -70,9 +70,9 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 		if ( !IsProxy )
 		{
 			ProngsState = ProngsState.LerpTo( prongsActive ? 1 : 0, Time.Delta * 10f );
-			ViewModel?.Renderer.Set( "prongs", ProngsState );
+			SetRendererAnimParam( "prongs", ProngsState );
+			ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.FromBytes( 172, 64, 0 ) );
 		}
-		ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.FromBytes( 172, 64, 0 ) );
 	}
 
 	TimeSince timeSinceImpulse;
@@ -133,12 +133,12 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 					ApplyImpulse( grabbedObject, grabbedBone, eyeDir * (heldBody.Mass * ThrowForce) );
 					ApplyAngularImpulse( grabbedObject, grabbedBone, Vector3.Random * (heldBody.Mass * ThrowForce) );
 				}
-				ViewModel?.Renderer.Set( "altfire", true );
+				SetRendererAnimParam( "altfire", true );
 			}
 			else if ( Input.Pressed( "attack2" ) )
 			{
 				GrabEnd();
-				ViewModel?.Renderer.Set( "drop", true );
+				SetRendererAnimParam( "drop", true );
 			}
 			else
 			{
@@ -190,7 +190,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 				var pushScale = 1.0f - Math.Clamp( tr.Distance / MaxPushDistance, 0.0f, 1.0f );
 				ApplyImpulseAt( tr.GameObject, modelPhysics.IsValid() ? body.GroupIndex : -1, tr.EndPosition, eyeDir * (body.Mass * (PushForce * pushScale)) );
 			}
-			ViewModel?.Renderer.Set( "fire", true );
+			SetRendererAnimParam( "fire", true );
 		}
 		else if ( Input.Down( "attack2" ) )
 		{
@@ -201,7 +201,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 				var holdDistance = HoldDistance + attachPos.Distance( body.MassCenter );
 
 				GrabStart( tr.GameObject, body, eyePos + eyeDir * holdDistance, eyeRot );
-				ViewModel?.Renderer.Set( "hold", true );
+				SetRendererAnimParam( "hold", true );
 			}
 			else
 			{
@@ -331,7 +331,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 		if ( startPos.Distance( attachPos ) > MaxHoldDistanceBeforeDrop )
 		{
 			GrabEnd();
-			ViewModel?.Renderer.Set( "drop", true );
+			SetRendererAnimParam( "drop", true );
 			return;
 		}
 

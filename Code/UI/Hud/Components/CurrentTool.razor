@@ -39,12 +39,4 @@
 
         return tool?.CurrentTool;
     }
-
-	[Rpc.Owner]
-	public static void CreateToolPanel()
-	{
-		SpawnMenu.Instance?.ToolPanel?.DeleteChildren(true);
-		GetCurrentTool()?.LoadModelSelector();
-		GetCurrentTool()?.CreateToolPanel();
-	}
 }

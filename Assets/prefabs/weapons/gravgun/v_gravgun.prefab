@@ -811,7 +811,7 @@
   "DontBreakAsTemplate": false,
   "ResourceVersion": 1,
   "__references": [
-    "rust.v_rust_pistol#43970"
+    "katka.gravitygun#38114"
   ],
   "__version": 1
 }
