@@ -28,6 +28,18 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		return PartyId != 0UL;
 	}
 
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+		if ( !IsProxy )
+		{
+			if ( Input.Pressed( "undo" ) )
+			{
+				UndoSystem.PlayerUndo();
+			}
+		}
+	}
+
 	/// <summary>
 	/// Creates a ragdoll but it isn't enabled
 	/// </summary>
