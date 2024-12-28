@@ -24,6 +24,7 @@ namespace Sandbox.UI
 			Canvas.OnCreateCell = async ( cell, data ) =>
 			{
 				var file = (string)data;
+				if (file == null) return;
 				Panel panel;
 
 				if ( FileSystem.Mounted.FileExists( file + "_c.png" ) )
