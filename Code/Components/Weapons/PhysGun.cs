@@ -20,6 +20,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	private SoundHandle BeamSound;
 	private bool BeamSoundPlaying;
 	GameObject lastGrabbed = null;
+	private Model _model = Cloud.Model("katka/gravitygun"); // in the prefab, but this ensures its downloaded
 
 	PhysicsBody _heldBody;
 	PhysicsBody HeldBody
