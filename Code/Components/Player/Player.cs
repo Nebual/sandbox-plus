@@ -37,6 +37,10 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 			{
 				UndoSystem.PlayerUndo();
 			}
+			if ( Input.Pressed( "attack3" ) )
+			{
+				SboxToolAuto();
+			}
 		}
 	}
 

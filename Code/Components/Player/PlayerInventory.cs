@@ -82,7 +82,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		{
 			var entity = player.Inventory.GetSlot( i );
 			if ( !entity.IsValid() ) continue;
-			if ( TypeLibrary.GetType(entity.GetType()).ClassName != weaponClassName ) continue;
+			if ( !TypeLibrary.GetType( entity.GetType() ).ClassName.Equals( weaponClassName, StringComparison.InvariantCultureIgnoreCase ) ) continue;
 
 			player.Inventory.SetActiveSlot( i );
 			return;
