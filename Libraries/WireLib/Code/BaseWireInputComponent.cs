@@ -167,6 +167,10 @@
 				{
 					handler( (int)valueVec3.Length );
 				}
+				else if ( value is bool valueBool )
+				{
+					handler( valueBool ? 1 : 0 );
+				}
 				else
 				{
 					handler( (int)value );

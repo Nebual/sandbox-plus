@@ -84,17 +84,25 @@
 	{
 		if ( !Force.AlmostEqual( 0 ) )
 		{
+			if ( !TargetBody.IsValid() )
+			{
+				TargetBody = GetComponent<Rigidbody>();
+				On = false;
+			}
 			TargetBody.ApplyForceAt(
 				WorldPosition,
 				GameObject.WorldRotation.Down * (
 					Massless ?
-						Force * ForceMultiplier * (TargetBody.Mass + GetComponent<Rigidbody>().PhysicsBody.Mass ) * (IsForward ? 1 : -1)
+						Force * ForceMultiplier * (TargetBody.Mass + GetComponent<Rigidbody>().PhysicsBody.Mass) * (IsForward ? 1 : -1)
 						:
 						Force * ForceMultiplier * (IsForward ? 1 : -1)
 				)
 			);
-			var bounds = GetComponent<Prop>().Model.Bounds;
-			effects.WorldPosition = Transform.World.PointToWorld( bounds.Center + new Vector3( 0, 0, bounds.Extents.z ) );
+			if ( effects.IsValid() )
+			{
+				var bounds = GetComponent<Prop>().Model.Bounds;
+				effects.WorldPosition = Transform.World.PointToWorld( bounds.Center + new Vector3( 0, 0, bounds.Extents.z ) );
+			}
 		}
 	}
 }

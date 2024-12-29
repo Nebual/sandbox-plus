@@ -16,10 +16,9 @@ public partial class ResizerTool : BaseTool
 			return false;
 
 		var skinnedModelRenderer = trace.GameObject.GetComponent<SkinnedModelRenderer>();
-		if ( skinnedModelRenderer.IsValid() )
+		if ( skinnedModelRenderer.IsValid() && skinnedModelRenderer.GetBoneObject( trace.Bone ) is GameObject boneGo && boneGo.IsValid() )
 		{
-			var go = skinnedModelRenderer.GetBoneObject( trace.Bone );
-			var size = go.WorldScale + (resizeDir * 0.5f * Time.Delta);
+			var size = boneGo.WorldScale + (resizeDir * 0.5f * Time.Delta);
 
 			SetRagSize( trace.GameObject, size, trace.Bone );
 		}

@@ -66,7 +66,7 @@ public class Thruster : BaseTool
 			UndoSystem.Add( creator: this.Owner, callback: ReadyUndo( obj, trace.GameObject ), prop: trace.GameObject );
 
 			PropHelper propHelper = obj.Components.Get<PropHelper>();
-			if ( !propHelper.IsValid() )
+			if ( !propHelper.IsValid() || trace.GameObject.IsWorld() )
 				return true;
 
 			propHelper.Weld( trace.GameObject );
@@ -142,11 +142,11 @@ public class Thruster : BaseTool
 		}
 		else
 		{
-			var rigid = go.AddComponent<Rigidbody>();
+			var rigid = go.GetOrAddComponent<Rigidbody>();
 			thruster.TargetBody = rigid;
 		}
 
-			go.NetworkSpawn();
+		go.NetworkSpawn();
 		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
 
 		return go;
