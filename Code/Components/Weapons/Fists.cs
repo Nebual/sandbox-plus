@@ -1,6 +1,11 @@
 ﻿[Spawnable, Library( "weapon_fists" )]
 partial class Fists : BaseWeapon
 {
+	public override bool ShouldShowCrosshair()
+	{
+		return false;
+	}
+
 	public override bool CanReload()
 	{
 		return false;

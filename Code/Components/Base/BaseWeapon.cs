@@ -32,6 +32,11 @@ public partial class BaseWeapon : Component
 		return LocalWorldModel?.GetAttachment( name ) ?? WorldTransform;
 	}
 
+	public virtual bool ShouldShowCrosshair()
+	{
+		return true;
+	}
+
 	protected override void OnAwake()
 	{
 		var obj = Owner?.Controller?.Renderer?.GetBoneObject( ParentBone );
