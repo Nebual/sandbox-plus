@@ -18,8 +18,6 @@
         var weapon = GetCurrentWeapon();
         bool active = (weapon != null) ? weapon.ShouldShowCrosshair() : true;
 
-        Log.Info(weapon + " " + weapon.ShouldShowCrosshair() + " " + active );
-
         SetClass("active", active);
     }
 
