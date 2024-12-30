@@ -2,7 +2,7 @@
 
 namespace Sandbox.Tools
 {
-	[Library( "tool_lamp", Title = "Lamps", Description = "Directional light source that casts shadows", Group = "construction" )]
+	[Library( "tool_lamp", Title = "Lamp", Description = "Directional light source that casts shadows", Group = "construction" )]
 	public partial class LampTool : BaseSpawnTool
 	{
 		[Property, Title( "Model" ), ModelProperty( SpawnLists = ["lamp"] )]
@@ -44,14 +44,16 @@ namespace Sandbox.Tools
 			lamp.ConeInner = 25;
 			lamp.ConeOuter = 45;
 			lamp.Radius = 512;
-			lamp.Attenuation = 0.2f;
-			lamp.Cookie = Texture.Load( "materials/effects/lightcookie.vtex" );
+			lamp.Attenuation = 1;
+			lamp.Cookie = Texture.Load( "materials/effects/lightcookies/blank.vtex" );
+			go.GetComponent<ModelRenderer>().RenderType = ModelRenderer.ShadowRenderType.Off; // otherwise the light itself casts shadows from the inside
+
+			go.GetOrAddComponent<LampWireComponent>();
 		}
 
 		protected override GameObject SpawnEntity( SceneTraceResult tr )
 		{
 			var go = base.SpawnEntity( tr );
-			go.AddComponent<LampWireComponent>();
 
 			var rigid = go.GetComponent<Rigidbody>();
 			var bounds = rigid.PhysicsBody.GetBounds();

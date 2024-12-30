@@ -2,7 +2,7 @@
 
 namespace Sandbox.Tools;
 
-[Library( "tool_balloon", Title = "Balloons", Description = "Create Balloons!", Group = "construction" )]
+[Library( "tool_balloon", Title = "Balloon", Description = "Create Balloons!", Group = "construction" )]
 public partial class BalloonTool : BaseSpawnTool
 {
 	[Property, Range( 0.05f, 2f, 0.05f ), Title( "Balloon Strength" ), Description( "The upward strength of the balloon." )]
