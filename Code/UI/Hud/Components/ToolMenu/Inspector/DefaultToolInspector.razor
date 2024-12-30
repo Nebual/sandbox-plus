@@ -1,0 +1,61 @@
+@using System;
+@using System.Collections.Generic;
+@using Sandbox;
+@using Sandbox.UI;
+@using Scenebox.Tools;
+@inherits Panel
+@implements IToolInspector
+@namespace Scenebox.UI
+@attribute [StyleSheet]
+
+<root class="DefaultToolInspector">
+	<label class="header">@Toolgun.CurrentTool.GetName()</label>
+	<div class="content">
+		<label class="description">@Toolgun.CurrentTool.GetLongDescription()</label>
+		<div class="controls">
+			@foreach (var property in TypeLibrary.GetSerializedObject(Toolgun.CurrentTool))
+			{
+				if (!property.HasAttribute<PropertyAttribute>()) continue;
+				property.TryGetAttribute<TitleAttribute>(out var title);
+				var name = title?.Value ?? property.Name;
+				<div class="control">
+					@if (property.PropertyType == typeof(float))
+					{
+						<p>@(name):</p>
+						property.TryGetAttribute<RangeAttribute>(out var range);
+						<SliderControl Min=@(range?.Min ?? 0) Max=@(range?.Max ?? 1) Step=@(range?.Step ?? 0.01f) SerializedProperty=@property OnValueChanged=@((float _value) => { property.SetValue(_value); }) ShowTextEntry=@(true) />
+					}
+					else if (property.PropertyType == typeof(int))
+					{
+						<p>@(name):</p>
+						<SliderControl Min=@(0) Max=@(1) Step=@(1) SerializedProperty=@property OnValueChanged=@((float _value) => { property.SetValue(_value); }) ShowTextEntry=@(true) />
+					}
+					else if (property.PropertyType == typeof(bool))
+					{
+						<SwitchControl SerializedProperty=@property OnValueChanged=@((bool _value) => { property.SetValue(_value); }) />
+						<p>@name</p>
+					}
+					else if (property.PropertyType == typeof(string))
+					{
+
+					}
+					@* else if (property.PropertyType == typeof(Model))
+				{
+				<AssetList Query="type:model sort:popular" />
+				} *@
+				</div>
+				@if (property.TryGetAttribute<DescriptionAttribute>(out var description))
+				{
+					<label class="description">@description.Value</label>
+				}
+			}
+		</div>
+	</div>
+</root>
+
+@code
+{
+	public Toolgun Toolgun { get; set; }
+
+	protected override int BuildHash() => System.HashCode.Combine("");
+}

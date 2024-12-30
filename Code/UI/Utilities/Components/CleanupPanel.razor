@@ -1,0 +1,107 @@
+@using Sandbox.UI;
+@using Sandbox.Audio;
+@namespace Scenebox.UI.Utilities
+@inherits Panel
+@attribute [StyleSheet]
+
+<root>
+	<label class="description">Clean up a group of spawned items.</label>
+	<button class="btn" onclick=@DoEverything>Clean Up Everything</button>
+	<button class="btn" onclick=@DoConstraints>Constraints</button>
+	<button class="btn" onclick=@DoProps>Props</button>
+	<button class="btn" onclick=@DoRagdolls>Ragdolls</button>
+</root>
+
+@code
+{
+	public bool IsAdmin { get; set; } = false;
+
+	List<PropHelper> GetProps()
+	{
+		var props = Scene.GetAllComponents<PropHelper>();
+		if (!IsAdmin)
+		{
+			props = props.Where(x => x.CreatorId == Connection.Local.Id);
+		}
+		else if (!Networking.IsHost)
+		{
+			return new List<PropHelper>();
+		}
+		return props.ToList();
+	}
+
+	void DoEverything()
+	{
+		var props = GetProps();
+
+		foreach (var prop in props)
+		{
+			prop.GameObject.Destroy();
+		}
+
+		if (props.Count() > 0)
+		{
+			Notify("Cleaned up everything!");
+		}
+	}
+
+	void DoConstraints()
+	{
+		var props = GetProps();
+
+		foreach (var prop in props)
+		{
+			if (prop.Components.TryGet<Joint>(out var joint))
+			{
+				joint.Destroy();
+				prop.GameObject.Root.Network.Refresh();
+			}
+		}
+
+		if (props.Count() > 0)
+		{
+			Notify("Cleaned up all Constraints!");
+		}
+	}
+	void DoProps()
+	{
+		var props = GetProps();
+
+		foreach (var prop in props)
+		{
+			if (!prop.Components.TryGet<ModelPhysics>(out var _))
+			{
+				prop.GameObject.Destroy();
+			}
+		}
+
+		if (props.Count() > 0)
+		{
+			Notify("Cleaned up all Props!");
+		}
+	}
+
+	void DoRagdolls()
+	{
+		var props = GetProps();
+
+		foreach (var prop in props)
+		{
+			if (prop.Components.TryGet<ModelPhysics>(out var _))
+			{
+				prop.GameObject.Destroy();
+			}
+		}
+
+		if (props.Count() > 0)
+		{
+			Notify("Cleaned up all Ragdolls!");
+		}
+	}
+
+	void Notify(string message)
+	{
+		Sound.Play("ui.undo").TargetMixer = Mixer.FindMixerByName("UI");
+		NotificationPanel.Instance.AddEntry("cleanup", message, 5f, false);
+	}
+}

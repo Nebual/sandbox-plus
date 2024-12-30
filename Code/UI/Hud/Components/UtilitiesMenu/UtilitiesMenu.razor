@@ -1,0 +1,113 @@
+@using System;
+@using System.Collections.Generic;
+@using Sandbox;
+@using Sandbox.UI;
+@using Scenebox.Tools;
+@inherits Panel
+@namespace Scenebox.UI
+@attribute [StyleSheet]
+
+<root>
+	<div class="listcontainer">
+		<TextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
+		<div class="toollist">
+			@if (true)
+			{
+				var utilities = GetUtilities();
+				foreach (var group in GetGroups(utilities))
+				{
+					<label class="header">@group</label>
+					foreach (var utility in utilities.Where(x => GetGroup(x.TargetType) == group))
+					{
+						<div class="tool @(IsCurrentPage(utility) ? "active" : "")" onclick=@(() => SetPage(utility))>
+							@(TypeLibrary.GetAttribute<UtilityPageAttribute>(utility.TargetType)?.Title ?? "Missingtool.")
+						</div>
+					}
+				}
+			}
+		</div>
+	</div>
+	<div class="inspector" @ref="InspectorPanel">
+
+	</div>
+</root>
+
+@code
+{
+	public static UtilitiesMenu Instance { get; private set; }
+
+	Panel CurrentPage;
+
+	TextEntry SearchEntry;
+	Panel InspectorPanel;
+
+	string GetGroup(Type utility) => TypeLibrary.GetAttribute<UtilityPageAttribute>(utility)?.Group ?? "Other";
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		base.OnAfterTreeRender(firstTime);
+
+		if (firstTime)
+		{
+			Instance = this;
+
+			SetPage(GetUtilities().FirstOrDefault());
+		}
+	}
+
+	List<TypeDescription> GetUtilities()
+	{
+		var utilities = TypeLibrary.GetTypesWithAttribute<UtilityPageAttribute>();
+		if (!string.IsNullOrWhiteSpace(SearchEntry?.Text))
+		{
+			utilities = utilities.Where(x =>
+			{
+				var page = x.Item2;
+				return page.Title.Contains(SearchEntry.Text, StringComparison.OrdinalIgnoreCase) || page.Group.Contains(SearchEntry.Text, StringComparison.OrdinalIgnoreCase);
+			});
+		}
+		var list = new List<TypeDescription>();
+		foreach (var utility in utilities)
+		{
+			list.Add(utility.Item1);
+		}
+		return list;
+	}
+
+	bool IsCurrentPage(TypeDescription utility)
+	{
+		return CurrentPage?.GetType() == utility.TargetType;
+	}
+
+	void SetPage(TypeDescription utility)
+	{
+		if (!InspectorPanel.IsValid()) return;
+
+		InspectorPanel.DeleteChildren();
+
+		var header = new Label();
+		header.AddClass("header");
+		header.Text = TypeLibrary.GetAttribute<UtilityPageAttribute>(utility.TargetType)?.Title ?? "Missingtool.";
+		InspectorPanel.AddChild(header);
+
+		var panel = TypeLibrary.Create<Panel>(utility.TargetType);
+		InspectorPanel.AddChild(panel);
+		CurrentPage = panel;
+	}
+
+	List<string> GetGroups(List<TypeDescription> utilities)
+	{
+		var groups = new List<string>();
+		foreach (var utility in utilities)
+		{
+			var group = GetGroup(utility.TargetType);
+			if (!groups.Contains(group))
+			{
+				groups.Add(group);
+			}
+		}
+		return groups;
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(SearchEntry?.Text);
+}

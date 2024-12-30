@@ -1,0 +1,44 @@
+@using System.Threading.Tasks;
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+@namespace Scenebox.UI
+@attribute [StyleSheet]
+
+<root class="spawnpage columned">
+	<AssetList @ref="AssetList" Query="type:model sort:popular" />
+</root>
+
+@code
+{
+	AssetList AssetList;
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		if (firstTime)
+		{
+			AssetList.OnSelected += Spawn;
+		}
+	}
+
+	void Spawn(Package package)
+	{
+		var localPlayer = Player.Local;
+		if (!localPlayer.IsValid())
+			return;
+
+		var tr = Scene.Trace.Ray(new Ray(localPlayer.Head.Transform.Position, localPlayer.Direction.Forward), 10_000)
+		.IgnoreGameObject(localPlayer.GameObject.Root)
+		.WithoutTags("trigger")
+		.Run();
+
+		var mins = package.GetMeta("RenderMins", Vector3.Zero);
+		var maxs = package.GetMeta("RenderMaxs", Vector3.One);
+		var bounds = new BBox(mins, maxs);
+
+		var position = tr.Hit ? (tr.HitPosition + tr.Normal * bounds.Size.Length / 2f) : tr.EndPosition;
+		var rotation = Rotation.From(0, localPlayer.Direction.yaw + 180, 0);
+
+		var obj = Scenebox.GameManager.Instance.SpawnCloudModel(package.FullIdent, position, rotation);
+	}
+}

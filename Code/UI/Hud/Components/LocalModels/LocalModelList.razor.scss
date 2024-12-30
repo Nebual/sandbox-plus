@@ -1,0 +1,74 @@
+LocalModelList
+{
+	flex-grow: 1;
+	font-family: Poppins;
+	font-size: 14px;
+
+	.folderlist
+	{
+		.entry
+		{
+			flex-shrink: 0;
+			gap: 4px;
+			pointer-events: all;
+			cursor: pointer;
+
+			img
+			{
+				background-position: center;
+				background-size: contain;
+				background-repeat: no-repeat;
+			}
+
+			&:hover
+			{
+				background-color: rgba(grey, 0.1);
+			}
+
+			&.selected
+			{
+				background-color: rgba(blue, 0.3);
+			}
+		}
+	}
+
+	.canvas
+	{
+		flex-direction: row;
+		flex-grow: 1;
+		flex-wrap: wrap;
+		overflow-x: hidden;
+		overflow-y: scroll;
+
+		.cell
+		{
+			width: 100px;
+			height: 100px;
+			flex-shrink: 0;
+			cursor: pointer;
+			
+			Image
+			{
+				width: 100%;
+				height: 100%;
+				
+			}
+
+			&:hover
+			{
+				border: 1px solid #53B1FE;
+			}
+
+			&:active
+			{
+				sound-out: ui.button.press;
+
+				.icon
+				{
+					transform: scale(0.95);
+				}
+			}
+		}
+
+	}
+}

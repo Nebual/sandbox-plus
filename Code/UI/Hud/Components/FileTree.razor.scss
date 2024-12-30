@@ -1,0 +1,66 @@
+FileTree, FileTreeEntry
+{
+	font-family: Poppins;
+	font-size: 14px;
+	flex-direction: column;
+	flex-shrink: 0;
+
+	> FileTree
+	{
+		margin-left: 24px;
+	}
+
+	> div:not(.header)
+	{
+		flex-shrink: 0;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		align-items: center;
+		
+		gap: 4px;
+		
+		i
+		{
+			color: white;
+			text-stroke: 2px rgb(0, 0, 0);
+		}
+
+		&:hover
+		{
+			cursor: pointer;
+			background-color: rgba(grey, 0.1);
+		}
+
+		&.selected
+		{
+			background-color: rgba(blue, 0.3);
+		}
+	}
+
+	> .header
+	{
+		flex-grow: 1;
+		justify-content: space-evenly;
+		gap: 8px;
+		margin-bottom: 8px;
+		flex-shrink: 0;
+
+		> .btn
+		{
+			flex-grow: 1;
+			background-color: rgba(white, 0.02);
+			padding: 4px;
+			cursor: pointer;
+
+			&:hover
+			{
+				background-color: rgba(grey, 0.1);
+			}
+		}
+	}
+
+	&.hidden
+	{
+		display: none;
+	}
+}

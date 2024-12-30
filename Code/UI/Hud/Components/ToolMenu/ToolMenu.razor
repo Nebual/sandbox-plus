@@ -1,0 +1,140 @@
+@using System;
+@using System.Collections.Generic;
+@using Sandbox;
+@using Sandbox.UI;
+@using Scenebox.Tools;
+@inherits Panel
+@namespace Scenebox.UI
+@attribute [StyleSheet]
+
+<root>
+	<div class="listcontainer">
+		<TextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
+		<div class="toollist">
+			@if (true)
+			{
+				var tools = GetTools();
+				var groups = GetGroups(tools);
+				foreach (var group in groups)
+				{
+					<label class="header">@group</label>
+					foreach (var tool in tools.Where(x => GetGroup(x.TargetType) == group))
+					{
+						<div class="tool @(IsCurrentTool(tool.TargetType) ? "active" : "")" onclick=@(() => GiveTool(tool))>
+							@(TypeLibrary.GetAttribute<ToolAttribute>(tool.TargetType)?.Title ?? "Missingtool.")
+						</div>
+					}
+				}
+			}
+		</div>
+	</div>
+	<div class="inspector" @ref="InspectorPanel">
+
+	</div>
+</root>
+
+@code
+{
+	public static ToolMenu Instance { get; private set; }
+
+	TextEntry SearchEntry;
+	Panel InspectorPanel;
+
+	string GetGroup(Type tool) => TypeLibrary.GetAttribute<ToolAttribute>(tool)?.Group ?? "Other";
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		base.OnAfterTreeRender(firstTime);
+
+		if (firstTime)
+		{
+			Instance = this;
+			UpdateInspector();
+		}
+	}
+
+	List<TypeDescription> GetTools()
+	{
+		var tools = TypeLibrary.GetTypes<BaseTool>().Where(x => x.Name != "BaseTool");
+
+		if (!string.IsNullOrWhiteSpace(SearchEntry?.Text))
+		{
+
+			tools = tools.Where(x =>
+			{
+				var attr = TypeLibrary.GetAttribute<ToolAttribute>(x.TargetType);
+				var text = SearchEntry.Text.ToLower();
+				return attr.Title.ToLower().Contains(text)
+	|| attr.Group.ToLower().Contains(text);
+			});
+		}
+
+		return tools.ToList();
+	}
+
+	void GiveTool(TypeDescription tool)
+	{
+		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
+		if (toolgun.IsValid())
+		{
+			toolgun.SetTool(tool);
+		}
+		Player.Local?.Inventory?.EquipWeapon(toolgun);
+	}
+
+	List<string> GetGroups(List<TypeDescription> tools)
+	{
+		var groups = new List<string>();
+		foreach (var tool in tools)
+		{
+			var group = GetGroup(tool.TargetType);
+			if (!groups.Contains(group))
+			{
+				groups.Add(group);
+			}
+		}
+		return groups;
+	}
+
+	public void UpdateInspector()
+	{
+		if (!InspectorPanel.IsValid()) return;
+
+		InspectorPanel.DeleteChildren();
+		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
+		if (!toolgun.IsValid()) return;
+
+		var tool = toolgun.CurrentTool;
+		if (tool is null) return;
+
+		var panelTypes = TypeLibrary.GetTypesWithAttribute<ToolInspectorAttribute>();
+		var panelType = panelTypes.FirstOrDefault(x => x.Attribute.Type == tool.GetType());
+		if (panelType.Type is not null)
+		{
+			var panel = TypeLibrary.Create<Panel>(panelType.Type.TargetType);
+			if (panel is IToolInspector inspectorPanel)
+			{
+				inspectorPanel.Toolgun = toolgun;
+			}
+			InspectorPanel.AddChild(panel);
+		}
+		else
+		{
+			var defaultPanel = new DefaultToolInspector();
+			defaultPanel.Toolgun = toolgun;
+			InspectorPanel.AddChild(defaultPanel);
+		}
+	}
+
+	bool IsCurrentTool(Type toolType)
+	{
+		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
+		if (toolgun.IsValid())
+		{
+			return toolgun?.CurrentTool?.GetType() == toolType;
+		}
+		return false;
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(SearchEntry?.Text);
+}

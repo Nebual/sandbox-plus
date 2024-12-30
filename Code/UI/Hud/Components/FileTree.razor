@@ -1,0 +1,87 @@
+@using System;
+@using Sandbox;
+@using Sandbox.UI;
+@namespace Scenebox.UI
+@attribute [StyleSheet]
+
+<root>
+	@* @if (Root)
+	{
+	<div class="header">
+	<div class="btn" onclick=@ExpandAll>Expand All</div>
+	<div class="btn" onclick=@CollapseAll>Collapse All</div>
+	</div>
+	} *@
+	@if (FileSystem?.IsValid ?? false)
+	{
+		var dirs = GetDirectories();
+		@foreach (var dir in dirs)
+		{
+			<FileTreeEntry FileSystem=@FileSystem Dir=@dir Path=@(Path + dir + "/") FileFilter=@FileFilter Selected=@Selected ShowFiles=@ShowFiles OnFileSelect=@OnFileSelect OnFolderSelect=@OnFolderSelect />
+		}
+		@if (ShowFiles)
+		{
+			var files = FileSystem.FindFile(Path, "*", false).OrderBy(x => x);
+			@foreach (var file in files)
+			{
+				<div onclick=@(() => Select(file))><i>@IconHelper.GetFileIcon(file)</i>@file</div>
+			}
+		}
+	}
+</root>
+
+@code
+{
+	public BaseFileSystem FileSystem { get; set; }
+	public string Path { get; set; }
+	public bool Root { get; set; } = false;
+	public bool ShowFiles { get; set; } = true;
+	public string Selected { get; set; } = "";
+	public string FileFilter { get; set; } = "*";
+
+	public Action<string> OnFileSelect { get; set; }
+	public Action<string> OnFolderSelect { get; set; }
+
+	List<string> GetDirectories()
+	{
+		var dirs = FileSystem.FindDirectory(Path).OrderBy(x => x).ToList();
+
+		// Remove any duplicates with differents caps
+		for (int i = 0; i < dirs.Count; i++)
+		{
+			for (int j = i + 1; j < dirs.Count; j++)
+			{
+				if (dirs[i].Equals(dirs[j], StringComparison.OrdinalIgnoreCase))
+				{
+					dirs.RemoveAt(j);
+					j--;
+				}
+			}
+		}
+
+		return dirs;
+	}
+
+	void Select(string file)
+	{
+		OnFileSelect?.Invoke(Path + file);
+	}
+
+	void ExpandAll()
+	{
+		foreach (var entry in FileTreeEntry.Entries)
+		{
+			entry.open = true;
+			entry.StateHasChanged();
+		}
+	}
+
+	void CollapseAll()
+	{
+		foreach (var entry in FileTreeEntry.Entries)
+		{
+			entry.open = false;
+			entry.StateHasChanged();
+		}
+	}
+}

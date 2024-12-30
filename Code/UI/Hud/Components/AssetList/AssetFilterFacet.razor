@@ -1,0 +1,56 @@
+@using System;
+@using Sandbox;
+@using Sandbox.UI;
+@using System.Threading
+@namespace Sandbox.UI
+
+@{
+	var current = Facet.Entries.FirstOrDefault(x => x.Name == Value);
+}
+
+<root>
+
+	<label class="header">@Facet.Title</label>
+
+	<div class="options">
+		@foreach (var entry in Facet.Entries)
+		{
+			var classes = entry.Name == Value ? "active" : "";
+			<div class="option @classes" onmousedown="@(() => SwitchTo(entry))">
+				<i>@entry.Icon</i>
+				<label class="title">@entry.Title</label>
+				<label class="count">@entry.Count</label>
+			</div>
+		}
+	</div>
+
+</root>
+
+@code
+{
+	public Package.Facet Facet { get; set; }
+	public string Value { get; set; }
+	public Action<Package.Facet, string> OnChange { get; set; }
+
+	void SwitchTo(Package.Facet.Entry entry)
+	{
+		if (entry == null || Value == entry.Name)
+		{
+			OnChange?.Invoke(Facet, null);
+			Value = null;
+		}
+		else
+		{
+			OnChange?.Invoke(Facet, entry.Name);
+			Value = entry.Name;
+		}
+
+		StateHasChanged();
+	}
+
+	void OnClear(PanelEvent e)
+	{
+		e.StopPropagation();
+		SwitchTo(null);
+	}
+}

@@ -1,0 +1,55 @@
+@using System;
+@using Sandbox;
+@using Sandbox.UI;
+@namespace Scenebox.UI
+
+<root>
+	@if (FileSystem.FindFile(Path, FileFilter, true).Count() > 0)
+	{
+		<div class="@(Selected == Path ? "selected" : "")" onclick=@OpenClose><i>@(open ? "folder_open" : "folder")</i>@Dir</div>
+		@if (open)
+		{
+			<FileTree FileSystem=@FileSystem Path=@Path ShowFiles=@ShowFiles FileFilter=@FileFilter OnFileSelect=@OnFileSelect OnFolderSelect=@OnFolderSelect />
+		}
+	}
+</root>
+
+@code
+{
+	public BaseFileSystem FileSystem { get; set; }
+	public string Dir { get; set; }
+	public string Path { get; set; }
+	public bool ShowFiles { get; set; } = true;
+	public string Selected { get; set; } = "";
+	public string FileFilter { get; set; } = "*";
+
+	public Action<string> OnFileSelect { get; set; }
+	public Action<string> OnFolderSelect { get; set; }
+
+	public static List<FileTreeEntry> Entries = new List<FileTreeEntry>();
+
+	internal bool open = false;
+
+	void OpenClose()
+	{
+		Log.Error($"path: {Path}");
+		Log.Error($"selected: {Selected}");
+		OnFolderSelect?.Invoke(Path);
+		open = !open;
+		StateHasChanged();
+	}
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		if (firstTime)
+		{
+			Entries.Add(this);
+		}
+	}
+
+	public override void OnDeleted()
+	{
+		Entries.Remove(this);
+	}
+	protected override int BuildHash() => System.HashCode.Combine(Selected);
+}

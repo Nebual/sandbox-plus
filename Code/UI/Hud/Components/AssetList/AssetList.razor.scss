@@ -1,0 +1,43 @@
+AssetList
+{
+	flex-shrink: 1;
+	flex-wrap: wrap;
+	flex-grow: 1;
+	gap: 10px;
+	justify-content: space-around;
+	flex-grow: 1;
+	padding: 8px;
+	font-family: Poppins;
+
+	> div
+	{
+		flex-direction: column;
+		height: 100%;
+	}
+
+	> .left
+	{
+		width: 300px;
+		flex-shrink: 0;
+	}
+
+	> .right
+	{
+		flex-grow: 1;
+		gap: 8px;
+
+		.header
+		{
+			font-weight: 500;
+			font-size: 32px;
+			margin-top: 8px;
+		}
+
+		.content
+		{
+			flex-grow: 1;
+			flex-wrap: wrap;
+			overflow-y: scroll;
+		}
+	}
+}

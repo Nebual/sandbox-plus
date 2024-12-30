@@ -1,0 +1,43 @@
+@using Sandbox.UI;
+@inherits Panel
+@namespace Scenebox.UI
+
+<root class="cell" onclick=@Spawn>
+	<label class="title">@Package.Title</label>
+	<img src=@Package.Thumb />
+	<label class="author">@Package.Org.Title</label>
+	<div class="hover-panel">
+		<label class="description">
+			@(string.IsNullOrWhiteSpace(Package.Description) ? (string.IsNullOrWhiteSpace(Package.Summary) ? "No description..." : Package.Summary) : Package.Description)
+		</label>
+		<button>deploy</button>
+	</div>
+</root>
+
+@code
+{
+	public Package Package { get; set; }
+
+	void Spawn()
+	{
+		var localPlayer = Player.Local;
+		if (!localPlayer.IsValid())
+			return;
+
+		var tr = Scene.Trace.Ray(new Ray(localPlayer.Head.Transform.Position, localPlayer.Direction.Forward), 10_000)
+		.IgnoreGameObject(localPlayer.GameObject.Root)
+		.WithoutTags("trigger")
+		.Run();
+
+		var mins = Package.GetMeta("RenderMins", Vector3.Zero);
+		var maxs = Package.GetMeta("RenderMaxs", Vector3.One);
+		var bounds = new BBox(mins, maxs);
+
+		var position = tr.Hit ? (tr.HitPosition + tr.Normal * bounds.Size.Length / 2f) : tr.EndPosition;
+		var rotation = Rotation.From(0, localPlayer.Direction.yaw + 180, 0);
+
+		var obj = GameManager.Instance.SpawnCloudModel(Package.FullIdent, position, rotation);
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(Package);
+}

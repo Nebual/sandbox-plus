@@ -1,0 +1,103 @@
+AssetFilters
+{
+	width: 100%;
+	flex-shrink: 0;
+	flex-direction: column;
+	height: 100%;
+	gap: 8px;
+
+	> div
+	{
+		flex-direction: column;
+	}
+
+	> .top
+	{
+		flex-grow: 1;
+		gap: 16px;
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+
+	> .bottom
+	{
+		flex-shrink: 0;
+		gap: 16px;
+
+		TextEntry
+		{
+			border: 1px solid #ABADB3;
+			border-radius: 2px;
+			font-size: 14px;
+			background-color: white;
+			box-shadow: 0 0 0px transparent;
+
+			&:focus
+			{
+				border: 1px solid #5499D8;
+				box-shadow: 0 0 2px #7FC3FE;
+			}
+		}
+	}
+}
+
+AssetFilterFacet
+{
+	flex-direction: column;
+	font-family: Poppins;
+	font-size: 22px;
+	gap: 8px;
+	flex-shrink: 0;
+
+	.options
+	{
+		flex-direction: column;
+		font-size: 14px;
+		font-weight: bold;
+		gap: 6px;
+
+		.option
+		{
+			background-color: #ddd;
+			padding: 4px;
+			align-items: center;
+			border-radius: 4px;
+			gap: 4px;
+			cursor: pointer;
+			
+			i
+			{
+				max-width: 32px;
+				max-height: 32px;
+				justify-content: center;
+				align-items: center;
+				text-align: center;
+			}
+
+			.title
+			{
+				font-weight: bold;
+				flex-grow: 1;
+			}
+
+			.count
+			{
+				font-size: 12px;
+				background-color: white;
+				color: #aaa;
+				padding: 4px;
+				border-radius: 4px;
+			}
+
+			&:hover
+			{
+				sound-in: ui.button.over;
+			}
+
+			&.active
+			{
+				background-color: #99CCFF;
+			}
+		}
+	}
+}

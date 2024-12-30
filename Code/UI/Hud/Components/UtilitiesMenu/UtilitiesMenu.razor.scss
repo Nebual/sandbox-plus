@@ -1,0 +1,13 @@
+UtilitiesMenu
+{
+	width: 100%;
+	height: 100%;
+	flex-direction: row;
+	gap: 4px;
+	font-size: 13px;
+
+	.description
+	{
+		padding: 4px 16px;
+	}
+}
