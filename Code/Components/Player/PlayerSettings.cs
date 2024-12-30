@@ -47,7 +47,7 @@ namespace Sandbox
 		}
 		public static PlayerSettings Load()
 		{
-			var loaded = FileSystem.Data.ReadJson<PlayerSettings>( "playersettings.json" );
+			var loaded = FileSystem.Data.ReadJson<PlayerSettings>( "playersettings.json" ) ?? new PlayerSettings();
 			loaded.SetDirty( false );
 			return loaded;
 		}

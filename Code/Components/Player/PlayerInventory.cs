@@ -17,6 +17,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		Pickup( "prefabs/weapons/mp5/w_mp5.prefab" );
 		Pickup( "prefabs/weapons/flashlight/w_flashlight.prefab" );
 		Pickup( "prefabs/weapons/fists/w_fists.prefab" );
+		Pickup( "prefabs/weapons/shotgun/w_shotgun.prefab" );
 	}
 
 	protected override void OnUpdate()
