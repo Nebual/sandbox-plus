@@ -2,9 +2,9 @@ using Sandbox.Citizen;
 using Sandbox.Network;
 using Sandbox.Services;
 
-public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayerEvent, Component.INetworkListener, ISceneStartup
+public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, IPlayerEvent, Component.INetworkListener, ISceneStartup
 {
-	public GameManager( Scene scene ) : base( scene )
+	public SandboxGameManager( Scene scene ) : base( scene )
 	{
 	}
 
@@ -55,7 +55,7 @@ public sealed partial class GameManager : GameObjectSystem<GameManager>, IPlayer
 	{
 		if ( Scene.GetAllComponents<Player>().Any( x => x.Network.Owner == channel ) )
 		{
-			Log.Info( "GameManager: Tried to spawn multiple instances of the same player! Ignoring." );
+			Log.Info( "SandboxGameManager: Tried to spawn multiple instances of the same player! Ignoring." );
 			return;
 		}
 

@@ -45,7 +45,7 @@ public sealed class PlayerObserver : Component
 	{
 		if ( IsProxy ) return;
 
-		GameManager.Current.SpawnPlayerForConnection( Network.Owner );
+		SandboxGameManager.Current.SpawnPlayerForConnection( Network.Owner );
 		GameObject.Destroy();
 	}
 

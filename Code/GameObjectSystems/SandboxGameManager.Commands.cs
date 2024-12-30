@@ -1,4 +1,4 @@
-public sealed partial class GameManager
+public partial class SandboxGameManager
 {
 	[ConCmd( "spawn" )]
 	public static void Spawn( string modelname )
@@ -98,7 +98,7 @@ public sealed partial class GameManager
 	}
 
 	[Rpc.Broadcast]
-	static void BroadcastMount( string packageName )
+	public static void BroadcastMount( string packageName )
 	{
 		GameTask.MainThread().OnCompleted( async () =>
 		{
