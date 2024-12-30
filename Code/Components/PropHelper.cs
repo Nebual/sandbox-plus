@@ -152,7 +152,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		}
 
 		await GameTask.DelaySeconds( 1f / Scene.FixedUpdateFrequency + 0.05f );
-
+		if ( !this.IsValid ) return;
 		Damage( damage );
 	}
 
@@ -296,6 +296,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	public async void Explosion( string particle, string sound, Vector3 position, float radius, float damage, float forceScale )
 	{
 		await GameTask.Delay( Game.Random.Next( 50, 250 ) );
+		if ( !this.IsValid ) return;
 
 		BroadcastExplosion( sound, position );
 
