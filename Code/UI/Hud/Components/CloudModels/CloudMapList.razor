@@ -1,0 +1,33 @@
+@using System.Threading.Tasks;
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+@namespace Sandbox.UI
+@attribute [StyleSheet]
+
+<root class="spawnpage columned flex-column">
+	Switching maps is very WIP: currently, props are visible on all maps simultaneously. <br/>
+	Click to switch yourself to a new map, ctrl-click to bring everyone over.
+	<AssetList @ref="AssetList" Query="type:map sort:popular" />
+</root>
+
+@code
+{
+	AssetList AssetList;
+
+	protected override void OnAfterTreeRender(bool firstTime)
+	{
+		if (firstTime)
+		{
+			AssetList.OnSelected += (Package package) => {
+				if (Input.Down("run"))
+				{
+					Clipboard.SetText(package.FullIdent);
+					Log.Info($"Copied to clipboard: {package.FullIdent}");
+					return;
+				}
+				ConsoleSystem.Run("changemap", package.FullIdent, (Input.Down("duck") && Networking.IsHost) ? "everyone" : "alone");
+			};
+		}
+	}
+}

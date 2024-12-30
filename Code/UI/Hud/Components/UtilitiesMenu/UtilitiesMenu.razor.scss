@@ -10,4 +10,10 @@ UtilitiesMenu
 	{
 		padding: 4px 16px;
 	}
+	.utility-panel {
+		flex-direction: column;
+		flex-grow: 1;
+		padding: 4px;
+		gap: 8px;
+	}
 }

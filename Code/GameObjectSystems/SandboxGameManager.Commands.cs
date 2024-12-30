@@ -106,4 +106,36 @@ public partial class SandboxGameManager
 			await package.MountAsync();
 		} );
 	}
+
+	[ConCmd( "changemap" )]
+	public static void ChangeMapCmd( string mapName, string who )
+	{
+		if ( who == "everyone" )
+		{
+			ChangeMapCmd( mapName );
+			return;
+		}
+		using ( Rpc.FilterInclude( c => c == Connection.Local ) )
+		{
+			ChangeMapCmd( mapName );
+		}
+	}
+	[Rpc.Broadcast]
+	public static void ChangeMapCmd( string mapName )
+	{
+		GameTask.MainThread().OnCompleted( async () =>
+		{
+			var mapPackage = await Package.FetchAsync( mapName, false );
+			if ( mapPackage == null ) return;
+
+			var primaryAsset = mapPackage.GetMeta<string>( "PrimaryAsset" );
+			if ( string.IsNullOrEmpty( primaryAsset ) ) return;
+			await mapPackage.MountAsync();
+
+			CustomMapInstance.Current.MapName = mapName;
+
+			await GameTask.Delay( 100 );
+			Game.ActiveScene.GetComponentInChildren<MapPlayerSpawner>().RespawnPlayers();
+		} );
+	}
 }

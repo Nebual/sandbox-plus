@@ -25,7 +25,7 @@ public sealed class MapPlayerSpawner : Component
 
 	}
 
-	void RespawnPlayers()
+	public void RespawnPlayers()
 	{
 		var spawnPoints = Scene.GetAllComponents<SpawnPoint>().ToArray();
 

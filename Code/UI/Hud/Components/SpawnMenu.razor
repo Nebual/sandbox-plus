@@ -14,10 +14,15 @@
 				<i>category</i>
 				<label>#spawnmenu.props</label>
 			</div>
+			<div onclick=@(() => SetActiveLeft(CloudMapsPanel)) class="btn @(SelectedPanelLeft == CloudMapsPanel ? "active" : "")">
+				<i>map</i>
+				<label>Maps</label>
+			</div>
 		</div>
 		<div class="body" @ref="SpawnMenuLeftBody">
 			<CloudModelList @ref="CloudModelsPanel" />
 			<LocalModelList @ref="LocalModelsPanel" />
+			<CloudMapList @ref="CloudMapsPanel" />
 			@* <EntityList /> *@
 			@* <NpcList /> *@
 		</div>
@@ -46,6 +51,7 @@
 
 	Panel LocalModelsPanel;
 	Panel CloudModelsPanel;
+	Panel CloudMapsPanel;
 	Panel ToolsPanel;
 	Panel UtilitiesPanel;
 
