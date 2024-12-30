@@ -1,9 +1,9 @@
 @using Sandbox.UI;
 @inherits Panel
-@namespace Scenebox.UI
+@namespace Sandbox.UI
 
-<root class="cell" onclick=@Spawn Tooltip=@Model.ResourceName>
-	<Image Texture=@ThumbnailCache.Get(Model) />
+<root class="cell" onclick=@Spawn Tooltip=@Model.ResourcePath>
+	<Image Texture=@(Texture.Load(FileSystem.Mounted, $"/{Model.ResourcePath}_c.png", false) ?? ThumbnailCache.Get(Model)) />
 </root>
 
 @code
@@ -12,19 +12,13 @@
 
 	void Spawn()
 	{
-		var localPlayer = Player.Local;
-		if (!localPlayer.IsValid())
+		if (Input.Down("run"))
+		{
+			Clipboard.SetText(Model.ResourcePath);
+			Log.Info($"Copied to clipboard: {Model.ResourcePath}");
 			return;
-
-		var tr = Scene.Trace.Ray(new Ray(localPlayer.Head.Transform.Position, localPlayer.Direction.Forward), 10_000)
-		.IgnoreGameObject(localPlayer.GameObject.Root)
-		.WithoutTags("trigger")
-		.Run();
-
-		var position = tr.Hit ? (tr.HitPosition + tr.Normal * Model.Bounds.Size.Length / 2f) : tr.EndPosition;
-		var rotation = Rotation.From(0, localPlayer.Direction.yaw + 180, 0);
-
-		var obj = GameManager.Instance.SpawnModel(Model, position, rotation);
+		}
+		ConsoleSystem.Run("spawn", Model.ResourcePath);
 	}
 
 	protected override int BuildHash() => System.HashCode.Combine(ThumbnailCache.Get(Model));

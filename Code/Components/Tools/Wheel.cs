@@ -1,9 +1,10 @@
-﻿[Library( "tool_wheel", Description = "A wheel that you can turn on and off (but actually can't yet)", Group = "construction" )]
+﻿using Sandbox.Tools;
+
+[Library( "tool_wheel", Title = "Wheel", Description = "A wheel that you can turn on and off (but actually can't yet)", Group = "constraints" )]
 public class Wheel : BaseTool
 {
-
-	[ConVar( "tool_wheel_model" )]
-	public static string _ { get; set; } = "models/citizen_props/wheel01.vmdl";
+	[Property, Title( "Wheel Model" ), ModelProperty( SpawnLists = ["wheel"] )]
+	public override string SpawnModel { get; set; } = "models/citizen_props/wheel01.vmdl";
 
 	protected override bool IsPreviewTraceValid( SceneTraceResult tr )
 	{
@@ -92,7 +93,7 @@ public class Wheel : BaseTool
 		};
 
 		var prop = go.AddComponent<Prop>();
-		prop.Model = Model.Load( GetModel() );
+		prop.Model = Model.Load( SpawnModel );
 
 		var propHelper = go.AddComponent<PropHelper>();
 		propHelper.Invincible = true;

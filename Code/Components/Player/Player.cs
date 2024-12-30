@@ -3,6 +3,7 @@
 /// </summary>
 public sealed partial class Player : Component, Component.IDamageable, PlayerController.IEvents
 {
+	public static Player Local => FindLocalPlayer();
 	public static Player FindLocalPlayer()
 	{
 		return Game.ActiveScene.GetAllComponents<Player>().FirstOrDefault( x => !x.IsProxy );

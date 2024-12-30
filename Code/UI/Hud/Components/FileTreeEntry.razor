@@ -1,7 +1,7 @@
 @using System;
 @using Sandbox;
 @using Sandbox.UI;
-@namespace Scenebox.UI
+@namespace Sandbox.UI
 
 <root>
 	@if (FileSystem.FindFile(Path, FileFilter, true).Count() > 0)
@@ -32,8 +32,6 @@
 
 	void OpenClose()
 	{
-		Log.Error($"path: {Path}");
-		Log.Error($"selected: {Selected}");
 		OnFolderSelect?.Invoke(Path);
 		open = !open;
 		StateHasChanged();

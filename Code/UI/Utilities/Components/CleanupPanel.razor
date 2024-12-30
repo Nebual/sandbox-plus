@@ -1,6 +1,6 @@
 @using Sandbox.UI;
 @using Sandbox.Audio;
-@namespace Scenebox.UI.Utilities
+@namespace Sandbox.UI.Utilities
 @inherits Panel
 @attribute [StyleSheet]
 
@@ -101,7 +101,7 @@
 
 	void Notify(string message)
 	{
-		Sound.Play("ui.undo").TargetMixer = Mixer.FindMixerByName("UI");
-		NotificationPanel.Instance.AddEntry("cleanup", message, 5f, false);
+		Sound.Play("drop_001").TargetMixer = Mixer.FindMixerByName("UI");
+		HintFeed.AddHint("content_cut", message, 5);
 	}
 }

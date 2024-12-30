@@ -1,4 +1,4 @@
-namespace Scenebox;
+namespace Sandbox.UI;
 
 public static class IconHelper
 {

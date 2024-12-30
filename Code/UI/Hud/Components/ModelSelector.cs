@@ -13,8 +13,37 @@ namespace Sandbox.UI
 
 		private static readonly Regex reModelMatGroup = new( @"^(.*?)(?:--(\d+))?(\.vmdl)?$" );
 		private static readonly Regex reSpawnlistFile = new( @"([^\.]+)\.spawnlist$" );
-		public ModelSelector( IEnumerable<string> spawnListNames, bool showMaterialGroups = false )
+
+		public IEnumerable<string> SpawnListNames { get; set; }
+		public Action<string> OnValueChanged { get; set; }
+		protected string Value { get; set; }
+		public SerializedProperty SerializedProperty
 		{
+			get => _property;
+			set
+			{
+				_property = value;
+				Value = _property.GetValue<string>();
+			}
+		}
+		SerializedProperty _property;
+		protected string ValueMaterialGroup { get; set; }
+		public SerializedProperty SerializedPropertyMaterialGroup
+		{
+			get => _propertyMaterialGroup;
+			set
+			{
+				_propertyMaterialGroup = value;
+				ValueMaterialGroup = _propertyMaterialGroup.GetValue<string>();
+			}
+		}
+		SerializedProperty _propertyMaterialGroup;
+
+		private bool initialized;
+		protected override void OnParametersSet()
+		{
+			if (initialized) return;
+			initialized = true;
 			AddClass( "modelselector" );
 			AddChild( out Canvas, "canvas" );
 
@@ -24,7 +53,7 @@ namespace Sandbox.UI
 			Canvas.OnCreateCell = async ( cell, data ) =>
 			{
 				var file = (string)data;
-				if (file == null) return;
+				if ( file == null ) return;
 				Panel panel;
 
 				if ( FileSystem.Mounted.FileExists( file + "_c.png" ) )
@@ -64,7 +93,7 @@ namespace Sandbox.UI
 				} );
 			};
 
-			var spawnList = spawnListNames.SelectMany( GetSpawnList );
+			var spawnList = SpawnListNames.SelectMany( GetSpawnList );
 
 			foreach ( var file in spawnList )
 			{
@@ -87,8 +116,7 @@ namespace Sandbox.UI
 			return panel;
 		}
 
-		[ConCmd( "tool_cloud_model" )]
-		public static async void SetToolCloudModel( string tool, string model, string materialGroup )
+		public async void SetToolCloudModel( string tool, string model, string materialGroup )
 		{
 			if ( model == "" || model.EndsWith( ".vmdl" ) )
 				return;
@@ -111,10 +139,18 @@ namespace Sandbox.UI
 			SetToolModelClient( tool, model, materialGroup );
 		}
 
-		[Rpc.Owner]
-		public static void SetToolModelClient( string tool, string model, string materialGroup )
+		public void SetToolModelClient( string tool, string model, string materialGroup )
 		{
-			ConsoleSystem.Run( $"{tool}_model", model );
+			Value = model;
+			OnValueChanged?.Invoke( Value );
+			_property?.SetValue( Value );
+			ValueMaterialGroup = materialGroup;
+			_propertyMaterialGroup?.SetValue( ValueMaterialGroup );
+
+			if ( ConsoleSystem.GetValue( $"{tool}_model" ) != null )
+			{
+				ConsoleSystem.Run( $"{tool}_model", model );
+			}
 			if ( ConsoleSystem.GetValue( $"{tool}_materialgroup" ) != null )
 			{
 				ConsoleSystem.Run( $"{tool}_materialgroup", materialGroup );

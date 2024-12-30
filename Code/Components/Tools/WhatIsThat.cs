@@ -1,6 +1,8 @@
+using Sandbox.UI;
+
 namespace Sandbox.Tools
 {
-	[Library( "tool_whatisthat", Title = "What is that?", Description = "Prop identificationifier", Group = "construction" )]
+	[Library( "tool_whatisthat", Title = "What is that?", Description = "Prop identificationifier", Group = "rendering" )]
 	public partial class WhatIsThatTool : BaseTool
 	{
 		public override bool Primary( SceneTraceResult tr )
@@ -14,6 +16,7 @@ namespace Sandbox.Tools
 			var prop = tr.GameObject.GetComponent<PropHelper>();
 			if ( prop.IsValid() )
 			{
+				Clipboard.SetText(prop.Prop.Model.Name);
 				message += $" {prop.Prop.Model.Name},\n";
 				if ( tr.Body.IsValid() )
 				{

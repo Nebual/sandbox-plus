@@ -1,151 +1,95 @@
 @using Sandbox.UI
 @using Sandbox.UI.Construct
-@* @using Sandbox.UI.Hud.Components.Left *@
 
-@inherits Panel
+@inherits PanelComponent
 
-<root />
+<root class="@(IsVisible ? "spawnmenuopen" : "")">
+	<div class="left">
+		<div class="tabs" @ref="SpawnMenuLeftTabs">
+			<div onclick=@(() => SetActiveLeft(CloudModelsPanel)) class="btn @(SelectedPanelLeft == CloudModelsPanel ? "active" : "")">
+				<i>cloud_download</i>
+				<label>#spawnmenu.modellist</label>
+			</div>
+			<div onclick=@(() => SetActiveLeft(LocalModelsPanel)) class="btn @(SelectedPanelLeft == LocalModelsPanel ? "active" : "")">
+				<i>category</i>
+				<label>#spawnmenu.props</label>
+			</div>
+		</div>
+		<div class="body" @ref="SpawnMenuLeftBody">
+			<CloudModelList @ref="CloudModelsPanel" />
+			<LocalModelList @ref="LocalModelsPanel" />
+			@* <EntityList /> *@
+			@* <NpcList /> *@
+		</div>
+	</div>
+	<div class="right">
+		<div class="tabs">
+			<div onclick=@(() => SetActiveRight(ToolsPanel)) class="btn @(SelectedPanelRight == ToolsPanel ? "active" : "")">
+				<i>construction</i>
+				<label>#spawnmenu.tools</label>
+			</div>
+			<div onclick=@(() => SetActiveRight(UtilitiesPanel)) class="btn @(SelectedPanelRight == UtilitiesPanel ? "active" : "")">
+				<i>find_in_page</i>
+				<label>#spawnmenu.utility</label>
+			</div>
+		</div>
+		<div class="body">
+			<ToolMenu @ref="ToolsPanel" />
+			<UtilitiesMenu @ref="UtilitiesPanel" />
+		</div>
+	</div>
+</root>
 
 @code
 {
     public static SpawnMenu Instance { get; protected set; }
 
-    readonly Panel toollist;
+	Panel LocalModelsPanel;
+	Panel CloudModelsPanel;
+	Panel ToolsPanel;
+	Panel UtilitiesPanel;
 
-    private static ModelList modelList;
-    
-    public Panel ToolPanel { get; private set; }
-    public ButtonGroup SpawnMenuLeftTabs  { get; private set; }
+	Panel SelectedPanelLeft;
+	Panel SelectedPanelRight;
+
+    public Panel SpawnMenuLeftTabs  { get; private set; }
     public Panel SpawnMenuLeftBody { get; private set; }
     public bool IgnoreMenuButton = false;
-    private bool IsOpen = false;
-    private bool isSearching;
-    private bool menuWasPressed = false;
+	public bool IsVisible => (Input.Down("Menu") && !IgnoreMenuButton) || Panel.Children.Any(x => x.HasFocus);
 
-    public SpawnMenu()
-    {
+	protected override void OnTreeFirstBuilt()
+	{
         Instance = this;
 
-        var left = Add.Panel("left");
-        {
-            var tabs = left.AddChild<ButtonGroup>();
-            tabs.AddClass("tabs");
-            SpawnMenuLeftTabs = tabs;
-
-            var body = left.Add.Panel("body");
-            SpawnMenuLeftBody = body;
-            {
-                modelList = body.AddChild<ModelList>();
-                tabs.SelectedButton = tabs.AddButtonActive("#spawnmenu.modellist", (b) => modelList.SetClass("active", b));
-
-                // var ents = body.AddChild<EntityList>();
-                // tabs.AddButtonActive("#spawnmenu.entities", (b) => ents.SetClass("active", b));
-
-                // var npclist = body.AddChild<NpcList>();
-                // tabs.AddButtonActive("#spawnmenu.npclist", (b) => npclist.SetClass("active", b));
-
-                var props = body.AddChild<SpawnList>();
-                tabs.AddButtonActive("#spawnmenu.props", (b) => props.SetClass("active", b));
-
-                // todo: remove this when the "sandbox.hud.loaded" event works again
-                DynShapeSpawnMenu.Initialize();
-            }
-        }
-
-        var right = Add.Panel("right");
-        {
-            var tabs = right.Add.Panel("tabs");
-            {
-                tabs.Add.Button("#spawnmenu.tools").AddClass("active");
-                tabs.Add.Button("#spawnmenu.utility");
-            }
-
-            var body = right.Add.Panel("body");
-            {
-                toollist = body.Add.Panel("toollist");
-                {
-                    RebuildToolList();
-                }
-
-                ToolPanel = body.Add.Panel("inspector");
-            }
-        }
-    }
-
-    public void RebuildToolList()
+		// todo: remove this when the "sandbox.hud.loaded" event works again
+		DynShapeSpawnMenu.Initialize();
+		SetActiveLeft(CloudModelsPanel);
+		SetActiveRight(ToolsPanel);
+	}
+    protected override void OnTreeBuilt()
     {
-        toollist.DeleteChildren(true);
-
-        foreach (var entry in TypeLibrary.GetTypes<BaseTool>().OrderBy(( x ) => x.Title))
-        {
-            if (entry.Name.StartsWith("Base"))
-                continue;
-
-            var button = toollist.Add.Button(entry.Title);
-            button.SetClass("active", entry.ClassName == ConsoleSystem.GetValue("tool_current"));
-
-            button.AddEventListener("onclick", () =>
-            {
-                SetActiveTool(entry.ClassName);
-
-                foreach (var child in toollist.Children)
-                    child.SetClass("active", child == button);
-            });
-        }
+		SandboxHud.Instance?.SetClass("spawnmenuopen", IsVisible);
     }
+	public void SetActiveLeft(Panel panel)
+	{
+		SelectedPanelLeft = panel;
+		SpawnMenuLeftBody.Children.ToList().ForEach(x => x.SetClass("hidden", x != SelectedPanelLeft));
+	}
 
-    void SetActiveTool(string className)
-    {
-        // setting a cvar
-        ConsoleSystem.Run("tool_current", className);
+	void SetActiveRight(Panel panel)
+	{
+		ToolsPanel.SetClass("hidden", ToolsPanel != panel);
+		UtilitiesPanel.SetClass("hidden", UtilitiesPanel != panel);
+		SelectedPanelRight = panel;
+	}
 
-        // set the active weapon to the toolgun
-        var player = Player.FindLocalPlayer();
-        if (!player.IsValid())
-            return;
-
-        var inventory = player.Inventory;
-        if (!inventory.IsValid())
-            return;
-
-        // why isn't inventory just an ienumurable wtf
-        for (int i = 0; i < inventory.Weapons.Count; i++)
-        {
-            var weapon = player.Inventory.GetSlot(i);
-            if (!weapon.IsValid()) continue;
-            if (DisplayInfo.ForType(weapon.GetType()).ClassName != "weapon_tool") continue;
-
-            inventory.SetActiveSlot(i);
-        }
-    }
-
-    public override void Tick()
-    {
-        if (!IgnoreMenuButton)
-        {
-            if (Input.Pressed("menu"))
-            {
-                IsOpen = true;
-            }
-            if (menuWasPressed && !Input.Down("menu"))
-            {
-                IsOpen = false;
-            }
-        }
-        menuWasPressed = Input.Down("menu");
-
-        if (modelList.SearchInput.HasFocus)
-        {
-            isSearching = true;
-        }
-        else if (isSearching && Input.Pressed("Menu"))
-        {
-            isSearching = false;
-        }
-
-        if (isSearching)
-            return;
-
-        SetClass("spawnmenuopen", IsOpen);
-    }
+	protected override void OnFixedUpdate()
+	{
+		if (Input.Pressed("attack1"))
+		{
+			Panel.Children.FirstOrDefault(x => x.HasFocus)?.Blur();
+			Panel?.Blur();
+		}
+	}
+	protected override int BuildHash() => System.HashCode.Combine(SelectedPanelLeft ?? null, SelectedPanelRight ?? null, IsVisible);
 }

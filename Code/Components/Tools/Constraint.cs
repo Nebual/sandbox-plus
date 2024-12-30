@@ -7,7 +7,7 @@ using Sandbox.Physics;
 
 namespace Sandbox.Tools
 {
-	[Library( "tool_constraint", Title = "Constraint", Description = "Constrain stuff together", Group = "construction" )]
+	[Library( "tool_constraint", Title = "Constraint", Description = "Constrain stuff together", Group = "constraints" )]
 	public partial class ConstraintTool : BaseTool
 	{
 		// ConVar doesn't seem to network its wrapped property nicely, so lets make our own...
@@ -90,7 +90,7 @@ namespace Sandbox.Tools
 				wasPlayerInputLocked = false;
 			}
 
-			this.Description = CalculateDescription();
+			this.LongDescription = CalculateDescription();
 
 			if ( Input.Pressed( "drop" ) )
 			{
@@ -688,12 +688,6 @@ namespace Sandbox.Tools
 			rope.ControlPoints = RopePoints;
 
 			return rope;
-		}
-
-		public override void CreateToolPanel()
-		{
-			var toolConfigUi = new ConstraintToolConfig();
-			SpawnMenu.Instance?.ToolPanel?.AddChild( toolConfigUi );
 		}
 
 		protected void ResetTool()

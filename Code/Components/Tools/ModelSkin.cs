@@ -1,4 +1,4 @@
-[Library( "model_skin", Title = "Model Skin Changer", Description = "Cycles through the models skins", Group = "construction" )]
+[Library( "model_skin", Title = "Model Skin Changer", Description = "Cycles through the models skins", Group = "rendering" )]
 public partial class ModelSkinTool : BaseTool
 {
 	public override bool Primary( SceneTraceResult trace )

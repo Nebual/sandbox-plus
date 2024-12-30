@@ -1,48 +1,80 @@
-@using System;
-@using System.Collections.Generic;
-@using Sandbox;
 @using Sandbox.UI;
-@using Scenebox.Tools;
+@using Sandbox.Tools;
 @inherits Panel
-@implements IToolInspector
-@namespace Scenebox.UI
+@* @implements IToolInspector *@
+@namespace Sandbox.UI
 @attribute [StyleSheet]
 
 <root class="DefaultToolInspector">
-	<label class="header">@Toolgun.CurrentTool.GetName()</label>
+	<label class="header">@CurrentTool.GetCurrentTool().Name</label>
 	<div class="content">
-		<label class="description">@Toolgun.CurrentTool.GetLongDescription()</label>
+		<label class="description">@CurrentTool.GetCurrentTool().Description</label>
 		<div class="controls">
-			@foreach (var property in TypeLibrary.GetSerializedObject(Toolgun.CurrentTool))
+			@foreach (var property in TypeLibrary.GetSerializedObject(CurrentTool.GetCurrentTool()))
 			{
-				if (!property.HasAttribute<PropertyAttribute>()) continue;
+				if (!property.HasAttribute<PropertyAttribute>() || property.PropertyType == typeof(Action)) continue;
 				property.TryGetAttribute<TitleAttribute>(out var title);
 				var name = title?.Value ?? property.Name;
 				<div class="control">
 					@if (property.PropertyType == typeof(float))
 					{
-						<p>@(name):</p>
 						property.TryGetAttribute<RangeAttribute>(out var range);
-						<SliderControl Min=@(range?.Min ?? 0) Max=@(range?.Max ?? 1) Step=@(range?.Step ?? 0.01f) SerializedProperty=@property OnValueChanged=@((float _value) => { property.SetValue(_value); }) ShowTextEntry=@(true) />
+						<Slider
+							Label=@name
+							Min=@(range?.Min ?? 0)
+							Max=@(range?.Max ?? 1)
+							Step=@(range?.Step ?? 0.01f)
+							SerializedProperty=@property
+							OnValueChanged=@((float _value) => { property.SetValue(_value); })
+							ShowTextEntry=@(true)
+						/>
 					}
 					else if (property.PropertyType == typeof(int))
 					{
-						<p>@(name):</p>
-						<SliderControl Min=@(0) Max=@(1) Step=@(1) SerializedProperty=@property OnValueChanged=@((float _value) => { property.SetValue(_value); }) ShowTextEntry=@(true) />
+						property.TryGetAttribute<RangeAttribute>(out var range);
+						<Slider
+							Label=@name
+							Min=@(range?.Min ?? 0)
+							Max=@(range?.Max ?? 1)
+							Step=@(range?.Step ?? 1)
+							SerializedProperty=@property
+							OnValueChanged=@((float _value) => { property.SetValue(_value); })
+							ShowTextEntry=@(true)
+						/>
 					}
 					else if (property.PropertyType == typeof(bool))
 					{
-						<SwitchControl SerializedProperty=@property OnValueChanged=@((bool _value) => { property.SetValue(_value); }) />
-						<p>@name</p>
+						<ToolCheckbox
+							Label=@name
+							SerializedProperty=@property
+							OnValueChanged=@((bool _value) => { property.SetValue(_value); })
+						/>
+					}
+					else if (property.TryGetAttribute<ModelPropertyAttribute>(out var modelProperty) && modelProperty != null)
+					{
+						<ModelSelector
+							SpawnListNames=@(modelProperty.SpawnLists)
+							SerializedProperty=@property
+							OnValueChanged=@((string _value) => { property.SetValue(_value); })
+						/>
+					}
+					else if (property.TryGetAttribute<MaterialPropertyAttribute>(out var materialProperty) && materialProperty != null)
+					{
+						<MaterialSelector
+							SerializedProperty=@property
+							OnValueChanged=@((string _value) => { property.SetValue(_value); })
+						/>
 					}
 					else if (property.PropertyType == typeof(string))
 					{
-
+						@* todo text entry *@
 					}
-					@* else if (property.PropertyType == typeof(Model))
-				{
-				<AssetList Query="type:model sort:popular" />
-				} *@
+					else if (property.PropertyType == typeof(Color))
+					{
+						<ColorSelector
+							SerializedProperty=@property
+						/>
+					}
 				</div>
 				@if (property.TryGetAttribute<DescriptionAttribute>(out var description))
 				{
@@ -55,7 +87,5 @@
 
 @code
 {
-	public Toolgun Toolgun { get; set; }
-
 	protected override int BuildHash() => System.HashCode.Combine("");
 }

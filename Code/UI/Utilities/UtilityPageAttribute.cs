@@ -1,4 +1,4 @@
-namespace Scenebox;
+namespace Sandbox.UI;
 
 public class UtilityPageAttribute : System.Attribute
 {

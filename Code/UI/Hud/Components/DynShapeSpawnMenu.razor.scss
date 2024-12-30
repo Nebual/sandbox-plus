@@ -1,5 +1,4 @@
 ﻿DynShapeSpawnMenu {
-  display: none;
   flex-direction: column;
   flex-grow: 1;
 
@@ -95,7 +94,6 @@
     flex-grow: 1;
 
     label {
-      color: rgba(#fff, 0.5);
       font-size: 14px;
 
       &.header {

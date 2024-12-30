@@ -13,6 +13,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		public Transform Transform { get; set; }
 	}
 
+	[Sync] public Guid CreatorId { get; set; } = Guid.Empty;
 	[Property, Sync] public float Health { get; set; } = 1f;
 	[Property, Sync] public Vector3 Velocity { get; set; } = 0f;
 	[Property, Sync] public bool Invincible { get; set; } = false;
@@ -71,6 +72,10 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		Velocity = 0f;
 
 		lastPosition = Prop?.WorldPosition ?? WorldPosition;
+		if ( !IsProxy && CreatorId == Guid.Empty )
+		{
+			CreatorId = Connection.Local.Id;
+		}
 	}
 
 	[Rpc.Broadcast]

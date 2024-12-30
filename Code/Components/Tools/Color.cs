@@ -1,8 +1,8 @@
-[Library( "tool_color", Title = "Color", Description = "Change render color and alpha of entities", Group = "construction" )]
+[Library( "tool_color", Title = "Color", Description = "Change render color and alpha of entities", Group = "rendering" )]
 public partial class ColorTool : BaseTool
 {
-	[ConVar( "tool_color_color" )]
-	public static string _ { get; set; } = "";
+	[Property, Title( "Color" )]
+	public Color TargetColor { get; set; } = Color.Blue;
 
 	public override bool Primary( SceneTraceResult trace )
 	{
@@ -14,7 +14,7 @@ public partial class ColorTool : BaseTool
 		if ( !trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
 			return false;
 
-		BroadcastColor( propHelper, GetConvarValue( "tool_color_color" ) );
+		BroadcastColor( propHelper, TargetColor );
 
 		return true;
 	}
@@ -38,11 +38,5 @@ public partial class ColorTool : BaseTool
 	private static void BroadcastColor( PropHelper propHelper, Color color )
 	{
 		propHelper.Prop.Tint = color;
-	}
-
-	public override void CreateToolPanel()
-	{
-		var colorSelector = new Sandbox.UI.ColorSelector();
-		SpawnMenu.Instance?.ToolPanel?.AddChild( colorSelector );
 	}
 }

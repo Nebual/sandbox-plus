@@ -1,7 +1,7 @@
 @using Sandbox;
 @using Sandbox.UI;
 @inherits Panel
-@namespace Scenebox.UI
+@namespace Sandbox.UI
 @attribute [StyleSheet]
 
 <root class="spawnpage columned">
@@ -63,6 +63,7 @@
 			{
 				if (file.Contains("_lod0")) continue;
 				if (file.Contains("clothes")) continue;
+				if (file.Contains("_gib")) continue;
 			}
 			else
 			{

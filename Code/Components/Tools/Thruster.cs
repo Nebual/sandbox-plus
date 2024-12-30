@@ -1,14 +1,10 @@
-﻿using Sandbox.UI;
-
-[Library( "tool_thruster", Description = "A rocket type thing that can push forwards and backward", Group = "construction" )]
+﻿[Library( "tool_thruster", Title = "Thruster", Description = "A rocket type thing that can push forwards and backward", Group = "construction" )]
 public class Thruster : BaseTool
 {
-	RealTimeSince timeSinceDisabled;
-
-	[ConVar( "tool_thruster_thrust" )]
-	public static float _ { get; set; } = 1000f;
-
-	private static Slider WeightSlider;
+	[Property, Range( 0, 10000, 10 ), Title("Force Multiplier"), Description("The amount of force the thruster will apply to the attached object.")]
+	public float ForceMultiplier { get; set; } = 1000f;
+	[Property]
+	public bool Massless { get; set; } = true;
 
 	protected override void OnAwake()
 	{
@@ -56,7 +52,8 @@ public class Thruster : BaseTool
 			ThrusterComponent targetThruster = trace.GameObject.GetComponent<ThrusterComponent>();
 			if ( targetThruster.IsValid() )
 			{
-				targetThruster.ForceMultiplier = float.Parse( GetConvarValue( "tool_thruster_thrust" ) );
+				targetThruster.ForceMultiplier = ForceMultiplier;
+				targetThruster.Massless = Massless;
 
 				return true;
 			}
@@ -81,12 +78,6 @@ public class Thruster : BaseTool
 	{
 		wheel.WorldPosition = trace.HitPosition + trace.Normal * 1f;
 		wheel.WorldRotation = Rotation.LookAt( trace.Normal ) * Rotation.From( new Angles( 90, 0, 0 ) );
-	}
-
-	public override void Disabled()
-	{
-		base.Disabled();
-		timeSinceDisabled = 0;
 	}
 
 	private Func<string> ReadyUndo( GameObject wheel, GameObject other )
@@ -133,7 +124,8 @@ public class Thruster : BaseTool
 		}
 
 		var thruster = go.AddComponent<ThrusterComponent>();
-		thruster.ForceMultiplier = float.Parse( GetConvarValue( "tool_thruster_thrust" ) );
+		thruster.ForceMultiplier = ForceMultiplier;
+		thruster.Massless = Massless;
 
 		Rigidbody targetBody = trace.GameObject.GetComponent<Rigidbody>();
 		if ( targetBody.IsValid() )
@@ -150,36 +142,5 @@ public class Thruster : BaseTool
 		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
 
 		return go;
-	}
-
-	[Rpc.Owner]
-	public void SetThrustConvar( float thrust )
-	{
-		ConsoleSystem.Run( "tool_thruster_thrust", thrust );
-		if ( WeightSlider.IsValid() )
-		{
-			WeightSlider.Value = thrust;
-		}
-		OnThrustConvarChanged( thrust );
-		HintFeed.AddHint( "", $"Loaded thrust of {thrust}" );
-	}
-	public void OnThrustConvarChanged( float thrust )
-	{
-		Description = $"Set thrust to {thrust}";
-	}
-
-	public override void CreateToolPanel()
-	{
-		WeightSlider = new Slider
-		{
-			Label = "Thrust",
-			Min = 0f,
-			Max = 10000f,
-			Value = 1f,
-			Step = 1f,
-			Convar = "tool_thruster_thrust",
-			OnValueChanged = OnThrustConvarChanged,
-		};
-		SpawnMenu.Instance?.ToolPanel?.AddChild( WeightSlider );
 	}
 }

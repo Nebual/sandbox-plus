@@ -1,6 +1,4 @@
-using System;
-
-namespace Scenebox.Tools;
+namespace Sandbox.Tools;
 
 [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
 public class ToolInspectorAttribute : Attribute

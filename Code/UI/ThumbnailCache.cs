@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace Scenebox;
+namespace Sandbox.UI;
 
 public static class ThumbnailCache
 {

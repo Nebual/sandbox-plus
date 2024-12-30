@@ -1,4 +1,4 @@
-[Library( "tool_remover", Description = "Remove entities", Group = "construction" )]
+[Library( "tool_remover", Title = "Remover", Description = "Remove entities", Group = "construction" )]
 public class Remover : BaseTool
 {
 	public override bool Primary( SceneTraceResult trace )

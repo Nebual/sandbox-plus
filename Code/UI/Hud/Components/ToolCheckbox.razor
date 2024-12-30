@@ -3,19 +3,25 @@
 @namespace Sandbox.UI
 
 <root>
-    @if (Value)
-    {
-        <icon>check</icon>
-    }
-    else
-    {
-        <icon>square</icon>
-    }
-    <text>@Label</text>
+	@if (Value)
+	{
+		<span class="checkbox checked">
+			<i>check</i>
+		</span>
+	}
+	else
+	{
+		<span class="checkbox unchecked">
+			<i style="color: transparent;">square</i>
+		</span>
+	}
+	</span>
+    <label>@Label</label>
 </root>
 
 @code
 {
+    public Action<bool> OnValueChanged { get; set; }
     /// <summary>
     /// The convar to bind to. Handles Value/OnValueChanged
     /// </summary>
@@ -23,6 +29,17 @@
     public string Label = "";
 
     public bool Value = false;
+
+    public SerializedProperty SerializedProperty
+    {
+        get => _property;
+        set
+        {
+            _property = value;
+            Value = _property.GetValue<bool>();
+        }
+    }
+    SerializedProperty _property;
 
     protected override Task OnParametersSetAsync()
     {
@@ -34,12 +51,13 @@
 	    return Task.CompletedTask;
     }
 
-    public virtual void OnValueChanged( )
+    public void DoValueChanged( )
     {
         if (Convar != "")
         {
             ConsoleSystem.Run( Convar, Value ? "1" : "0" );
         }
+        OnValueChanged?.Invoke(Value);
     }
 
     protected override void OnClick( MousePanelEvent e )
@@ -47,7 +65,7 @@
         base.OnClick( e );
 
         Value = !Value;
-        OnValueChanged();
+        DoValueChanged();
         e.StopPropagation();
     }
 
@@ -61,9 +79,12 @@
 ToolCheckbox {
     margin-bottom: 5px;
     align-items: center;
-    icon {
-        flex-grow: 0;
-        margin-right: 4px;
-    }
+	.checkbox {
+		padding: 1px;
+		background-color: #eee;
+	}
+	label {
+		margin-left: 4px;
+	}
 }
 </style>

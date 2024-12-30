@@ -1,4 +1,4 @@
-[Library( "tool_weld", Description = "Weld stuff together", Group = "construction" )]
+[Library( "tool_weld", Title = "Weld", Description = "Weld stuff together", Group = "constraints" )]
 public class Weld : BaseTool
 {
 	GameObject welded;

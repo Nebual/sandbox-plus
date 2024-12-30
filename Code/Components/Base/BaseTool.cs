@@ -3,10 +3,16 @@ public abstract class BaseTool : Component
 	public ToolGun Parent { get; set; }
 	public Player Owner { get; set; }
 
-	// Set this to override the [Library]'s class default
-	public string Description { get; set; } = null;
+	public string Name => DisplayInfo.For( this ).Name;
+	// Shown in the tool panel
+	public string Description { get => _description ?? DisplayInfo.For( this ).Description; set => _description = value; }
+	private string _description = null;
+	// Shown in the main HUD
+	public string LongDescription { get => _longDescription ?? Description; set => _longDescription = value; }
+	private string _longDescription = null;
 
 	protected PreviewModel previewModel;
+	public virtual string SpawnModel { get; set; } = "";
 
 	public virtual bool Primary( SceneTraceResult trace )
 	{
@@ -32,9 +38,7 @@ public abstract class BaseTool : Component
 		CreatePreview();
 		if ( !IsProxy )
 		{
-			SpawnMenu.Instance?.ToolPanel?.DeleteChildren( true );
-			LoadModelSelector();
-			CreateToolPanel();
+			Sandbox.UI.ToolMenu.Instance?.UpdateInspector();
 		}
 	}
 
@@ -72,20 +76,6 @@ public abstract class BaseTool : Component
 		base.OnDestroy();
 		previewModel?.Destroy();
 	}
-
-	public void LoadModelSelector()
-	{
-		if ( !IsProxy && HasModel() )
-		{
-			var modelSelector = new Sandbox.UI.ModelSelector( GetSpawnLists() );
-			SpawnMenu.Instance?.ToolPanel?.AddChild( modelSelector );
-		}
-	}
-
-	public virtual void CreateToolPanel()
-	{
-	}
-
 	protected string GetConvarValue( string name, string defaultValue = null )
 	{
 		return ConsoleSystem.GetValue( name, defaultValue );
@@ -113,17 +103,15 @@ public abstract class BaseTool : Component
 
 	protected bool HasModel()
 	{
+		if ( SpawnModel != "" ) return true;
 		var toolId = GetConvarValue( "tool_current" );
 		return (GetConvarValue( $"{toolId}_model" ) ?? "") != "";
 	}
 	protected virtual string GetModel()
 	{
+		if ( SpawnModel != "" ) return SpawnModel;
 		var toolCurrent = GetConvarValue( "tool_current", "" );
 		return GetConvarValue( $"{toolCurrent}_model" ) ?? "models/citizen_props/coffeemug01.vmdl";
-	}
-	protected virtual string[] GetSpawnLists()
-	{
-		return new string[] { GetConvarValue( "tool_current", "" )[5..] };
 	}
 
 	public virtual void CreatePreview()

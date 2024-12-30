@@ -1,4 +1,4 @@
-[Library( "tool_boxgun", Description = "Shoot boxes", Group = "fun" )]
+[Library( "tool_boxgun", Title = "Box Gun", Description = "Shoot boxes", Group = "fun" )]
 public class BoxShooter : BaseTool
 {
 	RealTimeSince timeSinceShoot;

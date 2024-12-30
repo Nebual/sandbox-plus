@@ -3,12 +3,10 @@
 [Library( "tool_weight", Title = "Weight", Description = "Change prop weight", Group = "construction" )]
 public class WeightTool : BaseTool
 {
-	[ConVar( "tool_weight_weight" )]
-	public static float _ { get; set; } = 100f;
+	[Property, Range( 1f, 50000f, 1f ), Title( "Weight" )]
+	public float TargetWeight { get; set; } = 100f;
 
 	public static Dictionary<string, float> ModelWeights = new();
-
-	private static Slider WeightSlider;
 
 	public override bool Primary( SceneTraceResult trace )
 	{
@@ -22,7 +20,7 @@ public class WeightTool : BaseTool
 			{
 				ModelWeights.Add( prop.Model.Name, trace.Body.Mass );
 			}
-			trace.Body.Mass = float.Parse( GetConvarValue( "tool_weight_weight" ) );
+			trace.Body.Mass = TargetWeight;
 			return true;
 		}
 
@@ -65,33 +63,9 @@ public class WeightTool : BaseTool
 		return false;
 	}
 
-	[Rpc.Owner]
 	public void SetWeightConvar( float weight )
 	{
-		ConsoleSystem.Run( "tool_weight_weight", weight );
-		if ( WeightSlider.IsValid() )
-		{
-			WeightSlider.Value = weight;
-		}
-		OnWeightConvarChanged( weight );
+		TargetWeight = weight;
 		HintFeed.AddHint( "", $"Loaded weight of {weight}" );
-	}
-	public void OnWeightConvarChanged( float weight )
-	{
-		Description = $"Set weight to {weight}";
-	}
-
-	public override void CreateToolPanel()
-	{
-		WeightSlider = new Slider
-		{
-			Label = "Weight",
-			Min = 1f,
-			Max = 50000f,
-			Step = 1f,
-			Convar = "tool_weight_weight",
-			OnValueChanged = OnWeightConvarChanged,
-		};
-		SpawnMenu.Instance?.ToolPanel?.AddChild( WeightSlider );
 	}
 }

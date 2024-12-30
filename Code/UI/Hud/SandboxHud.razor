@@ -10,7 +10,6 @@
 	<Scoreboard T="ScoreboardEntry" />
 	<Health />
 	<CurrentTool />
-	<SpawnMenu />
 	<Crosshair />
 	<InventoryBar />
 </root>
@@ -25,6 +24,15 @@
 		Instance = this;
 
 		// Event.Run("sandbox.hud.loaded");
+	}
+	protected override void OnTreeFirstBuilt()
+	{
+		AddComponent<SpawnMenu>();
+	}
+
+	protected override void OnUpdate()
+	{
+		Sandbox.UI.ThumbnailCache.CheckTextureQueue();
 	}
 
 	[Rpc.Owner]
@@ -45,7 +53,10 @@
 	private void OnReloaded()
 	{
 		Log.Info("SandboxHud.OnReloaded");
-		SpawnMenu.Instance?.RebuildToolList();
+		
+		GetComponent<SpawnMenu>()?.Destroy();
+		AddComponent<SpawnMenu>();
+		Sandbox.UI.ThumbnailCache.Clear();
 		HotReloadTool();
 	}
 

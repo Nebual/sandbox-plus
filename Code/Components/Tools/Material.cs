@@ -2,11 +2,17 @@
 
 namespace Sandbox.Tools
 {
-	[Library( "tool_material", Title = "Material", Description = "Primary: Set Material Override\nSecondary: Change Model's MaterialGroup (if supported)\nReload: Clear Material Override", Group = "construction" )]
+	[Library( "tool_material", Title = "Material", Description = "Change the material override of props", Group = "construction" )]
 	public partial class MaterialTool : BaseTool
 	{
-		[ConVar( "tool_material_material" )]
-		public static string _ { get; set; } = "";
+		[Property, MaterialProperty]
+		public string SpawnMaterial { get; set; } = "";
+
+		protected override void OnEnabled()
+		{
+			base.OnEnabled();
+			LongDescription = "Primary: Set Material Override\nSecondary: Change Model's MaterialGroup (if supported)\nReload: Clear Material Override";
+		}
 
 		[ConVar( "tool_material_materialindex" )] public static string _2 { get; set; } = "-1";
 		protected override void OnUpdate()
@@ -23,7 +29,7 @@ namespace Sandbox.Tools
 
 				if ( Input.Pressed( "attack1" ) )
 				{
-					modelEnt.SetClientMaterialOverride( GetConvarValue( "tool_material_material" ), int.Parse( GetConvarValue( "tool_material_materialindex" ) ) );
+					modelEnt.SetClientMaterialOverride( SpawnMaterial, int.Parse( GetConvarValue( "tool_material_materialindex" ) ) );
 
 					Parent.ToolEffects( tr.EndPosition, tr.Normal );
 				}
@@ -124,12 +130,6 @@ namespace Sandbox.Tools
 		{
 			var collectionLookup = await Package.FetchAsync( "sugmatextures/sugmatextures", false, true );
 			ModelSelector.AddToSpawnlist( "material", collectionLookup.PackageReferences );
-		}
-
-		public override void CreateToolPanel()
-		{
-			var materialSelector = new MaterialSelector();
-			SpawnMenu.Instance?.ToolPanel?.AddChild( materialSelector );
 		}
 	}
 }

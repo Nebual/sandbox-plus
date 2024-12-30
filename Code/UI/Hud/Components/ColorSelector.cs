@@ -6,10 +6,25 @@ namespace Sandbox.UI
 	[Library]
 	public partial class ColorSelector : Panel
 	{
+		public Action<Color> OnValueChanged { get; set; }
+		protected Color Value;
+		public SerializedProperty SerializedProperty
+		{
+			get => _property;
+			set
+			{
+				_property = value;
+				Value = _property.GetValue<Color>();
+			}
+		}
+		SerializedProperty _property;
 		VirtualScrollPanel Canvas;
 
-		public ColorSelector()
+		private bool initialized;
+		protected override void OnParametersSet()
 		{
+			if ( initialized ) return;
+			initialized = true;
 			AddClass( "modelselector" );
 			AddClass( "active" );
 			AddChild( out Canvas, "canvas" );
@@ -24,6 +39,10 @@ namespace Sandbox.UI
 
 			Canvas.OnCreateCell = ( cell, data ) =>
 			{
+				if ( index < 0 || index >= colors.Length )
+				{
+					return;
+				}
 				var sceneWorld = new SceneWorld();
 				var mod = new SceneObject( sceneWorld, Cloud.Model( "https://asset.party/drakefruit.cube32" ), Transform.Zero );
 				var color = colors[index];
@@ -36,8 +55,9 @@ namespace Sandbox.UI
 
 				panel.AddEventListener( "onclick", () =>
 				{
-					var currentTool = ConsoleSystem.GetValue( "tool_current" );
-					ConsoleSystem.Run( $"{currentTool}_color", color );
+					Value = color;
+					OnValueChanged?.Invoke( Value );
+					_property?.SetValue( Value );
 				} );
 
 				if ( index < colors.Length )
@@ -50,6 +70,8 @@ namespace Sandbox.UI
 			{
 				Canvas.AddItem( color );
 			}
+			// VirtualScrollPanel doesn't have a valid height (subsequent children overlap it within flex-direction: column) so calculate it manually
+			Style.Height = (64 + 6) * (int)Math.Ceiling( colors.Length / 5f );
 		}
 	}
 }

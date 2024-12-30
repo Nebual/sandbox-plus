@@ -1,10 +1,7 @@
-@using System;
-@using System.Collections.Generic;
-@using Sandbox;
 @using Sandbox.UI;
-@using Scenebox.Tools;
+@using Sandbox.Tools;
 @inherits Panel
-@namespace Scenebox.UI
+@namespace Sandbox.UI
 @attribute [StyleSheet]
 
 <root>
@@ -15,13 +12,13 @@
 			{
 				var tools = GetTools();
 				var groups = GetGroups(tools);
-				foreach (var group in groups)
+				foreach (var group in groups.OrderBy(x => x))
 				{
 					<label class="header">@group</label>
-					foreach (var tool in tools.Where(x => GetGroup(x.TargetType) == group))
+					foreach (var tool in tools.Where(x => x.Group == group).OrderBy(x => x.Title))
 					{
-						<div class="tool @(IsCurrentTool(tool.TargetType) ? "active" : "")" onclick=@(() => GiveTool(tool))>
-							@(TypeLibrary.GetAttribute<ToolAttribute>(tool.TargetType)?.Title ?? "Missingtool.")
+						<div class="tool @(IsCurrentTool(tool.Type.TargetType) ? "active" : "")" onclick=@(() => GiveTool(tool))>
+							@tool.Title
 						</div>
 					}
 				}
@@ -40,7 +37,7 @@
 	TextEntry SearchEntry;
 	Panel InspectorPanel;
 
-	string GetGroup(Type tool) => TypeLibrary.GetAttribute<ToolAttribute>(tool)?.Group ?? "Other";
+	string GetGroup(Type tool) => TypeLibrary.GetAttribute<LibraryAttribute>(tool)?.Group ?? "construction";
 
 	protected override void OnAfterTreeRender(bool firstTime)
 	{
@@ -53,41 +50,50 @@
 		}
 	}
 
-	List<TypeDescription> GetTools()
+	struct ToolInfo
 	{
-		var tools = TypeLibrary.GetTypes<BaseTool>().Where(x => x.Name != "BaseTool");
+		public string Name; // id
+		public string Title;
+		public string Group;
+		public TypeDescription Type;
+	}
+	List<ToolInfo> GetTools()
+	{
+		var tools = TypeLibrary.GetTypes<BaseTool>()
+		.Where(x => !x.Name.StartsWith("Base"))
+		.Select(x =>
+		{
+			var Type = TypeLibrary.GetAttribute<LibraryAttribute>(x.TargetType);
+			return new ToolInfo
+				{
+					Name = x.Name,
+					Title = Type?.Title ?? Type?.Name ?? "Missingtool.",
+					Group = Type?.Group ?? "construction",
+					Type = x
+				};
+		});
 
 		if (!string.IsNullOrWhiteSpace(SearchEntry?.Text))
 		{
-
-			tools = tools.Where(x =>
-			{
-				var attr = TypeLibrary.GetAttribute<ToolAttribute>(x.TargetType);
-				var text = SearchEntry.Text.ToLower();
-				return attr.Title.ToLower().Contains(text)
-	|| attr.Group.ToLower().Contains(text);
-			});
+			var text = SearchEntry.Text.ToLower();
+			tools = tools.Where(x => x.Title.ToLower().Contains(text) || x.Group.ToLower().Contains(text));
 		}
 
 		return tools.ToList();
 	}
 
-	void GiveTool(TypeDescription tool)
+	void GiveTool(ToolInfo tool)
 	{
-		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
-		if (toolgun.IsValid())
-		{
-			toolgun.SetTool(tool);
-		}
-		Player.Local?.Inventory?.EquipWeapon(toolgun);
+		ConsoleSystem.Run("tool_current", tool.Name);
+		ConsoleSystem.Run("weapon_switch", "weapon_tool");
 	}
 
-	List<string> GetGroups(List<TypeDescription> tools)
+	List<string> GetGroups(List<ToolInfo> tools)
 	{
 		var groups = new List<string>();
 		foreach (var tool in tools)
 		{
-			var group = GetGroup(tool.TargetType);
+			var group = tool.Group;
 			if (!groups.Contains(group))
 			{
 				groups.Add(group);
@@ -101,7 +107,7 @@
 		if (!InspectorPanel.IsValid()) return;
 
 		InspectorPanel.DeleteChildren();
-		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
+		var toolgun = Player.Local?.Components.Get<ToolGun>(FindMode.EverythingInSelfAndDescendants);
 		if (!toolgun.IsValid()) return;
 
 		var tool = toolgun.CurrentTool;
@@ -112,23 +118,18 @@
 		if (panelType.Type is not null)
 		{
 			var panel = TypeLibrary.Create<Panel>(panelType.Type.TargetType);
-			if (panel is IToolInspector inspectorPanel)
-			{
-				inspectorPanel.Toolgun = toolgun;
-			}
 			InspectorPanel.AddChild(panel);
 		}
 		else
 		{
 			var defaultPanel = new DefaultToolInspector();
-			defaultPanel.Toolgun = toolgun;
 			InspectorPanel.AddChild(defaultPanel);
 		}
 	}
 
 	bool IsCurrentTool(Type toolType)
 	{
-		var toolgun = Player.Local?.Components.Get<Toolgun>(FindMode.EverythingInSelfAndDescendants);
+		var toolgun = Player.Local?.Components.Get<ToolGun>(FindMode.EverythingInSelfAndDescendants);
 		if (toolgun.IsValid())
 		{
 			return toolgun?.CurrentTool?.GetType() == toolType;

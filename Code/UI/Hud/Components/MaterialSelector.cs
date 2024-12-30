@@ -8,8 +8,23 @@ namespace Sandbox.UI
 	{
 		VirtualScrollPanel Canvas;
 
-		public MaterialSelector()
+		public Action<string> OnValueChanged { get; set; }
+		protected string Value { get; set; }
+		public SerializedProperty SerializedProperty
 		{
+			get => _property;
+			set
+			{
+				_property = value;
+				Value = _property.GetValue<string>();
+			}
+		}
+		SerializedProperty _property;
+		private bool initialized;
+		protected override void OnParametersSet()
+		{
+			if ( initialized ) return;
+			initialized = true;
 			AddClass( "modelselector" );
 			AddChild( out Canvas, "canvas" );
 
@@ -36,8 +51,15 @@ namespace Sandbox.UI
 
 				panel.AddEventListener( "onclick", () =>
 				{
+					Value = file;
+					OnValueChanged?.Invoke( Value );
+					_property?.SetValue( Value );
+
 					var currentTool = ConsoleSystem.GetValue( "tool_current" );
-					ConsoleSystem.Run( $"{currentTool}_material", file );
+					if ( ConsoleSystem.GetValue( $"{currentTool}_material" ) != null )
+					{
+						ConsoleSystem.Run( $"{currentTool}_material", file );
+					}
 				} );
 			};
 

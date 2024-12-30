@@ -5,8 +5,10 @@ namespace Sandbox.Tools;
 [Library( "tool_balloon", Title = "Balloons", Description = "Create Balloons!", Group = "construction" )]
 public partial class BalloonTool : BaseSpawnTool
 {
-	[ConVar( "tool_balloon_strength" )] public static string _ { get; set; } = "0.65";
-	[ConVar( "tool_balloon_rope_length" )] public static string _2 { get; set; } = "100";
+	[Property, Range( 0.05f, 2f, 0.05f ), Title( "Balloon Strength" ), Description( "The upward strength of the balloon." )]
+	public float BalloonStrength { get; set; } = 0.65f;
+	[Property, Range( 5f, 500f, 5f ), Title( "Balloon Rope Length" ), Description( "The length of the rope attached to the balloon." )]
+	public float BalloonRopeLength { get; set; } = 100f;
 	public Color Tint { get; set; }
 
 	public override void Activate()
@@ -75,7 +77,7 @@ public partial class BalloonTool : BaseSpawnTool
 		Tint = Color.Random;
 
 		var rigid = go.GetComponent<Rigidbody>();
-		rigid.PhysicsBody.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
+		rigid.PhysicsBody.GravityScale = -BalloonStrength;
 
 		UndoSystem.Add( creator: this.Owner, callback: () =>
 		{
@@ -93,8 +95,7 @@ public partial class BalloonTool : BaseSpawnTool
 			var body = go.GetComponent<Rigidbody>().PhysicsBody;
 			var point1 = PhysicsPoint.World( tr.Body, tr.EndPosition, tr.Body.Rotation );
 			var point2 = PhysicsPoint.World( body, tr.EndPosition, body.Rotation );
-			var lengthOffset = float.Parse( GetConvarValue( "tool_balloon_rope_length", "100" ) );
-			var length = lengthOffset;
+			var length = BalloonRopeLength;
 			var joint = PhysicsJoint.CreateLength(
 				point1,
 				point2,
@@ -129,10 +130,5 @@ public partial class BalloonTool : BaseSpawnTool
 	{
 		go.GetComponent<Rigidbody>().PhysicsBody.GravityScale = -float.Parse( GetConvarValue( "tool_balloon_strength", "0.66" ) );
 		go.GetComponent<Prop>().Tint = Tint;
-	}
-
-	public override void CreateToolPanel()
-	{
-		SpawnMenu.Instance?.ToolPanel?.AddChild( new BalloonToolConfig() );
 	}
 }

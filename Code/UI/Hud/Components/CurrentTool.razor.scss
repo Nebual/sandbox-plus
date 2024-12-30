@@ -37,8 +37,7 @@ CurrentTool {
         text-transform: uppercase;
         white-space: pre-line;
     }
-
-    &.spawnmenuopen {
-        opacity: 0.01;
-    }
+}
+.spawnmenuopen CurrentTool {
+    opacity: 0.01;
 }

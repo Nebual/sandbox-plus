@@ -6,9 +6,15 @@
     <div class="inner">
         @if (!string.IsNullOrEmpty(Label))
         {
-	        <div>
-		        <label style="font-size: 18px; margin-bottom: 5px;">@Label</label>
-		    </div>
+            <div class="control-header">
+                <label>@Label</label>
+                @if (ShowTextEntry || true)
+                {
+                    <div class="entry">
+                        <TextEntry @ref="TextEntryPanel" Value:bind="@Value" OnTextEdited=@OnTextEdited Numeric="@true" NumberFormat="@NumberFormat"></TextEntry>
+                    </div>
+                }
+            </div>
         }
         @if (ShowRange)
         {
@@ -20,7 +26,7 @@
         <div @ref="TrackPanel" class="track">
             <div class="track-active" style="width: @(SliderPosition())%;"></div>
             <div @ref="ThumbPanel" style="left: @(SliderPosition())%;" class="thumb">
-                @if (this.HasActive)
+                @if (this.HasActive && ShowValueTooltip)
                 {
                     <div class="value-tooltip">
                         <label>@Value.ToString( NumberFormat )</label>
@@ -60,6 +66,16 @@
     /// </summary>
     public bool ShowRange { get; set; } = true;
 
+    /// <summary>
+    /// When changing the value show the tooltip
+    /// </summary>
+    public bool ShowValueTooltip { get; set; } = true;
+
+    /// <summary>
+    /// When changing the value show the tooltip
+    /// </summary>
+    public bool ShowTextEntry { get; set; } = true;
+
     public string NumberFormat { get; set; } = "0.###";
 
     private float _value;
@@ -77,6 +93,17 @@
             StateHasChanged();
         }
     }
+
+    public SerializedProperty SerializedProperty
+    {
+        get => _property;
+        set
+        {
+            _property = value;
+            Value = _property.GetValue<float>();
+        }
+    }
+    SerializedProperty _property;
 
     private Panel TrackPanel { get; set; }
     private Panel ThumbPanel { get; set; }
@@ -112,6 +139,7 @@
         if ( !HasActive || e.MouseButton == MouseButtons.Middle ) return;
 
         Value = ScreenPosToValue( Mouse.Position );
+        OnValueChanged?.Invoke(Value);
         e.StopPropagation();
     }
 
@@ -123,6 +151,7 @@
         base.OnMouseDown( e );
 
         Value = ScreenPosToValue( Mouse.Position );
+        OnValueChanged?.Invoke(Value);
         e.StopPropagation();
 
         TextEntryPanel?.Blur();
@@ -149,18 +178,28 @@
     {
         return MathX.LerpInverse(Value, Min, Max, true) * 100.0f;
     }
+
+	protected void OnTextEdited(string value)
+	{
+		Value = float.Parse(value);
+        if (Convar != "")
+        {
+            ConsoleSystem.Run(Convar, value);
+        }
+        OnValueChanged?.Invoke(Value);
+	}
 }
 
 <style>
 Slider {
-    min-width: 50px;
+    min-width: 150px;
     position: relative;
     flex-shrink: 0;
-    flex-direction: row;
+    flex-direction: column;
     pointer-events: all;
     margin: 0px 8px;
     align-items: center;
-    padding-bottom: 15px;
+    gap: 8px;
 
     > .inner {
         flex-direction: column;
@@ -187,7 +226,7 @@ Slider {
             border-radius: 4px;
 
             > .track-active {
-                background-color: #fff;
+                background-color: #555;
                 position: absolute;
                 height: 7px;
                 left: 0px;
@@ -195,7 +234,7 @@ Slider {
             }
 
             > .thumb {
-                background-color: #fff;
+                background-color: #000;
                 border-radius: 100px;
                 width: 16px;
                 height: 16px;
@@ -205,23 +244,39 @@ Slider {
         }
     }
 
-    > .entry {
-        width: 50px;
-        flex-shrink: 0;
-        flex-grow: 0;
+	.control-header {
+		flex-direction: row;
+		width: 100%;
+		margin-bottom: 5px;
+		justify-content: space-between;
 
-        > textentry {
-            text-align: right;
-            width: 100%;
-            border-radius: 4px;
-            padding: 0;
-            min-height: 0px;
+		> label {
+			font-size: 18px;
+			flex-grow: 0;
+		}
 
-            > .content-label {
-                padding: 0 4px;
-            }
-        }
-    }
+		.entry {
+			align-self: flex-end;
+			background-color: #eee;
+			color: white;
+			width: 60px;
+			position: relative;
+			border-radius: 4px;
+			
+			textentry
+			{
+				color: black;
+				font-family: Poppins;
+				font-size: 14px;
+				flex-shrink: 0;
+
+				.content-label
+				{
+					padding: 0 4px;
+				}
+			}
+		}
+	}
 }
 
 Slider .value-tooltip {
@@ -233,14 +288,15 @@ Slider .value-tooltip {
 
     > .label {
         font-size: 20px;
-        background-color: black;
+		color: black;
+        background-color: #ccc;
         padding: 8px 12px;
         border-radius: 8px;
     }
 
     > .tail {
         left: 8px;
-        background-color: black;
+        background-color: #ccc;
         width: 10px;
         height: 10px;
         transform: rotateZ(45 deg);

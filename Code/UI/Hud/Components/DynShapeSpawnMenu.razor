@@ -35,15 +35,16 @@
 	{
 		Log.Info( "DynShapeSpawnMenu created" );
 		var plateList = SpawnMenu.Instance.SpawnMenuLeftBody.AddChild<DynShapeSpawnMenu>();
-		SpawnMenu.Instance.SpawnMenuLeftTabs
-			.AddButtonActive( "DynShapes", ( b ) => plateList.SetClass( "active", b ) );
+		plateList.AddClass("hidden");
+		var button = SpawnMenu.Instance.SpawnMenuLeftTabs.Add.Button( "DynShapes", () => SpawnMenu.Instance.SetActiveLeft(plateList) );
+		button.AddClass("btn");
 	}
 
 	protected override void OnAfterTreeRender(bool firstTime)
 	{
 		base.OnAfterTreeRender(firstTime);
 	
-		if (firstTime) {
+		if (firstTime || !Canvas.HasChildren) {
 			// Tabs.AddButtonActive( "prefabs", b => PrefabsPanel.SetClass( "active", b ) );
 			// Tabs.AddButtonActive( "creator", b => CreatorPanel.SetClass( "active", b ) );
 			

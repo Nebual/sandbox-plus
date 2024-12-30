@@ -20,10 +20,8 @@
 
         if (tool != null)
         {
-            var display = DisplayInfo.For(tool);
-
-            Title.Text = display.Name;
-            Description.Text = tool.Description ?? display.Description;
+            Title.Text = tool.Name;
+            Description.Text = tool.LongDescription;
         }
     }
 
