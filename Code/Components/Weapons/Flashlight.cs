@@ -7,6 +7,10 @@ partial class Flashlight : BaseWeapon
 	[Sync, Change( nameof( ToggleLight ) )] private bool LightEnabled { get; set; } = true;
 
 	TimeSince timeSinceLightToggled;
+	public override bool ShouldShowCrosshair()
+	{
+		return false;
+	}
 
 	public override void OnControl()
 	{

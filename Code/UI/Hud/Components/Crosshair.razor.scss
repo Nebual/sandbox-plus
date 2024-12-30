@@ -10,4 +10,9 @@
     left: 50%;
     border-radius: 100px;
     transform: translate( -50% -50% );
+    opacity: 0.0;
+
+    &.active {
+        opacity: 1.0;
+    }
 }
