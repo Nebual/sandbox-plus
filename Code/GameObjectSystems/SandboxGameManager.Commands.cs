@@ -130,9 +130,27 @@ public partial class SandboxGameManager
 
 			var primaryAsset = mapPackage.GetMeta<string>( "PrimaryAsset" );
 			if ( string.IsNullOrEmpty( primaryAsset ) ) return;
+			if ( !mapPackage.IsMounted() )
+			{
+				HintFeed.AddHint( "map", $"Map {mapName} not loaded, mounting...", 3 );
+			}
 			await mapPackage.MountAsync();
 
-			CustomMapInstance.Current.MapName = mapName;
+			if ( primaryAsset.EndsWith( ".scene" ) )
+			{
+				// todo: we'll need to unload the old scene, and reload the default scene when leaving one of these...
+				// lets disable this for now
+				HintFeed.AddHint( "map", $"Map {mapName} is a scene, not supported yet (probably has its own camera/playermodel/etc)", 5 );
+				return;
+				// var sceneLoadOptions = new SceneLoadOptions { IsAdditive = true };
+				// var sceneFile = mapPackage.GetMeta<SceneFile>( "PrimaryAsset" );
+				// sceneLoadOptions.SetScene( sceneFile );
+				// Game.ActiveScene.Load( sceneLoadOptions );
+			}
+			else
+			{
+				CustomMapInstance.Current.MapName = mapName;
+			}
 
 			await GameTask.Delay( 100 );
 			Game.ActiveScene.GetComponentInChildren<MapPlayerSpawner>().RespawnPlayers();

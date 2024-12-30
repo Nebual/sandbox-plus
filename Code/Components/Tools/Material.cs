@@ -2,7 +2,7 @@
 
 namespace Sandbox.Tools
 {
-	[Library( "tool_material", Title = "Material", Description = "Change the material override of props", Group = "construction" )]
+	[Library( "tool_material", Title = "Material", Description = "Change the material override of props", Group = "rendering" )]
 	public partial class MaterialTool : BaseTool
 	{
 		[Property, MaterialProperty]
