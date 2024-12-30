@@ -51,6 +51,12 @@ namespace Sandbox.UI
 
 				panel.AddEventListener( "onclick", () =>
 				{
+					if ( Input.Down( "run" ) )
+					{
+						Clipboard.SetText( file );
+						Log.Info( $"Copied to clipboard: {file}" );
+						return;
+					}
 					Value = file;
 					OnValueChanged?.Invoke( Value );
 					_property?.SetValue( Value );

@@ -82,6 +82,12 @@ namespace Sandbox.UI
 				{
 					var currentTool = ConsoleSystem.GetValue( "tool_current" );
 					var model = match.Groups[1].Value + match.Groups[3].Value;
+					if ( Input.Down( "run" ) )
+					{
+						Clipboard.SetText( model );
+						Log.Info( $"Copied to clipboard: {model}" );
+						return;
+					}
 					if ( match.Groups[3].Value == ".vmdl" )
 					{
 						SetToolModelClient( currentTool, model, match.Groups[2].Value );
