@@ -1,6 +1,13 @@
 public sealed class PlayerDresser : Component, Component.INetworkSpawn
 {
 	[Property] public SkinnedModelRenderer BodyRenderer { get; set; }
+	private Player Owner { get => GameObject.Parent.GetComponent<Player>(); }
+	public bool UseHumanModel
+	{
+		get => Owner.Settings.UseHumanModel;
+		set => Owner.Settings.UseHumanModel = value;
+	}
+	private ClothingContainer clothing;
 
 	// On initial connect/spawn, OnNetworkSpawn is called on the host
 	// On subsequent respawns, OnNetworkSpawn is called on the client, so we need to RPC to get the clothing from the host
@@ -21,8 +28,23 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 	[Rpc.Broadcast]
 	public void ApplyClothes(string serializedClothes)
 	{
-		var clothing = new ClothingContainer();
+		clothing = new ClothingContainer();
 		clothing.Deserialize( serializedClothes );
-		clothing.Apply(BodyRenderer);
+		ChangePlayerModelType( UseHumanModel );
+	}
+
+	[Rpc.Broadcast]
+	public void ChangePlayerModelType( bool UseHumanModel )
+	{
+		this.UseHumanModel = UseHumanModel;
+		if ( UseHumanModel )
+		{
+			BodyRenderer.Model = Model.Load( "models/citizen_human/citizen_human_female.vmdl" );
+		}
+		else
+		{
+			BodyRenderer.Model = Model.Load( "models/citizen/citizen.vmdl" );
+		}
+		clothing.Apply( BodyRenderer );
 	}
 }

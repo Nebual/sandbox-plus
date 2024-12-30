@@ -12,6 +12,20 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 	[RequireComponent] public PlayerController Controller { get; set; }
 	[RequireComponent] public PlayerInventory Inventory { get; set; }
 
+	private PlayerSettings _settings;
+	public PlayerSettings Settings
+	{
+		get
+		{
+			if ( _settings == null )
+			{
+				_settings = PlayerSettings.Load();
+				_settings.player = this;
+			}
+			return _settings;
+		}
+	}
+
 	[Property] public GameObject Body { get; set; }
 	[Property, Range( 0, 100 ), Sync] public float Health { get; set; } = 100;
 

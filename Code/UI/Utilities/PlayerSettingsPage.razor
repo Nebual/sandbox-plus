@@ -1,0 +1,19 @@
+@using Sandbox.UI;
+@namespace Sandbox.UI.Utilities
+@inherits Panel
+@attribute [UtilityPage("Settings", "Player")]
+
+<root class="utility-panel">
+	<label class="description">Player Model</label>
+	<button class="btn" onclick=@TogglePlayerModelType>Toggle Player Model Humanity</button>
+</root>
+
+@code
+{
+	void TogglePlayerModelType()
+	{
+		if (Player.Local.Body.GetComponent<PlayerDresser>() is PlayerDresser dresser) {
+			dresser.ChangePlayerModelType(!dresser.UseHumanModel);
+		}
+	}
+}
