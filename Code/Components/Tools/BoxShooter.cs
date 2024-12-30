@@ -17,7 +17,7 @@ public class BoxShooter : BaseTool
 
 	public override bool Secondary( SceneTraceResult trace )
 	{
-		if ( timeSinceShoot > 0.05f )
+		if ( timeSinceShoot > 0.2f )
 		{
 			timeSinceShoot = 0;
 
