@@ -1,24 +1,14 @@
-﻿[Library( "tool_thruster", Title = "Thruster", Description = "A rocket type thing that can push forwards and backward", Group = "construction" )]
+﻿using Sandbox.Tools;
+[Library( "tool_thruster", Title = "Thruster", Description = "A rocket type thing that can push forwards and backward", Group = "construction" )]
 public class Thruster : BaseTool
 {
+	[Property, Title( "Model" ), ModelProperty( SpawnLists = ["thruster"] )]
+	public override string SpawnModel { get; set; } = "models/thruster/thrusterprojector.vmdl";
 	[Property, Range( 0, 10000, 10 ), Title("Force Multiplier"), Description("The amount of force the thruster will apply to the attached object.")]
 	public float ForceMultiplier { get; set; } = 1000f;
 	[Property]
 	public bool Massless { get; set; } = true;
 
-	protected override void OnAwake()
-	{
-		if ( IsProxy )
-			return;
-	}
-	protected override string GetModel()
-	{
-		return "models/thruster/thrusterprojector.vmdl";
-	}
-	private string tagName()
-	{
-		return "thruster";
-	}
 	public override void CreatePreview()
 	{
 		previewModel = new PreviewModel

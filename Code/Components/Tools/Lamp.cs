@@ -5,10 +5,8 @@ namespace Sandbox.Tools
 	[Library( "tool_lamp", Title = "Lamps", Description = "Directional light source that casts shadows", Group = "construction" )]
 	public partial class LampTool : BaseSpawnTool
 	{
-		protected override string GetModel()
-		{
-			return "models/torch/torch.vmdl";
-		}
+		[Property, Title( "Model" ), ModelProperty( SpawnLists = ["lamp"] )]
+		public override string SpawnModel { get; set; } = "models/torch/torch.vmdl";
 
 		protected override TypeDescription GetSpawnedComponent()
 		{
