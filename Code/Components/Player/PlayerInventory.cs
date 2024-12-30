@@ -6,6 +6,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 
 	[Sync] public NetList<BaseWeapon> Weapons { get; set; } = new();
 	[Sync] public BaseWeapon ActiveWeapon { get; set; }
+	private BaseWeapon PreviousWeapon { get; set; } = null;
 
 	public void GiveDefaultWeapons()
 	{
@@ -36,6 +37,8 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		if ( Input.Pressed( "slot8" ) ) SetActiveSlot( 7 );
 		if ( Input.Pressed( "slot9" ) ) SetActiveSlot( 8 );
 
+		if ( Input.Pressed( "PreviousWeapon" ) ) SwitchToPreviousWeapon();
+
 		if ( Input.MouseWheel != 0 && !Owner.SuppressScrollWheelInventory ) SwitchActiveSlot( (int)-Input.MouseWheel.y );
 	}
 
@@ -53,6 +56,13 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		ILocalPlayerEvent.Post( e => e.OnWeaponAdded( weapon ) );
 	}
 
+	public void SwitchToPreviousWeapon()
+	{
+		if ( PreviousWeapon == null ) return;
+
+		ConsoleSystem.Run( "weapon_switch", [TypeLibrary.GetType( PreviousWeapon.GetType() ).ClassName] );
+	}
+
 	public void SetActiveSlot( int i )
 	{
 		var weapon = GetSlot( i );
@@ -65,6 +75,7 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 		if ( ActiveWeapon.IsValid() )
 			ActiveWeapon.GameObject.Enabled = false;
 
+		PreviousWeapon = ActiveWeapon;
 		ActiveWeapon = weapon;
 
 		if ( ActiveWeapon.IsValid() )
