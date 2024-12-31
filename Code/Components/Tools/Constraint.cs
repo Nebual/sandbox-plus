@@ -287,8 +287,8 @@ namespace Sandbox.Tools
 			);
 			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			trace1.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
+			trace2.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )

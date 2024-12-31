@@ -50,7 +50,7 @@ partial class Pistol : BaseWeapon, Component.ICollisionListener
 	protected void WeagleAttack()
 	{
 		var tr = Player.DoBasicTrace();
-		if ( tr.GameObject.GetComponent<PropHelper>() is PropHelper prop )
+		if ( tr.GameObject.IsValid() && tr.GameObject.GetComponent<PropHelper>() is PropHelper prop )
 		{
 			BroadcastAttackPrimary();
 			ViewModel?.Renderer?.Set( "b_attack", true );

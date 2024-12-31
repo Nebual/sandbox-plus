@@ -5,7 +5,7 @@
 @attribute [ToolInspector(typeof(ConstraintTool))]
 
 <root class="DefaultToolInspector">
-    <label class="header">@CurrentTool.GetCurrentTool().Name</label>
+    <label class="header">@CurrentTool.GetCurrentTool()?.Name</label>
 <div class="content">
 	<div class="list">
 		@foreach ( var type in Enum.GetValues<ConstraintType>() )

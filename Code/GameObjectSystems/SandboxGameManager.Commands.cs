@@ -156,7 +156,13 @@ public partial class SandboxGameManager
 			}
 
 			await GameTask.Delay( 100 );
-			Game.ActiveScene.GetComponentInChildren<MapPlayerSpawner>().RespawnPlayers();
+			var mapPlayerSpawner = Game.ActiveScene?.GetComponentInChildren<MapPlayerSpawner>();
+			if ( !mapPlayerSpawner.IsValid() )
+			{ // huh. wait longer I guess.
+				await GameTask.Delay( 1000 );
+				mapPlayerSpawner = Game.ActiveScene?.GetComponentInChildren<MapPlayerSpawner>();
+			}
+			mapPlayerSpawner?.RespawnPlayers();
 		} );
 	}
 }

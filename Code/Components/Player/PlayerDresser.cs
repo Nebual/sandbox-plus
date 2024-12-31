@@ -13,8 +13,8 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 	// On subsequent respawns, OnNetworkSpawn is called on the client, so we need to RPC to get the clothing from the host
 	public async void OnNetworkSpawn( Connection owner )
 	{
-		await GameTask.Delay(100); // wait for the new Player object to be created on the host
-		LoadClothes(owner.Id);
+		await Task.Delay( 100 ); // wait for the new Player object to be created on the host
+		LoadClothes( owner.Id );
 	}
 	[Rpc.Host]
 	private static void LoadClothes(Guid connectionId)
@@ -30,11 +30,15 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 	{
 		clothing = new ClothingContainer();
 		clothing.Deserialize( serializedClothes );
-		ChangePlayerModelType( UseHumanModel );
+		changePlayerModelType( UseHumanModel );
 	}
 
 	[Rpc.Broadcast]
 	public void ChangePlayerModelType( bool UseHumanModel )
+	{
+		changePlayerModelType( UseHumanModel );
+	}
+	private void changePlayerModelType( bool UseHumanModel )
 	{
 		this.UseHumanModel = UseHumanModel;
 		if ( UseHumanModel )

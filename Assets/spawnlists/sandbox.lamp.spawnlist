@@ -1,3 +1,4 @@
 models/torch/torch.vmdl
 luke.dnd_light_lamp
 facepunch.street_lamp_light_unit
+gkaf/floodlight_body

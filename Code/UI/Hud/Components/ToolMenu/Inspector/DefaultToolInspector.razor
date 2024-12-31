@@ -4,11 +4,11 @@
 @namespace Sandbox.UI
 
 <root class="DefaultToolInspector">
-	<label class="header">@CurrentTool.GetCurrentTool().Name</label>
+	<label class="header">@currentTool.Name</label>
 	<div class="content">
-		<label class="description">@CurrentTool.GetCurrentTool().Description</label>
+		<label class="description">@currentTool.Description</label>
 		<div class="controls">
-			@foreach (var property in TypeLibrary.GetSerializedObject(CurrentTool.GetCurrentTool()))
+			@foreach (var property in TypeLibrary.GetSerializedObject(currentTool))
 			{
 				if (!property.HasAttribute<PropertyAttribute>() || property.PropertyType == typeof(Action)) continue;
 				property.TryGetAttribute<TitleAttribute>(out var title);
@@ -86,4 +86,14 @@
 @code
 {
 	protected override int BuildHash() => System.HashCode.Combine("");
+
+	protected BaseTool lastTool = new WhatIsThatTool();
+	protected BaseTool currentTool
+	{
+		get
+		{
+			lastTool = CurrentTool.GetCurrentTool() ?? lastTool;
+			return lastTool;
+		}
+	}
 }

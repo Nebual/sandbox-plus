@@ -10,7 +10,7 @@
 	{
 		if ( beam.IsValid() )
 		{
-			beam?.GameObject.Destroy();
+			beam?.GameObject?.Destroy();
 			beam = null;
 		}
 
