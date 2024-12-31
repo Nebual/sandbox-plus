@@ -29,6 +29,57 @@ public static class JointExtensions
 		return [];
 	}
 
+	public static IEnumerable<GameObject> GetAttachedGameObjects( this GameObject baseGo, List<PhysicsJoint> joints = null )
+	{
+		joints ??= new();
+		HashSet<GameObject> objsChecked = new();
+		HashSet<PhysicsJoint> jointsChecked = joints.ToHashSet();
+		Stack<GameObject> objsToCheck = new();
+		objsChecked.Add( baseGo );
+		objsToCheck.Push( baseGo );
+
+		while ( objsToCheck.Count > 0 )
+		{
+			GameObject ent = objsToCheck.Pop();
+			foreach ( GameObject e in ent.Children )
+			{
+				if ( objsChecked.Add( e ) )
+					objsToCheck.Push( e );
+			}
+			if ( ent.Parent.IsValid() && ent.Parent.GetComponent<Prop>() is not null && objsChecked.Add( ent.Parent ) )
+			{
+				objsToCheck.Push( ent.Parent );
+			}
+
+			// if ( ent.GetComponent<SkinnedModelRenderer>() is SkinnedModelRenderer ragdoll )
+			// {
+			// 	for ( int i = 0, end = ragdoll.Model.BoneCount; i < end; ++i )
+			// 	{
+			// 		GameObject e = ragdoll.GetBoneObject( i );
+			// 		if ( objsChecked.Add( e ) )
+			// 			objsToCheck.Push( e );
+			// 	}
+			// }
+			foreach ( PhysicsJoint j in GetJoints( ent ) )
+			{
+				if ( jointsChecked.Add( j ) )
+				{
+					if ( objsChecked.Add( j.Body1.GetGameObject() ) )
+						objsToCheck.Push( j.Body1.GetGameObject() );
+					if ( objsChecked.Add( j.Body2.GetGameObject() ) )
+						objsToCheck.Push( j.Body2.GetGameObject() );
+				}
+			}
+		}
+		joints.AddRange( jointsChecked );
+		return objsChecked;
+	}
+
+	public static IEnumerable<T> GetAttachedGameObjects<T>( this GameObject baseGo, List<PhysicsJoint> joints = null )
+	{
+		return baseGo.GetAttachedGameObjects( joints ).Select( x => x.GetComponent<T>() ).Where( x => x is not null );
+	}
+
 	public static Sandbox.Tools.ConstraintType GetConstraintType( this Sandbox.Physics.PhysicsJoint joint )
 	{
 		if ( joint is Sandbox.Physics.FixedJoint )

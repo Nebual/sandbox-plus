@@ -83,6 +83,8 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 		if ( inventory.IsValid() )
 			player.Inventory = inventory;
 
+		channel.CanRefreshObjects = true;
+
 		playerGo.NetworkSpawn( channel );
 		
 		IPlayerEvent.PostToGameObject( player.GameObject, x => x.OnSpawned() );
