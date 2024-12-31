@@ -19,7 +19,7 @@ For the old version using the Entity system, see [2023-entity-system](https://gi
 
 #### WIP (needs porting over from 2023-entity-system / CodeOld/)
 - Duplicator tool
-- [Many new events](EVENTS.md) (aiming to reproduce many of Gmod 1's), including "entity.spawned" event, "undo.add" event
+- [Many new events](EVENTS.md) (aiming to reproduce many of Gmod 1's), including "IPropSpawnedEvent" event, "undo.add" event
 
 ## Addons for SandboxPlus
 

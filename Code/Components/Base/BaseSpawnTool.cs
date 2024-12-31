@@ -47,8 +47,6 @@ namespace Sandbox.Tools
 					propHelper2.PhysicsJoints.Add( joint );
 				}
 			}
-
-			// Event.Run( "entity.spawned", ent, Owner );
 			return true;
 		}
 
@@ -77,6 +75,7 @@ namespace Sandbox.Tools
 
 			go.NetworkSpawn();
 			go.Network.SetOrphanedMode( NetworkOrphaned.Host );
+			Events.IPropSpawnedEvent.Post( x => x.OnSpawned( prop ) );
 			return go;
 		}
 		protected virtual void UpdateEntity( GameObject ent ) { }

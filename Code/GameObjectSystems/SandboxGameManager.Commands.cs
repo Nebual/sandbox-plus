@@ -1,3 +1,5 @@
+using Sandbox.Events;
+
 public partial class SandboxGameManager
 {
 	[ConCmd( "spawn" )]
@@ -65,6 +67,7 @@ public partial class SandboxGameManager
 
 		go.NetworkSpawn( playerObject.Network.Owner );
 		go.Network.SetOrphanedMode( NetworkOrphaned.Host );
+		IPropSpawnedEvent.Post( x => x.OnSpawned( prop ) );
 
 		UndoSystem.Add( creator: playerObject.GetComponent<Player>(), callback: () => UndoSpawn( go, modelname ), prop: go );
 	}

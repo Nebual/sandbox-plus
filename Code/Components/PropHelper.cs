@@ -109,6 +109,7 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 				gib.GameObject.NetworkSpawn();
 				gib.Network.SetOrphanedMode( NetworkOrphaned.Host );
+				Sandbox.Events.IPropSpawnedEvent.Post( x => x.OnSpawned( gib ) );
 			}
 		}
 

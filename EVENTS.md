@@ -1,4 +1,15 @@
 # Custom Events provided by SandboxPlus
+- IPropSpawnedEvent
+
+# Custom Concommands
+- `weapon_switch physgun`
+- `undo`
+- `reload_hud`, though it typically hotreloads nicely in the editor
+- `reload_spawnlists` - for use after updating Assets/spawnlists/x.button.spawnlist files
+- `spawn_dynplate [length] [width] [height]`
+
+# ----
+# Older stuff we once had back in 2023-entity-system, maybe portable to Scene
 
 - "game.init": run on initial addon load
 - "package.mounted": run when a package is async mounted via `spawnpackage`
@@ -33,14 +44,8 @@
 For more usage examples, see [Wirebox](https://github.com/wiremod/wirebox).
 
 # Custom Concommands
-
-- `weapon_switch physgun`
 - `spawnpackage wiremod.sbox_tool_auto` - extended to work on runtime addons beyond just 'npc' + 'entity', see `Event("package.mounted")`
-- `undo` + `redo`
-- `reload_hud`, though it typically hotreloads nicely in the editor
-- `reload_spawnlists` - for use after updating config/x.button.spawnlist files
 - `tool_duplicator_savefile file.dupe` + `tool_duplicator_openfile file.dupe`
-- `spawn_dynplate [length] [width] [height]`
 - `tool_cloud_model tool_wirebutton facepunch.button 0` - mounts a new Package and sets that tool to use it
 
 # [Permissions](https://github.com/sandmod/permission)

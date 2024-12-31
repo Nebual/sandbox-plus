@@ -84,7 +84,6 @@ public partial class BalloonTool : BaseSpawnTool
 			go.Destroy();
 			return "Undid balloon creation";
 		}, prop: go );
-		// Event.Run( "entity.spawned", ent, Owner );
 		return go;
 	}
 	protected GameObject SpawnEntity( SceneTraceResult tr, bool useRope )
