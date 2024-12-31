@@ -40,12 +40,15 @@ public sealed partial class PlayerController : Component
 			{
 				UpdateEyeAngles();
 				UpdateLookAt();
+				UpdateSnapInput();
 			}
 
 			if ( UseCameraControls )
 			{
 				UpdateCameraPosition();
 			}
+			
+			OnRenderSnapHUD();
 		}
 
 		UpdateBodyVisibility();

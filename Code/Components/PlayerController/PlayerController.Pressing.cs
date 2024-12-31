@@ -219,6 +219,13 @@ public sealed partial class PlayerController : Component
 
 				return c as Component;
 			}
+			
+			// If it's not pressable, check if it has a Prop
+			foundComponent = eyeTrace.GameObject.GetComponent<Prop>();
+			if ( foundComponent.IsValid() )
+			{
+				return foundComponent;
+			}
 		}
 
 		return default;
