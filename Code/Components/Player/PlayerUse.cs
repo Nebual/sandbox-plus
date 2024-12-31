@@ -1,8 +1,8 @@
-public sealed class PlayerUse : Component, PlayerController.IEvents
+public sealed class PlayerUse : Component, SandboxPlus.PlayerController.IEvents
 {
 	[RequireComponent] public Player Player { get; set; }
 
-	void PlayerController.IEvents.FailPressing()
+	void SandboxPlus.PlayerController.IEvents.FailPressing()
 	{
 		BroadcastFailPressing();
 	}
