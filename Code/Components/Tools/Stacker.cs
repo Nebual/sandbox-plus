@@ -1,14 +1,4 @@
-﻿using Sandbox;
-using Sandbox.UI;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading;
-
-namespace Stacker
+﻿namespace Stacker
 {
 	public enum StackDirections
 	{
@@ -301,9 +291,9 @@ namespace Stacker
 		{
 			var axisAngles = GetRotation( direction, angle );
 
-			angle.RotateAroundAxis( axisAngles.Pitch.Normal, rotation.pitch );
-			angle.RotateAroundAxis( axisAngles.Yaw.Normal, rotation.yaw );
-			angle.RotateAroundAxis( axisAngles.Roll.Normal, rotation.roll );
+			angle = angle.RotateAroundAxis( axisAngles.Pitch.Normal, rotation.pitch );
+			angle = angle.RotateAroundAxis( axisAngles.Yaw.Normal, rotation.yaw );
+			angle = angle.RotateAroundAxis( axisAngles.Roll.Normal, rotation.roll );
 
 			return angle;
 		}
@@ -347,12 +337,6 @@ namespace Stacker
 				return false;
 
 			return false;
-		}
-
-		public override void CreateToolPanel()
-		{
-			var toolConfigUi = new StackerToolConfig();
-			SpawnMenu.Instance?.ToolPanel?.AddChild( toolConfigUi );
 		}
 
 		public override void Activate()

@@ -3,8 +3,11 @@
 @using Stacker;
 @namespace Sandbox.UI
 @inherits Panel
+@attribute [ToolInspector(typeof(StackerTool))]
 
-<root>
+<root class="DefaultToolInspector">
+	<label class="header">@CurrentTool.GetCurrentTool().Name</label>
+<div class="content">
     <h4>Stack Relative To</h4>
 	<div class="list">
 		@foreach ( var type in Enum.GetValues<StackRelatativeTo>() )
@@ -91,6 +94,7 @@
 	 	Convar="tool_stacker_roll_offset"
 	/>
     @* End Angles *@
+</div>
 </root>
 
 @code {
@@ -101,12 +105,25 @@
         StateHasChanged();
 	}
 
+	protected async void ResyncSlidersToConvars()
+	{
+		await Task.Delay( 10 );
+		foreach ( var child in Children ) {
+			foreach ( var slider in child.ChildrenOfType<Slider>() ) {
+				if ( slider.Convar != "" ) {
+					slider.Value = float.Parse( ConsoleSystem.GetValue( slider.Convar, slider.Min.ToString() ) );
+				}
+			}
+		}
+	}
+
     public void ResetOffsets() 
     {
 		ConsoleSystem.Run( "tool_stacker_x_offset 0" );
 		ConsoleSystem.Run( "tool_stacker_y_offset 0" );
 		ConsoleSystem.Run( "tool_stacker_z_offset 0" );
 
+		ResyncSlidersToConvars();
         StateHasChanged();
     }
 
@@ -116,6 +133,7 @@
 		ConsoleSystem.Run( "tool_stacker_yaw_offset 0" );
 		ConsoleSystem.Run( "tool_stacker_roll_offset 0" );
 
+		ResyncSlidersToConvars();
         StateHasChanged();
     }
 }
@@ -130,21 +148,19 @@ StackerToolConfig {
 			font-size: 12px;
 			align-items: center;
 			font-weight: 600;
-			opacity: 0.2;
-			color: #fff;
+			opacity: 0.75;
 			cursor: pointer;
 			label {
 				text-shadow: 1px 1px 4px rgba(black, 0.2);
 			}
 
 			&:hover {
-				opacity: 0.75;
+				opacity: 0.9;
 			}
 
 			&.active {
 				transform: scale(1);
 				opacity: 1;
-				color: #fff;
 			}
 		}
 	}
@@ -159,14 +175,8 @@ StackerToolConfig {
         border: 1px solid silver;
 
         &:hover {
-            // border-left: 3px solid #3273eb;
-            color: white;
-
+            padding: 5px 9px;
             border: 2px solid silver;
-        }
-
-        &:active {
-            color: white;
         }
     }
 }
