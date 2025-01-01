@@ -130,4 +130,52 @@ public abstract class BaseTool : Component
 	protected virtual void OnUpdatePreviewModel( Model model )
 	{
 	}
+
+	public void DoAxisOverlay( SceneTraceResult trace, CameraComponent camera, bool DrawLabels = true )
+	{
+		Prop prop = trace.GameObject.GetComponent<Prop>();
+
+		if ( !trace.Hit || !trace.Body.IsValid() || !prop.IsValid() )
+			return;
+
+		Rigidbody rigidbody = trace.GameObject.GetComponent<Rigidbody>();
+
+		if ( !rigidbody.IsValid() ) return;
+
+		//Vector3 GOCenter = prop.WorldPosition + prop.Model.Bounds.Center;
+		BBox bounds = rigidbody.PhysicsBody.GetBounds();
+
+		Vector3 center = prop.WorldTransform.PointToWorld( prop.Model.Bounds.Center );
+
+		Vector3 size = bounds.Size;
+		Rotation rotation = trace.GameObject.WorldRotation;
+
+		Vector2 goLoc = camera.PointToScreenPixels( bounds.Center );
+
+		Vector2 goWorldLoc = camera.PointToScreenPixels( prop.WorldPosition );
+
+		camera.Hud.DrawCircle( new Vector2( goWorldLoc.x, goWorldLoc.y ), new Vector2( 10, 10 ), Color.Magenta );
+		if ( DrawLabels )
+			camera.Hud.DrawText( new TextRendering.Scope( "World", Color.Magenta, 16 ), new Rect( goWorldLoc.x + 12, goWorldLoc.y - 5, 40, 10 ) );
+
+		camera.Hud.DrawCircle( new Vector2( goLoc.x, goLoc.y ), new Vector2( 10, 10 ), Color.White );
+		if ( DrawLabels )
+			camera.Hud.DrawText( new TextRendering.Scope( "Center", Color.White, 16 ), new Rect( goLoc.x + 12, goLoc.y - 5, 40, 10 ) );
+
+
+		DrawDirectionIndicator( camera, center, rotation.Forward, (int) (size.x / 2 * 1.5), 3, "Forward", Color.Red, DrawLabels );
+		DrawDirectionIndicator( camera, center, rotation.Right,   (int) (size.y / 2 * 1.5), 3, "Right", Color.Green, DrawLabels );
+		DrawDirectionIndicator( camera, center, rotation.Up,      (int) (size.z / 2 * 1.5), 3, "Up", Color.Blue, DrawLabels );
+	}
+
+	private void DrawDirectionIndicator( CameraComponent camera, Vector3 start, Vector3 direction, int length, int width, string text, Color color, bool DrawLabels = true )
+	{
+		Vector2 screenStart = camera.PointToScreenPixels( start );
+		Vector2 screenEnd = camera.PointToScreenPixels( start + (direction * length) );
+		Vector2 screenText = camera.PointToScreenPixels( start + (direction * length) + new Vector3( 0, 0, 5 ) );
+
+		camera.Hud.DrawLine( screenStart, screenEnd, width, color );
+		if ( DrawLabels )
+			camera.Hud.DrawText( new TextRendering.Scope( text, color, 32 ), new Rect( screenText.x, screenText.y, 40, 10 ) );
+	}
 }

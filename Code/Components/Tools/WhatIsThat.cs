@@ -37,6 +37,15 @@ namespace Sandbox.Tools
 			return true;
 		}
 
+		protected override void OnUpdate()
+		{
+			base.OnUpdate();
+
+			var trace = Parent.BasicTraceTool();
+
+			DoAxisOverlay( trace, Scene.Camera );
+		}
+
 		public static string[] ListTypes( GameObject go )
 		{
 			var types = new List<string>();
