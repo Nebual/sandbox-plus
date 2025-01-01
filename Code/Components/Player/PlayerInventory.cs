@@ -84,19 +84,22 @@ public sealed class PlayerInventory : Component, IPlayerEvent
 	}
 
 	[ConCmd( "weapon_switch" )]
-	public static void SwitchWeapon( string weaponClassName )
+	public static void SwitchWeaponCmd( string weaponClassName )
 	{
 		var player = Player.FindLocalPlayer();
 		if ( !player.IsValid() || player.Inventory is null )
 			return;
-
-		for ( int i = 0; i < player.Inventory.Weapons.Count; i++ )
+		player.Inventory.SwitchWeapon(weaponClassName);
+	}
+	public void SwitchWeapon( string weaponClassName )
+	{
+		for ( int i = 0; i < Weapons.Count; i++ )
 		{
-			var entity = player.Inventory.GetSlot( i );
+			var entity = GetSlot( i );
 			if ( !entity.IsValid() ) continue;
 			if ( !TypeLibrary.GetType( entity.GetType() ).ClassName.Equals( weaponClassName, StringComparison.InvariantCultureIgnoreCase ) ) continue;
 
-			player.Inventory.SetActiveSlot( i );
+			SetActiveSlot( i );
 			return;
 		}
 	}
