@@ -110,6 +110,11 @@ public sealed partial class PlayerController : Component
 
 		if ( Hovered != null )
 		{
+			// Rendering is broken on skinned models, the bounds don't seem to update dynamically
+			// Special handling will need to be added in the future.
+			if ( Hovered.GetComponent<SkinnedModelRenderer>() != null )
+				return;
+			
 			if ( Hovered.GetComponent<Prop>() is { } prop )
 			{
 				if ( !EnableSnapHudOnStatic && prop.IsStatic )
