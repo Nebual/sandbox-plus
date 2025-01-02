@@ -275,12 +275,13 @@ public sealed partial class PlayerController : Component
 			for ( var row = 0; row <= SnapGridRows; row++ )
 			{
 				var rowFrac = (float)row / SnapGridRows;
-				var rowCenter = (Vector3.Lerp( localTopLeft, localBottomLeft, rowFrac ) + Vector3.Lerp( localTopRight, localBottomRight, rowFrac ));
+				var rowCenter = (Vector3.Lerp( localTopLeft, localBottomLeft, rowFrac ) + Vector3.Lerp( localTopRight, localBottomRight, rowFrac )) * 0.5f;
 				for ( var col = 0; col <= SnapGridColumns; col++ )
 				{
 					var colFrac = (float)col / SnapGridColumns;
-					var colCenter = (Vector3.Lerp( localTopLeft, localTopRight, colFrac ) + Vector3.Lerp( localBottomLeft, localBottomRight, colFrac ));
-					var point = (rowCenter + colCenter) * 0.5f;
+					var colCenter = (Vector3.Lerp( localTopLeft, localTopRight, colFrac ) + Vector3.Lerp( localBottomLeft, localBottomRight, colFrac )) * 0.5f;
+					// subtract the average of the corners to get the center of the quad, useful for props whose origin is not the center
+					var point = rowCenter + colCenter - (localTopLeft + localTopRight + localBottomLeft + localBottomRight) * 0.25f;
 					var dist = intersection.Distance( point );
 					if ( dist < closestIntersection )
 					{
@@ -291,11 +292,11 @@ public sealed partial class PlayerController : Component
 					}
 				}
 			}
-			
-			var worldTransform = hoveredProp.WorldTransform;
+
 			var HitResult = Scene.Trace
-				.Ray( worldTransform.PointToWorld((FaceDirection[CachedFocusedFace] * -1f) + intersectingPoint),
-					worldTransform.PointToWorld((FaceDirection[CachedFocusedFace] * 99999f) + intersectingPoint) )
+				.Ray( world.PointToWorld((FaceDirection[CachedFocusedFace] * -1f) + intersectingPoint),
+					world.PointToWorld((FaceDirection[CachedFocusedFace] * 99999f) + intersectingPoint) )
+				.IgnoreGameObject(GameObject)
 				.Run();
 
 			if ( !HitResult.Hit )
