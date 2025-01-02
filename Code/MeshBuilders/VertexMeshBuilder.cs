@@ -108,19 +108,19 @@ namespace Sandbox
 			var split = modelId.Split( '_' );
 			if ( modelId.StartsWith( "rect_" ) )
 			{
-				CreateRectangleModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt() );
+				CreateRectangleModel( split[1].ToFloat(), split[2].ToFloat(), split[3].ToFloat(), split[4].ToInt() );
 			}
 			else if ( modelId.StartsWith( "cylinder_" ) )
 			{
-				CreateCylinderModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt() );
+				CreateCylinderModel( split[1].ToFloat(), split[2].ToFloat(), split[3].ToInt(), split[4].ToInt() );
 			}
 			else if ( modelId.StartsWith( "sphere_" ) )
 			{
-				CreateSphereModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt() );
+				CreateSphereModel( split[1].ToFloat(), split[2].ToInt(), split[3].ToInt() );
 			}
 			else if ( modelId.StartsWith( "gear_" ) )
 			{
-				CreateGearModel( split[1].ToInt(), split[2].ToInt(), split[3].ToInt(), split[4].ToInt(), split[5].ToInt(), split[6].ToInt() );
+				CreateGearModel( split[1].ToFloat(), split[2].ToFloat(), split[3].ToInt(), split[4].ToFloat(), split[5].ToFloat(), split[6].ToInt() );
 			}
 		}
 

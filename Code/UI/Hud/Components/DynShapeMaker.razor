@@ -113,31 +113,31 @@
 			var split = meshComponent.ModelId.Split('_');
 			if ( meshComponent.ModelId.StartsWith("rect_") )
 			{
-				PlateLength = split[1].ToInt();
-				PlateWidth = split[2].ToInt();
-				PlateHeight = split[3].ToInt();
+				PlateLength = split[1].ToFloat();
+				PlateWidth = split[2].ToFloat();
+				PlateHeight = split[3].ToFloat();
 				TextureSize = split[4].ToInt();
 			}
 			else if ( meshComponent.ModelId.StartsWith("cylinder_") )
 			{
-				Radius = split[1].ToInt();
-				Height = split[2].ToInt();
+				Radius = split[1].ToFloat();
+				Height = split[2].ToFloat();
 				NumSegments = split[3].ToInt();
 				TextureSize = split[4].ToInt();
 			}
 			else if ( meshComponent.ModelId.StartsWith("sphere_") )
 			{
-				Radius = split[1].ToInt();
+				Radius = split[1].ToFloat();
 				NumSegments = split[2].ToInt();
 				TextureSize = split[3].ToInt();
 			}
 			else if ( meshComponent.ModelId.StartsWith("gear_") )
 			{
-				SpokeSize = split[1].ToInt() / split[3].ToInt();
-				PlateHeight = split[2].ToInt();
+				SpokeSize = split[1].ToFloat() / split[3].ToFloat();
+				PlateHeight = split[2].ToFloat();
 				NumSegments = split[3].ToInt();
-				CutDepth = split[4].ToInt();
-				SpokeSpikiness = split[5].ToInt();
+				CutDepth = split[4].ToFloat();
+				SpokeSpikiness = split[5].ToFloat();
 				TextureSize = split[6].ToInt();
 			}
 		}
