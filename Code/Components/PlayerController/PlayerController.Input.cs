@@ -36,6 +36,12 @@ public sealed partial class PlayerController : Component
 		var ee = EyeAngles;
 		ee += input;
 		ee.roll = 0;
+		ee.yaw = ee.yaw.NormalizeDegrees();
+		ee.pitch = ee.pitch.NormalizeDegrees();
+
+		if ( ee.pitch > 180 )
+			ee.pitch -= 360;
+
 		ee.pitch = ee.pitch.Clamp( -90, 90 );
 
 		EyeAngles = ee;
