@@ -13,6 +13,8 @@ public abstract class BaseTool : Component
 
 	protected PreviewModel previewModel;
 	public virtual string SpawnModel { get; set; } = "";
+	
+	public virtual bool WantsSnapGrid { get; set; } = true;
 
 	public virtual bool Primary( SceneTraceResult trace )
 	{

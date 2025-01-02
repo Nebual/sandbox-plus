@@ -1,7 +1,7 @@
 /// <summary>
 /// Holds player information like health
 /// </summary>
-public sealed partial class Player : Component, Component.IDamageable, PlayerController.IEvents
+public sealed partial class Player : Component, Component.IDamageable, SandboxPlus.PlayerController.IEvents
 {
 	public static Player Local => FindLocalPlayer();
 	public static Player FindLocalPlayer()
@@ -9,7 +9,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		return Game.ActiveScene.GetAllComponents<Player>().FirstOrDefault( x => !x.IsProxy );
 	}
 
-	[RequireComponent] public PlayerController Controller { get; set; }
+	[RequireComponent] public SandboxPlus.PlayerController Controller { get; set; }
 	[RequireComponent] public PlayerInventory Inventory { get; set; }
 
 	private PlayerSettings _settings;
@@ -134,7 +134,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		TakeDamage( damage.Damage );
 	}
 
-	void PlayerController.IEvents.OnEyeAngles( ref Angles ang )
+	void SandboxPlus.PlayerController.IEvents.OnEyeAngles( ref Angles ang )
 	{
 		var player = Components.Get<Player>();
 		var angles = ang;
@@ -142,7 +142,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		ang = angles;
 	}
 
-	void PlayerController.IEvents.PostCameraSetup( CameraComponent camera )
+	void SandboxPlus.PlayerController.IEvents.PostCameraSetup( CameraComponent camera )
 	{
 		var player = Components.Get<Player>();
 
@@ -152,7 +152,7 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 		ILocalPlayerEvent.Post( x => x.OnCameraPostSetup( camera ) );
 	}
 
-	void PlayerController.IEvents.OnLanded( float distance, Vector3 impactVelocity )
+	void SandboxPlus.PlayerController.IEvents.OnLanded( float distance, Vector3 impactVelocity )
 	{
 		var player = Components.Get<Player>();
 		IPlayerEvent.PostToGameObject( GameObject, x => x.OnLand( distance, impactVelocity ) );
