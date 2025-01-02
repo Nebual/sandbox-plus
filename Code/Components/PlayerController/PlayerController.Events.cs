@@ -11,6 +11,12 @@ public sealed partial class PlayerController : Component
 		/// Our eye angles are changing. Allows you to change the sensitivity, or stomp all together.
 		/// </summary>
 		void OnEyeAngles( ref Angles angles ) { }
+		
+		/// <summary>
+		/// Called before we try to draw the snap grid. Set enable to override the user configuration.
+		/// </summary>
+		/// <param name="enable"></param>
+		void OnEnableSnapping( ref bool enable ) { }
 
 		/// <summary>
 		/// Called after we've set the camera up

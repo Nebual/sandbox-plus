@@ -104,9 +104,20 @@ public sealed partial class PlayerController : Component
 	void OnRenderSnapHUD()
 	{
 		IsShowingSnapHUD = false;
+
+		var enabled = EnableSnapping && EnableSnapHud;
+		IEvents.PostToGameObject( GameObject, x => x.OnEnableSnapping( ref enabled ) );
 		
-		if ( !EnableSnapping || !EnableSnapHud )
+		if ( !enabled )
 			return;
+		
+		// Check if our active weapon wants to override this too
+		if (GetComponent<PlayerInventory>() is {} inventory)
+		{
+			IEvents.PostToGameObject(inventory.ActiveWeapon.GameObject, x => x.OnEnableSnapping(ref enabled));
+			if (!enabled)
+				return;
+		}
 
 		if ( Hovered != null )
 		{

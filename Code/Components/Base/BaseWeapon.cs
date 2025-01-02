@@ -5,7 +5,7 @@ using Sandbox.Citizen;
 /// again. Feel free to not use this and to implement it however you want to.
 /// </summary>
 [Icon( "sports_martial_arts" )]
-public partial class BaseWeapon : Component
+public partial class BaseWeapon : Component, SandboxPlus.PlayerController.IEvents
 {
 	[Property] public GameObject ViewModelPrefab { get; set; }
 	[Property] public string ParentBone { get; set; } = "hold_r";
@@ -35,6 +35,17 @@ public partial class BaseWeapon : Component
 	public virtual bool ShouldShowCrosshair()
 	{
 		return true;
+	}
+
+	public virtual bool WantsSnapGrid()
+	{
+		return false;
+	}
+
+	void SandboxPlus.PlayerController.IEvents.OnEnableSnapping( ref bool enable )
+	{
+		if ( !WantsSnapGrid() )
+			enable = false;
 	}
 
 	protected override void OnAwake()
