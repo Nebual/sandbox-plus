@@ -79,7 +79,7 @@
         "Priority": 1
       },
       {
-        "__type": "Sandbox.Movement.LockedPositionMode",
+        "__type": "SandboxPlus.Movement.LockedPositionMode",
         "__guid": "0a8fbce6-baad-477d-81ee-3b39cae50c5f",
         "Priority": 1
       },

@@ -152,9 +152,9 @@ public abstract class BaseTool : Component
 		Vector3 size = bounds.Size;
 		Rotation rotation = trace.GameObject.WorldRotation;
 
-		Vector2 goLoc = camera.PointToScreenPixels( bounds.Center );
+		Vector2 goLoc = camera.PointToScreenPixels( bounds.Center, out bool _fix );
 
-		Vector2 goWorldLoc = camera.PointToScreenPixels( prop.WorldPosition );
+		Vector2 goWorldLoc = camera.PointToScreenPixels( prop.WorldPosition, out bool _fix2 );
 
 		camera.Hud.DrawCircle( new Vector2( goWorldLoc.x, goWorldLoc.y ), new Vector2( 10, 10 ), Color.Magenta );
 		if ( DrawLabels )
@@ -172,9 +172,9 @@ public abstract class BaseTool : Component
 
 	private void DrawDirectionIndicator( CameraComponent camera, Vector3 start, Vector3 direction, int length, int width, string text, Color color, bool DrawLabels = true )
 	{
-		Vector2 screenStart = camera.PointToScreenPixels( start );
-		Vector2 screenEnd = camera.PointToScreenPixels( start + (direction * length) );
-		Vector2 screenText = camera.PointToScreenPixels( start + (direction * length) + new Vector3( 0, 0, 5 ) );
+		Vector2 screenStart = camera.PointToScreenPixels( start, out bool _fix );
+		Vector2 screenEnd = camera.PointToScreenPixels( start + (direction * length), out bool _fix2 );
+		Vector2 screenText = camera.PointToScreenPixels( start + (direction * length) + new Vector3( 0, 0, 5 ), out bool _fix3 );
 
 		camera.Hud.DrawLine( screenStart, screenEnd, width, color );
 		if ( DrawLabels )

@@ -1,4 +1,4 @@
-namespace Sandbox.Movement;
+namespace SandboxPlus.Movement;
 
 // useful for the Wire Keyboard, or anytime you want to glue yourself to a prop to surf
 [Group( "Movement" ), Title( "MoveMode - Locked Position" )]

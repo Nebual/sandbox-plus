@@ -341,7 +341,7 @@ public sealed partial class PlayerController : Component
 		
 		if ( text != null )
 		{
-			var textPos = camera.PointToScreenPixels( (start + end) / 2 );
+			var textPos = camera.PointToScreenPixels( (start + end) / 2, out bool _behind3 );
 			var textScope = TextRendering.Scope.Default;
 			textScope.Text = text;
 			textScope.TextColor = lineColor;
