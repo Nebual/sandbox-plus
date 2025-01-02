@@ -65,7 +65,7 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 		var playerGo = GameObject.Clone( "/prefabs/player.prefab", new CloneConfig { Name = $"Player - {channel.DisplayName}", StartEnabled = true, Transform = startLocation } );
 		var player = playerGo.Components.GetOrCreate<Player>();
 
-		player.Name = channel.Name;
+		player.Name = channel.DisplayName;
 		player.SteamId = channel.SteamId;
 		player.PartyId = channel.PartyId;
 
