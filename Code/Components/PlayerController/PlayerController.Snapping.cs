@@ -88,6 +88,9 @@ public sealed partial class PlayerController : Component
 	public Color SnapUnfocusedLineColor = new Color( 40, 40, 80, 0.2f );
 	
 	[Property, Feature( "Snapping" )]
+	public Color SnapBoundsLineColor = new Color( 40, 40, 60, 0.12f );
+
+	[Property, Feature( "Snapping" )]
 	public Color SnapFocusedLineColor = new Color( 150, 150, 150, 0.4f );
 
 	private bool IsSnapping { get; set; } = false;
@@ -212,18 +215,18 @@ public sealed partial class PlayerController : Component
 	
 	void DrawBounds()
 	{
-		DrawLine(CachedSnapCorners[0], CachedSnapCorners[1], CachedFaceLines.Contains(0) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[1], CachedSnapCorners[2], CachedFaceLines.Contains(1) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[2], CachedSnapCorners[3], CachedFaceLines.Contains(2) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[3], CachedSnapCorners[0], CachedFaceLines.Contains(3) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[4], CachedSnapCorners[5], CachedFaceLines.Contains(4) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[5], CachedSnapCorners[6], CachedFaceLines.Contains(5) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[6], CachedSnapCorners[7], CachedFaceLines.Contains(6) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[7], CachedSnapCorners[4], CachedFaceLines.Contains(7) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[0], CachedSnapCorners[4], CachedFaceLines.Contains(8) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[1], CachedSnapCorners[5], CachedFaceLines.Contains(9) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[2], CachedSnapCorners[6], CachedFaceLines.Contains(10) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
-		DrawLine(CachedSnapCorners[3], CachedSnapCorners[7], CachedFaceLines.Contains(11) ? SnapFocusedLineColor : SnapUnfocusedLineColor, 3);
+		DrawLine(CachedSnapCorners[0], CachedSnapCorners[1], CachedFaceLines.Contains(0) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[1], CachedSnapCorners[2], CachedFaceLines.Contains(1) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[2], CachedSnapCorners[3], CachedFaceLines.Contains(2) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[3], CachedSnapCorners[0], CachedFaceLines.Contains(3) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[4], CachedSnapCorners[5], CachedFaceLines.Contains(4) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[5], CachedSnapCorners[6], CachedFaceLines.Contains(5) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[6], CachedSnapCorners[7], CachedFaceLines.Contains(6) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[7], CachedSnapCorners[4], CachedFaceLines.Contains(7) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[0], CachedSnapCorners[4], CachedFaceLines.Contains(8) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[1], CachedSnapCorners[5], CachedFaceLines.Contains(9) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[2], CachedSnapCorners[6], CachedFaceLines.Contains(10) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
+		DrawLine(CachedSnapCorners[3], CachedSnapCorners[7], CachedFaceLines.Contains(11) ? SnapFocusedLineColor : SnapBoundsLineColor, 3);
 	}
 
 	void DrawGrid(Prop hoveredProp)
@@ -295,7 +298,7 @@ public sealed partial class PlayerController : Component
 				Vector3.Lerp(topLeft, bottomLeft, (float)row / SnapGridRows), 
 				Vector3.Lerp(topRight, bottomRight, (float)row / SnapGridRows),
 				isRowFocused ? SnapFocusedLineColor : SnapUnfocusedLineColor,
-				isRowFocused ? 4 : 2
+				(isRowFocused ? 4 : 2) + (row == SnapGridRows/2 ? 3 : 0)
 			);
 		}
 		
@@ -306,7 +309,7 @@ public sealed partial class PlayerController : Component
 				Vector3.Lerp(topLeft, topRight, (float)col / SnapGridColumns), 
 				Vector3.Lerp(bottomLeft, bottomRight, (float)col / SnapGridColumns),
 				isColFocused ? SnapFocusedLineColor : SnapUnfocusedLineColor,
-				isColFocused ? 4 : 2
+				(isColFocused ? 4 : 2) + (col == SnapGridColumns/2 ? 3 : 0)
 			);
 		}
 	}
@@ -315,8 +318,8 @@ public sealed partial class PlayerController : Component
 	{
 		var camera = Scene.Camera;
 		var hud = camera.Hud;
-		var screenStart = camera.PointToScreenPixels( start );
-		var screenEnd = camera.PointToScreenPixels( end );
+		var screenStart = camera.PointToScreenPixels( start, out bool _behind1 );
+		var screenEnd = camera.PointToScreenPixels( end, out bool _behind2 );
 		
 		hud.DrawLine( screenStart, screenEnd, width, lineColor);
 		
