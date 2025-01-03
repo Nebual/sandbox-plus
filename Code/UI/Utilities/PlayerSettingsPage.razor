@@ -6,14 +6,33 @@
 <root class="utility-panel">
 	<label class="description">Player Model</label>
 	<button class="btn" onclick=@TogglePlayerModelType>Toggle Player Model Humanity</button>
+
+	<label class="description">Custom Crosshairs</label>
+    <TextEntry @ref="CrosshairEntryPanel" Value="@Player.Local.Settings.CustomCrosshair"></TextEntry>
+	<button class="btn" onclick=@ResetCrosshairs>Reset to Default</button>
+	<button class="btn" onclick=@UpdateCrosshairs>Save Custom Crosshairs</button>
 </root>
 
 @code
 {
+    private TextEntry CrosshairEntryPanel { get; set; }
+
 	void TogglePlayerModelType()
 	{
 		if (Player.Local.Body.GetComponent<PlayerDresser>() is PlayerDresser dresser) {
 			dresser.ChangePlayerModelType(!dresser.UseHumanModel);
 		}
+	}
+
+	void ResetCrosshairs()
+	{
+		Player.Local.Settings.CustomCrosshair = PlayerSettings.CustomCrosshairDefault;
+        CrosshairEntryPanel.Blur();
+	}
+
+	void UpdateCrosshairs()
+	{
+		Player.Local.Settings.CustomCrosshair = CrosshairEntryPanel.Text;
+        CrosshairEntryPanel.Blur();
 	}
 }
