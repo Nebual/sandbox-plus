@@ -105,12 +105,11 @@ namespace Sandbox
 			var modelId = CreateSphere(radius, numSegments, texSize);
 			
 			var entity = SpawnEntity( modelId );
-			Player player = Player.FindLocalPlayer();
-			GameObject pawn = player.Controller.GameObject;
-			Transform eye = player.EyeTransform;
-			SceneTraceResult trace = pawn.Scene.Trace.Ray(eye.Position, eye.Position + eye.Forward * 5000.0f ).UseHitboxes().IgnoreGameObject(pawn).Run();
 
-			entity.WorldPosition = trace.EndPosition + trace.Normal;
+			Player player = Player.FindLocalPlayer();
+			SceneTraceResult trace = player.BasicTrace();
+
+			entity.WorldPosition = trace.EndPosition + trace.Normal + new Vector3(0, 0, radius);
 
 			UndoSystem.Add( creator: player, callback: ReadyUndo( entity, "Sphere" ), prop: entity );
 		}
