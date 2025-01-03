@@ -69,6 +69,7 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	/// </summary>
 	private void DrawCrosshair()
 	{
+		if ( IsProxy ) return;
 		if ( hudObjects.Count == 0 ) RegenerateCrosshair();
 
 		Vector3 trace = Vector3.Zero;
