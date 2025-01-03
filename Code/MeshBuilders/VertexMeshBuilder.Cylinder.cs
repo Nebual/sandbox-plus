@@ -139,10 +139,10 @@ namespace Sandbox
 			var modelId = CreateCylinder(radius, depth, numFaces, texScale);
 			
 			var entity = SpawnEntity( modelId );
+
 			Player player = Player.FindLocalPlayer();
-			GameObject pawn = player.Controller.GameObject;
-			Transform eye = player.EyeTransform;
-			SceneTraceResult trace = pawn.Scene.Trace.Ray(eye.Position, eye.Position + eye.Forward * 5000.0f ).UseHitboxes().IgnoreGameObject(pawn).Run();
+			SceneTraceResult trace = player.BasicTrace();
+
 			entity.WorldPosition = trace.EndPosition + trace.Normal;
 
 			UndoSystem.Add( creator: player, callback: ReadyUndo( entity, "Cylinder" ), prop: entity );
