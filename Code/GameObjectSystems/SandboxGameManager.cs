@@ -71,7 +71,7 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 
 		//Make sure all of these exist
 		var animHelper = playerGo.Components.GetInDescendantsOrSelf<CitizenAnimationHelper>();
-		var controller = playerGo.Components.GetOrCreate<PlayerController>();
+		var controller = playerGo.Components.GetOrCreate<SandboxPlus.PlayerController>();
 		var inventory = playerGo.Components.GetOrCreate<PlayerInventory>();
 
 		if ( animHelper.IsValid() )

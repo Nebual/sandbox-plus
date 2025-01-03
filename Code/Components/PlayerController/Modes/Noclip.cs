@@ -1,4 +1,4 @@
-namespace Sandbox.Movement;
+namespace SandboxPlus.Movement;
 
 [Icon( "flight" ), Group( "Movement" ), Title( "MoveMode - Noclip" )]
 public class MoveModeNoclip : MoveMode

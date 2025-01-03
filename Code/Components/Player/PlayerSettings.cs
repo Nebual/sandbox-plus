@@ -3,10 +3,10 @@ namespace Sandbox
 	public class PlayerSettings
 	{
 		public Player player; // not saved
-		private bool useHumanModel = false;
 		private bool isDirty = false;
 
 		// any Properties will be saved
+		private bool useHumanModel = false;
 		public bool UseHumanModel
 		{
 			get => useHumanModel;
@@ -30,6 +30,18 @@ namespace Sandbox
 				SetDirty();
 
 				if (player != null) player.RegenerateCrosshair();
+      }
+    }
+    
+		private bool usePhysgunSound = true;
+		public bool UsePhysgunSound
+		{
+			get => usePhysgunSound;
+			set
+			{
+				if ( usePhysgunSound == value ) return;
+				usePhysgunSound = value;
+				SetDirty();
 			}
 		}
 
