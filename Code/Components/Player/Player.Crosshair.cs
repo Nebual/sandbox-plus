@@ -69,7 +69,7 @@ namespace PlayerCrosshair
 
 		public override void Draw( CameraComponent camera, Vector2 centerPos )
 		{
-			camera.Hud.DrawRect( new Rect( centerPos.x - Left, centerPos.y - Top, Width, Height ), Color, borderWidth: new Vector4( Thickness ) );
+			camera.Hud.DrawRect( new Rect( centerPos.x + Left, centerPos.y + Top, Width, Height ), Color, borderWidth: new Vector4( Thickness ) );
 		}
 	}
 

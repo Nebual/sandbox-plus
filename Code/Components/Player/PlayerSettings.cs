@@ -18,7 +18,7 @@ namespace Sandbox
 			}
 		}
 
-		public static string CustomCrosshairDefault = "(circle;255;255;255;0;0;5;5)";
+		public static string CustomCrosshairDefault = "(circle;255;255;255;-3;-3;6;6)";
 		private string customCrosshair = CustomCrosshairDefault;
 		public string CustomCrosshair
 		{
