@@ -17,6 +17,16 @@ public partial class ToolGun : BaseWeapon
 		CurrentTool?.Disabled();
 	}
 
+	public override bool WantsSnapGrid()
+	{
+		if ( CurrentTool != null )
+		{
+			return CurrentTool.WantsSnapGrid;
+		}
+		
+		return true;
+	}
+
 	string lastTool;
 
 	protected override void OnFixedUpdate()

@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# we generally shouldn't commit these, but sometimes need to if the source's are missing
+*.vtex_c filter=lfs diff=lfs merge=lfs -text
+*.vpcf_c filter=lfs diff=lfs merge=lfs -text
+*.vsnd_c filter=lfs diff=lfs merge=lfs -text
+*.vmdl_c filter=lfs diff=lfs merge=lfs -text
+*.vmat_c filter=lfs diff=lfs merge=lfs -text
+*.sound_c filter=lfs diff=lfs merge=lfs -text
+*.surface_c filter=lfs diff=lfs merge=lfs -text
+*.prefab_c filter=lfs diff=lfs merge=lfs -text
+
+*.tga filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.dmx filter=lfs diff=lfs merge=lfs -text
+*.wav filter=lfs diff=lfs merge=lfs -text
+*.ogg filter=lfs diff=lfs merge=lfs -text

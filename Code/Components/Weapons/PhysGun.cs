@@ -142,7 +142,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 
 		if ( Beaming )
 		{
-			if ( !(BeamSound?.IsPlaying ?? false) && !BeamSoundPlaying )
+			if ( !(BeamSound?.IsPlaying ?? false) && !BeamSoundPlaying && Owner.Settings.UsePhysgunSound )
 			{
 				BeamSound = GameObject.PlaySound( ResourceLibrary.Get<SoundEvent>( "sounds/weapons/gravity_gun/superphys_small_zap1.sound" ) );
 				BeamSound.Volume = 0.10f;
