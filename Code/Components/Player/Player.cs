@@ -38,6 +38,8 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	public Ray AimRay => new( EyeTransform.Position, EyeTransform.Rotation.Forward );
 	public bool SuppressScrollWheelInventory { get; set; } = false;
 
+	private List<PlayerCrosshair.HudObject> hudObjects = new();
+
 	public bool isInParty()
 	{
 		return PartyId != 0UL;
@@ -59,13 +61,33 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 		}
 
 		// Crosshair
+		DrawCrosshair();
+	}
+
+	/// <summary>
+	/// Draws the player's crosshair based on what they've defined
+	/// </summary>
+	private void DrawCrosshair()
+	{
+		if ( IsProxy ) return;
+		if ( hudObjects.Count == 0 ) RegenerateCrosshair();
+
 		Vector3 trace = Vector3.Zero;
 		if ( Controller.ThirdPerson ) trace = Player.DoBasicTrace().HitPosition;
 
-		if ( !Controller.ThirdPerson || trace == Vector3.Zero) trace = AimRay.Position + AimRay.Forward * 5000;
+		if ( !Controller.ThirdPerson || trace == Vector3.Zero ) trace = AimRay.Position + AimRay.Forward * 5000;
 
 		Vector2 loc = Scene.Camera.PointToScreenPixels( trace );
-		Scene.Camera.Hud.DrawCircle( new Vector2( loc.x, loc.y ), new Vector2( 5, 5 ), Color.White );
+
+		foreach(var obj in hudObjects)
+		{
+			obj.Draw( Scene.Camera, loc );
+		}
+	}
+
+	public void RegenerateCrosshair()
+	{
+		hudObjects = PlayerCrosshair.Crosshair.ConfigToHudObjects( Settings.CustomCrosshair );
 	}
 
 	/// <summary>

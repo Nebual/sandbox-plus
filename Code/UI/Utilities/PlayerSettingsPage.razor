@@ -9,10 +9,16 @@
 
     <label class="description">Physgun Sound</label>
 	<button class="btn" onclick=@(TogglePhysgunSound)>Toggle Physgun Sound (@(Player.Local.Settings.UsePhysgunSound ? "On" : "Off"))</button>
+
+	<label class="description">Custom Crosshairs</label>
+    <TextEntry @ref="CrosshairEntryPanel" Value="@Player.Local.Settings.CustomCrosshair"></TextEntry>
+	<button class="btn" onclick=@ResetCrosshairs>Reset to Default</button>
+	<button class="btn" onclick=@UpdateCrosshairs>Save Custom Crosshairs</button>
 </root>
 
 @code
 {
+    private TextEntry CrosshairEntryPanel { get; set; }
     PlayerDresser dresser { get; set; } = Player.Local.Body.GetComponent<PlayerDresser>();
 
 	void TogglePlayerModelType()
@@ -22,7 +28,19 @@
 		dresser.ChangePlayerModelType(!dresser.UseHumanModel);
 	}
 
-    void TogglePhysgunSound() {
+  void TogglePhysgunSound() 
+  {
 		Player.Local.Settings.UsePhysgunSound = !Player.Local.Settings.UsePhysgunSound;
-    }
+  }
+	void ResetCrosshairs()
+	{
+		Player.Local.Settings.CustomCrosshair = PlayerSettings.CustomCrosshairDefault;
+        CrosshairEntryPanel.Blur();
+	}
+
+	void UpdateCrosshairs()
+	{
+		Player.Local.Settings.CustomCrosshair = CrosshairEntryPanel.Text;
+        CrosshairEntryPanel.Blur();
+	}
 }

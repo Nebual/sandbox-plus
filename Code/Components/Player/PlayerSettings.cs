@@ -18,6 +18,21 @@ namespace Sandbox
 			}
 		}
 
+		public static string CustomCrosshairDefault = "(circle;255;255;255;-3;-3;6;6)";
+		private string customCrosshair = CustomCrosshairDefault;
+		public string CustomCrosshair
+		{
+			get => customCrosshair;
+			set
+			{
+				if ( customCrosshair == value ) return;
+				customCrosshair = value;
+				SetDirty();
+
+				if (player != null) player.RegenerateCrosshair();
+      }
+    }
+    
 		private bool usePhysgunSound = true;
 		public bool UsePhysgunSound
 		{
@@ -60,6 +75,7 @@ namespace Sandbox
 		public static PlayerSettings Load()
 		{
 			var loaded = FileSystem.Data.ReadJson<PlayerSettings>( "playersettings.json" ) ?? new PlayerSettings();
+			loaded.player = Player.FindLocalPlayer();
 			loaded.SetDirty( false );
 			return loaded;
 		}
