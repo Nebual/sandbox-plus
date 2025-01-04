@@ -15,17 +15,21 @@ public partial class ResizerTool : BaseTool
 		if ( !trace.Hit || !trace.GameObject.IsValid() )
 			return false;
 
+		var speed = Input.Down( "run" ) ? 2f
+			: Input.Down( "duck" ) ? 0.125f
+			: 0.5f;
+
 		var skinnedModelRenderer = trace.GameObject.GetComponent<SkinnedModelRenderer>();
 		if ( skinnedModelRenderer.IsValid() && skinnedModelRenderer.GetBoneObject( trace.Bone ) is GameObject boneGo && boneGo.IsValid() )
 		{
-			var size = boneGo.WorldScale + (resizeDir * 0.5f * Time.Delta);
+			var size = boneGo.WorldScale + (resizeDir * speed * Time.Delta);
 
 			SetRagSize( trace.GameObject, size, trace.Bone );
 		}
 		else
 		{
 			var go = trace.GameObject;
-			var size = go.WorldScale + (resizeDir * 0.5f * Time.Delta);
+			var size = go.WorldScale + (resizeDir * speed * Time.Delta);
 
 			SetPropSize( trace.GameObject, size );
 		}
