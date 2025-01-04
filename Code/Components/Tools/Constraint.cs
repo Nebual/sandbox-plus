@@ -209,7 +209,11 @@ namespace Sandbox.Tools
 
 			if ( stage == ConstraintToolStage.Applying )
 			{
-				return ApplyConstraint();
+				if ( !IsProxy )
+				{
+					ApplyConstraint();
+				}
+				return true;
 			}
 			else if ( stage == ConstraintToolStage.ConstraintController )
 			{
@@ -279,22 +283,15 @@ namespace Sandbox.Tools
 
 		protected void ApplyWeld()
 		{
-			var point1 = PhysicsPoint.World( trace1.Body, trace2.EndPosition, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
-			var joint = PhysicsJoint.CreateFixed(
-				point1,
-				point2
-			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Weld( trace2.GameObject, noCollide, trace1.Bone, trace2.Bone );
 
-			trace1.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )
 				{
-					joint.Remove();
-					return $"Removed {Type} constraint";
+					joint.Destroy();
+					return $"Removed Weld constraint";
 				}
 				return "";
 			} );
@@ -494,7 +491,8 @@ namespace Sandbox.Tools
 				stage = ConstraintToolStage.Removing;
 				if ( Input.Down( "walk" ) )
 				{
-					RemoveConstraints( Type, trace );
+					var propHelper = trace.GameObject.GetComponent<PropHelper>();
+					propHelper?.RemoveConstraints( Type );
 					ResetTool();
 					return true;
 				}
@@ -507,7 +505,8 @@ namespace Sandbox.Tools
 					ResetTool();
 					return false;
 				}
-				RemoveConstraintBetweenEnts( Type, trace1, trace2 );
+				var propHelper = trace1.GameObject.GetComponent<PropHelper>();
+				propHelper?.RemoveConstraints( Type, trace2.GameObject );
 				ResetTool();
 				return true;
 			}
@@ -552,31 +551,6 @@ namespace Sandbox.Tools
 			return trace1.GameObject.IsWorld() || trace2.GameObject.IsWorld();
 		}
 
-		private void RemoveConstraints( ConstraintType type, SceneTraceResult tr )
-		{
-			tr.GameObject.GetComponent<PropHelper>().PhysicsJoints.ForEach( j =>
-			{
-				if ( j.GetConstraintType() == type )
-				{
-					j.Remove();
-				}
-			} );
-		}
-
-		private void RemoveConstraintBetweenEnts( ConstraintType type, SceneTraceResult trace1, SceneTraceResult trace2 )
-		{
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.ForEach( j =>
-			{
-				if ( (j.Body1 == trace1.Body || j.Body2 == trace1.Body) && (j.Body1 == trace2.Body || j.Body2 == trace2.Body) )
-				{
-					if ( j.GetConstraintType() == type )
-					{
-						j.Remove();
-					}
-				}
-			} );
-		}
-
 		private void SelectNextType()
 		{
 			IEnumerable<ConstraintType> possibleEnums = Enum.GetValues<ConstraintType>();
@@ -618,6 +592,10 @@ namespace Sandbox.Tools
 				desc += $"\n{Input.GetButtonOrigin( "reload" )} to select an entity to remove {Type} constraint ({Input.GetButtonOrigin( "walk" )} to remove all {Type} constraints)";
 				desc += $"\n{Input.GetButtonOrigin( "drop" )} to cycle to next constraint type";
 			}
+			if ( stage == ConstraintToolStage.Removing )
+			{
+				desc += $"\nNow, {Input.GetButtonOrigin( "reload" )} the second entity to remove the {Type} constraint between them, or {Input.GetButtonOrigin( "reload" )} the same entity to remove all {Type}'s";
+			}
 			if ( WireboxSupport )
 			{
 				if ( stage == ConstraintToolStage.Moving )
@@ -643,6 +621,24 @@ namespace Sandbox.Tools
 			if ( WireboxSupport && Input.Down( "walk" ) )
 			{
 				createdJoint = joint;
+				createdUndo = undo;
+				stage = ConstraintToolStage.ConstraintController;
+				return;
+			}
+			ResetTool();
+		}
+
+		private void FinishConstraintCreation( Sandbox.Joint joint, Func<string> undo )
+		{
+			joint.OnBreak += () => { undo(); };
+
+			// Event.Run( "joint.spawned", joint, Owner );
+			UndoSystem.Add( Owner, undo );
+			// Analytics.ServerIncrement( To.Single( Owner ), "constraint.created" );
+
+			if ( WireboxSupport && Input.Down( "walk" ) )
+			{
+				// createdJoint = joint; // todo
 				createdUndo = undo;
 				stage = ConstraintToolStage.ConstraintController;
 				return;

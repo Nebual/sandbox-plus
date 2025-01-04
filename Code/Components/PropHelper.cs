@@ -1,5 +1,6 @@
 using Sandbox.ModelEditor.Nodes;
 using Sandbox.Physics;
+using Sandbox.Tools;
 
 
 /// <summary>
@@ -36,7 +37,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 	}
 	[Sync] public NetDictionary<int, BodyInfo> NetworkedBodies { get; set; } = new();
 
-	public List<Sandbox.FixedJoint> Welds { get; set; } = new();
 	public List<Joint> Joints { get; set; } = new();
 	public List<PhysicsJoint> PhysicsJoints { get; set; } = new();
 
@@ -370,62 +370,67 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 		Sound.Play( path, position );
 	}
 
-	[Rpc.Broadcast]
-	public void Weld( GameObject to )
+	public Sandbox.FixedJoint Weld( GameObject to, bool noCollide = true, int fromBone = -1, int toBone = -1 )
 	{
-		if ( IsProxy )
-			return;
-
-
-		var fixedJoint = Components.Create<Sandbox.FixedJoint>();
-		fixedJoint.Body = to;
+		var fixedJoint = GetJointGameObject( this.GameObject, fromBone ).Components.Create<Sandbox.FixedJoint>();
+		fixedJoint.Body = GetJointGameObject( to, toBone );
 		fixedJoint.LinearDamping = 0;
 		fixedJoint.LinearFrequency = 0;
 		fixedJoint.AngularDamping = 0;
 		fixedJoint.AngularFrequency = 0;
+		fixedJoint.EnableCollision = !noCollide;
+		fixedJoint.Network.Refresh();
 
-		Welds.Add( fixedJoint );
-		Joints.Add( fixedJoint );
-		// todo: PhysicsJoints ? Can we not access the PhysicsJoint from a Sandbox.FixedJoint? Facepunch what is this api
+		AddJointToList( fixedJoint );
+		to.Components.Get<PropHelper>()?.AddJointToList( fixedJoint );
 
-		PropHelper propHelper = to.Components.Get<PropHelper>();
-		propHelper?.Welds.Add( fixedJoint );
-		propHelper?.Joints.Add( fixedJoint );
+		return fixedJoint;
 	}
 
-	[Rpc.Broadcast]
-	public void Unweld()
+	private static GameObject GetJointGameObject( GameObject go, int bone = -1 )
 	{
-		if ( IsProxy )
-			return;
-
-		foreach ( var weld in Welds )
+		// Sandbox.Joint's only work with GameObjects, so we need to get the Bone's GameObject
+		if ( bone > -1 && go.GetComponent<SkinnedModelRenderer>() is SkinnedModelRenderer skinnedModelRenderer )
 		{
-			weld?.Destroy();
+			return skinnedModelRenderer.GetBoneObject( bone );
 		}
-
-		RemoveInvalidItemsFromLists();
+		return go;
 	}
 
 	[Rpc.Broadcast]
-	public void Unweld(GameObject from)
+	private void AddJointToList( Joint joint )
 	{
-		if ( IsProxy )
-			return;
+		Joints.Add( joint );
+	}
 
-		foreach(var weld in Welds)
+	[Rpc.Broadcast]
+	public void RemoveConstraints( ConstraintType type, GameObject to = null )
+	{
+		foreach ( var j in Joints.AsEnumerable().Reverse() ) // reverse so we can remove items from the list while iterating
 		{
-			if ( weld?.Body == from )
+			if ( !j.IsValid() )
 			{
-				weld?.Destroy();
-				break;
+				Joints.Remove( j );
+				continue;
+			}
+
+			if ( !to.IsValid() || ((j.GameObject == this.GameObject || j.Body == this.GameObject) && (j.Body == to || j.GameObject == to)) )
+			{
+				if ( j.GetConstraintType() == type )
+				{
+					j?.Destroy();
+					Joints.Remove( j );
+					to?.GetComponent<PropHelper>()?.Joints.Remove( j );
+				}
 			}
 		}
-
-		// Update the invalid items lists on the other entity, and ourselves
-		from.Components.Get<PropHelper>().RemoveInvalidItemsFromLists();
-		RemoveInvalidItemsFromLists();
 	}
+	[Rpc.Owner]
+	public void RemoveJoint( Sandbox.Joint joint )
+	{
+		joint?.Destroy();
+	}
+
 
 	[Rpc.Broadcast]
 	public void Hinge( GameObject to, Vector3 position, Vector3 normal )
@@ -477,7 +482,6 @@ public sealed class PropHelper : Component, Component.ICollisionListener
 
 	private void RemoveInvalidItemsFromLists()
 	{
-		Welds.RemoveAll( item => !item.IsValid() );
 		Joints.RemoveAll( item => !item.IsValid() );
 		PhysicsJoints.RemoveAll( item => !item.IsValid() );
 	}

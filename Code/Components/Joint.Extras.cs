@@ -113,6 +113,39 @@ public static class JointExtensions
 		throw new System.Exception( "Unknown joint type" );
 	}
 
+	public static Sandbox.Tools.ConstraintType GetConstraintType( this Sandbox.Joint joint )
+	{
+		if ( joint is Sandbox.FixedJoint )
+		{
+			return Sandbox.Tools.ConstraintType.Weld;
+		}
+		else if ( joint is Sandbox.HingeJoint )
+		{
+			return Sandbox.Tools.ConstraintType.Axis;
+		}
+		else if ( joint is Sandbox.BallJoint )
+		{
+			return Sandbox.Tools.ConstraintType.BallSocket;
+		}
+		else if ( joint is Sandbox.SpringJoint springJoint )
+		{
+			if ( springJoint.MinLength <= 0.001f )
+			{
+				if ( springJoint.MaxLength == 9999999 )
+				{
+					return Sandbox.Tools.ConstraintType.Nocollide;
+				}
+				return Sandbox.Tools.ConstraintType.Rope;
+			}
+			return Sandbox.Tools.ConstraintType.Spring;
+		}
+		else if ( joint is Sandbox.SliderJoint )
+		{
+			return Sandbox.Tools.ConstraintType.Slider;
+		}
+		throw new System.Exception( "Unknown joint type" );
+	}
+
 	public static bool IsWorld( this GameObject gameObject )
 	{
 		return gameObject.GetComponent<MapCollider>() != null;
