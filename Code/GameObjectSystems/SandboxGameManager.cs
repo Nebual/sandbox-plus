@@ -83,7 +83,9 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 		if ( inventory.IsValid() )
 			player.Inventory = inventory;
 
-		channel.CanRefreshObjects = true;
+		if (Networking.IsHost) {
+			channel.CanRefreshObjects = true;
+		}
 
 		playerGo.NetworkSpawn( channel );
 		

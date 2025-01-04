@@ -112,7 +112,7 @@ public sealed partial class PlayerController : Component
 			return;
 		
 		// Check if our active weapon wants to override this too
-		if (GetComponent<PlayerInventory>() is {} inventory)
+		if (GetComponent<PlayerInventory>() is {} inventory && inventory.ActiveWeapon.IsValid())
 		{
 			IEvents.PostToGameObject(inventory.ActiveWeapon.GameObject, x => x.OnEnableSnapping(ref enabled));
 			if (!enabled)

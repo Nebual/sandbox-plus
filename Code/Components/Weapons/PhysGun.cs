@@ -251,11 +251,11 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 
 		foreach ( Joint joint in result )
 		{
-			GameObject object1 = joint.Body1.GetGameObject();
-			GameObject object2 = joint.Body2.GetGameObject();
+			GameObject object1 = joint?.Body1?.GetGameObject();
+			GameObject object2 = joint?.Body2?.GetGameObject();
 
-			if ( !returned.Contains( object1 ) ) returned.Add( object1 );
-			if ( !returned.Contains( object2 ) ) returned.Add( object2 );
+			if ( object1.IsValid() && !returned.Contains( object1 ) ) returned.Add( object1 );
+			if ( object2.IsValid() && !returned.Contains( object2 ) ) returned.Add( object2 );
 		}
 
 		return returned;

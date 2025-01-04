@@ -41,6 +41,8 @@ namespace Sandbox.Tools
 		{
 			base.OnUpdate();
 
+			if ( !Parent.IsValid() ) return;
+
 			var trace = Parent.BasicTraceTool();
 
 			DoAxisOverlay( trace, Scene.Camera );
