@@ -22,7 +22,7 @@
 		}
 
 		previewObject.WorldPosition = trace.HitPosition + PositionOffset + trace.Normal * NormalOffset;
-		previewObject.WorldRotation = (FaceNormal ? Rotation.LookAt( trace.Normal ) : Rotation.Identity) * RotationOffset;
+		previewObject.WorldRotation = (FaceNormal ? Rotation.LookAt( trace.Normal, trace.Direction ) : Rotation.Identity) * RotationOffset;
 		SetEnabled( true );
 	}
 
