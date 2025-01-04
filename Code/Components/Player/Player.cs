@@ -161,17 +161,34 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 		IPlayerEvent.PostToGameObject( GameObject, x => x.OnLand( distance, impactVelocity ) );
 	}
 
-	public static SceneTraceResult DoBasicTrace()
+	/// <summary>
+	/// Function that runs a trace from the Player's eye forwards.
+	/// 
+	/// Use this is you already have a copy of the Player.
+	/// </summary>
+	/// <returns></returns>
+	public SceneTraceResult BasicTrace()
 	{
-		var player = Player.FindLocalPlayer();
-		var trace = player.Scene.Trace.Ray( player.AimRay.Position, player.AimRay.Position + player.AimRay.Forward * 5000 )
+		var trace = Scene.Trace.Ray( AimRay.Position, AimRay.Position + AimRay.Forward * 5000 )
 				.UseHitboxes()
 				.WithAnyTags( "solid", "npc", "glass" )
 				.WithoutTags( "debris", "player" )
-				.IgnoreGameObjectHierarchy( player.GameObject )
+				.IgnoreGameObjectHierarchy( GameObject )
 				.Size( 2 );
 
 		return trace.Run();
+	}
+
+	/// <summary>
+	/// Static function that gets the Local Player, and runs a trace from it's eye forwards.
+	/// 
+	/// Use this if you don't have a copy of the Player
+	/// </summary>
+	/// <returns>SceneTraceResult of a straight trace from the player's eye forwards</returns>
+	public static SceneTraceResult DoBasicTrace()
+	{
+		var player = Player.FindLocalPlayer();
+		return player.BasicTrace();
 	}
 
 	public static Player FindPlayerByConnection( Connection connection )
