@@ -49,6 +49,6 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 		{
 			BodyRenderer.Model = Model.Load( "models/citizen/citizen.vmdl" );
 		}
-		clothing.Apply( BodyRenderer );
+		clothing?.Apply( BodyRenderer );
 	}
 }

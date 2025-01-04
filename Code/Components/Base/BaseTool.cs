@@ -135,14 +135,13 @@ public abstract class BaseTool : Component
 
 	public void DoAxisOverlay( SceneTraceResult trace, CameraComponent camera, bool DrawLabels = true )
 	{
-		Prop prop = trace.GameObject.GetComponent<Prop>();
-
-		if ( !trace.Hit || !trace.Body.IsValid() || !prop.IsValid() )
+		if ( !trace.Hit || !trace.Body.IsValid() )
 			return;
 
+		Prop prop = trace.GameObject.GetComponent<Prop>();
 		Rigidbody rigidbody = trace.GameObject.GetComponent<Rigidbody>();
 
-		if ( !rigidbody.IsValid() ) return;
+		if ( !prop.IsValid() || !rigidbody.IsValid() ) return;
 
 		//Vector3 GOCenter = prop.WorldPosition + prop.Model.Bounds.Center;
 		BBox bounds = rigidbody.PhysicsBody.GetBounds();

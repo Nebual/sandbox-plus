@@ -122,6 +122,7 @@
 		protected override void OnUpdate()
 		{
 			base.OnUpdate();
+			if ( !Parent.IsValid() ) return;
 
 			var trace = Parent.BasicTraceTool();
 
