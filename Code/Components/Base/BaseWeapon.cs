@@ -114,7 +114,8 @@ public partial class BaseWeapon : Component, SandboxPlus.PlayerController.IEvent
 		if ( IsProxy )
 			return;
 
-		Scene.Camera.Tags.Set( "viewer", Owner.Controller.ThirdPerson );
+		if (Owner.IsValid())
+			Scene.Camera.Tags.Set( "viewer", Owner.Controller.ThirdPerson );
 
 		OnControl();
 	}
