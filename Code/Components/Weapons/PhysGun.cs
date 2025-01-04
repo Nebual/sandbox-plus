@@ -7,7 +7,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	[Property] public float AngularFrequency { get; set; } = 20.0f;
 	[Property] public float AngularDampingRatio { get; set; } = 1.0f;
 	[Property] public float TargetDistanceSpeed { get; set; } = 25.0f;
-	[Property] public float RotateSpeed { get; set; } = 0.2f;
+	[Property] public float RotateSpeed { get; set; } = 0.4f;
 	[Property] public float RotateSnapAt { get; set; } = 45.0f;
 
 	[Sync] public bool Beaming { get; set; }
@@ -20,7 +20,8 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	private SoundHandle BeamSound;
 	private bool BeamSoundPlaying;
 	GameObject lastGrabbed = null;
-	private Model _model = Cloud.Model("katka/gravitygun"); // in the prefab, but this ensures its downloaded
+	private Model _model = Cloud.Model( "katka/gravitygun" ); // in the prefab, but this ensures its downloaded
+	private RealTimeSince LastReloadPressed;
 
 	PhysicsBody _heldBody;
 	PhysicsBody HeldBody
@@ -134,10 +135,14 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 			grabbed = false;
 		}
 
-		if ( Input.Pressed( "reload" ) && Input.Down( "run" ) )
+		if ( Input.Pressed( "reload" ) && (Input.Down( "run" ) || LastReloadPressed < 0.5f) )
 		{
 			TryUnfreezeAll();
 			SetRendererAnimParam( "fire", true );
+		}
+		if ( Input.Pressed( "reload" ) )
+		{
+			LastReloadPressed = 0;
 		}
 
 		if ( Beaming )
