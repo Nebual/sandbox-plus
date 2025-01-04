@@ -38,6 +38,8 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	public Ray AimRay => new( EyeTransform.Position, EyeTransform.Rotation.Forward );
 	public bool SuppressScrollWheelInventory { get; set; } = false;
 
+	private RealTimeSince TimeSinceLastUndo = 0f;
+
 	public bool isInParty()
 	{
 		return PartyId != 0UL;
@@ -48,8 +50,9 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 		base.OnUpdate();
 		if ( !IsProxy )
 		{
-			if ( Input.Pressed( "undo" ) )
+			if ( Input.Pressed( "undo" ) && TimeSinceLastUndo > 0.1f )
 			{
+				TimeSinceLastUndo = 0;
 				UndoSystem.PlayerUndo();
 			}
 			if ( Input.Pressed( "attack3" ) )
