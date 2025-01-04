@@ -4,6 +4,14 @@ using Sandbox.Services;
 
 public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, IPlayerEvent, Component.INetworkListener, ISceneStartup
 {
+	struct PlayerConnectionData
+	{
+		public string ClientPassword { get; set; }
+	}
+	
+	[ConVar("sbox_password", Help = "Sets the password for the sandbox.")]
+	public static String Password { get; set; } = "";
+	
 	public SandboxGameManager( Scene scene ) : base( scene )
 	{
 	}
@@ -46,8 +54,81 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 		}
 	}
 
+	[Rpc.Broadcast(NetFlags.Reliable & NetFlags.SendImmediate)]
+	private static void OnRequestPlayerConnectionData( SteamId playerId )
+	{
+		if ( Connection.Local.SteamId == playerId )
+		{
+			// In the editor (and potentially other scenarios) the password is invalid
+			var password = Password;
+			if ( password == null )
+			{
+				password = ConsoleSystem.GetValue( "sbox_password" );
+
+				if ( password == null )
+				{
+					password = ConsoleSystem.GetValue("sv_password");
+				}
+			}
+			var data = new PlayerConnectionData
+			{
+				ClientPassword = password
+			};
+			
+			Log.Info($"Sending player connection data");
+			
+			OnPlayerConnectionDataReceived(data);
+		}
+	}
+	
+	[Rpc.Host(NetFlags.Reliable & NetFlags.SendImmediate)]
+	private static void OnPlayerConnectionDataReceived( PlayerConnectionData data )
+	{
+		Log.Info($"Player connection data received for {Rpc.Caller.SteamId}");
+		if ( Password.Length > 0 && data.ClientPassword != Password )
+		{
+			Log.Info($"{data.ClientPassword}, {Password}");
+			Rpc.Caller.Kick("Incorrect password");
+		}
+	}
+
+	bool Component.INetworkListener.AcceptConnection( Connection channel, ref string reason )
+	{
+		// Always accept the host
+		if ( channel.IsHost )
+			return true;
+		
+		// Checking the password here would be preferable, but Facepunch has locked down
+		// all the functions that would let us acquire the data we need at this point
+		/*if ( Password.Length == 0 )
+			return true;
+
+		var passwordRequest = channel.SendRequest( "sbox_request_password" );
+		var startTime = RealTime.Now;
+		while ( !passwordRequest.IsCompleted )
+		{
+			if ( RealTime.Now - startTime > 1.0f )
+			{
+				reason = "Player data request timed out";
+				return false;
+			}
+		}
+		
+		var userPassword = passwordRequest.Result as string;
+		if ( userPassword != Password )
+		{
+			reason = "Incorrect password";
+			return false;
+		}*/
+		
+		return true;
+	}
+
 	void Component.INetworkListener.OnActive( Connection channel )
 	{
+		OnRequestPlayerConnectionData(channel.SteamId);
+		Log.Info($"Requesting player data for {channel.SteamId}");
+		
 		SpawnPlayerForConnection( channel );
 	}
 
