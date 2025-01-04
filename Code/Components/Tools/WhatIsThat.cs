@@ -18,7 +18,12 @@ namespace Sandbox.Tools
 			{
 				Clipboard.SetText(prop.Prop.Model.Name);
 				message += $" {prop.Prop.Model.Name},\n";
-				if ( tr.Body.IsValid() )
+				var rigidBody = tr.GameObject.GetComponent<Rigidbody>();
+				if ( rigidBody.IsValid() && rigidBody.MassOverride > 0 )
+				{
+					message += $" weighing {rigidBody.MassOverride:F2} (overridden),";
+				}
+				else if ( tr.Body.IsValid() )
 				{
 					message += $" weighing {tr.Body.Mass:F2},";
 				}

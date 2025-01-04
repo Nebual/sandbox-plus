@@ -20,7 +20,15 @@ public class WeightTool : BaseTool
 			{
 				ModelWeights.Add( prop.Model.Name, trace.Body.Mass );
 			}
-			trace.Body.Mass = TargetWeight;
+			var rigidBody = trace.GameObject.GetComponent<Rigidbody>();
+			if ( rigidBody.IsValid() )
+			{
+				rigidBody.MassOverride = TargetWeight;
+			}
+			else
+			{
+				trace.Body.Mass = TargetWeight;
+			}
 			return true;
 		}
 
@@ -34,7 +42,15 @@ public class WeightTool : BaseTool
 
 		if ( Input.Pressed( "attack2" ) )
 		{
-			SetWeightConvar( trace.Body.Mass );
+			var rigidBody = trace.GameObject.GetComponent<Rigidbody>();
+			if ( rigidBody.IsValid() && rigidBody.MassOverride > 0 )
+			{
+				SetWeightConvar( rigidBody.MassOverride );
+			}
+			else
+			{
+				SetWeightConvar( trace.Body.Mass );
+			}
 			return true;
 		}
 
@@ -49,7 +65,12 @@ public class WeightTool : BaseTool
 		if ( Input.Pressed( "reload" ) )
 		{
 			var prop = trace.GameObject.GetComponent<Prop>();
-			if ( ModelWeights.ContainsKey( prop.Model.Name ) )
+			var rigidBody = trace.GameObject.GetComponent<Rigidbody>();
+			if ( rigidBody.IsValid() && rigidBody.MassOverride > 0 )
+			{
+				rigidBody.MassOverride = 0;
+			}
+			else if ( ModelWeights.ContainsKey( prop.Model.Name ) )
 			{
 				trace.Body.Mass = ModelWeights[prop.Model.Name];
 			}
