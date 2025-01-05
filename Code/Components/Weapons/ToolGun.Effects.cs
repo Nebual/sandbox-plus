@@ -38,7 +38,7 @@ public partial class ToolGun
 
 			if ( !IsProxy )
 			{
-				ViewModel?.Renderer?.Set( "b_attack", true );
+				ViewModel?.Renderer?.Set( "fire", true );
 			}
 
 			int soundIndex = new Random().Next( 0, ShootSounds.Length );
