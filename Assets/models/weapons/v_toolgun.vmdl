@@ -30,231 +30,6 @@
 				]
 			},
 			{
-				_class = "Skeleton"
-				children = 
-				[
-					{
-						_class = "Bone"
-						name = "base"
-						children = 
-						[
-							{
-								_class = "Bone"
-								name = "bip01_l_upperarm"
-								children = 
-								[
-									{
-										_class = "Bone"
-										name = "bip01_l_forearm"
-										children = 
-										[
-											{
-												_class = "Bone"
-												name = "bip01_l_hand"
-												children = 
-												[
-													{
-														_class = "Bone"
-														name = "bip01_l_finger4"
-														children = 
-														[
-															{
-																_class = "Bone"
-																name = "bip01_l_finger41"
-																children = 
-																[
-																	{
-																		_class = "Bone"
-																		name = "bip01_l_finger42"
-																		origin = [ 0.729362, 0.000005, -0.000004 ]
-																		angles = [ -0.0, -13.76284, 0.000005 ]
-																		do_not_discard = true
-																	},
-																]
-																origin = [ 1.312565, 0.000004, -0.000008 ]
-																angles = [ -0.000004, -24.951517, 0.000012 ]
-																do_not_discard = true
-															},
-														]
-														origin = [ 3.859673, -0.142406, -1.191969 ]
-														angles = [ 3.145481, -62.421795, -28.150337 ]
-														do_not_discard = true
-													},
-													{
-														_class = "Bone"
-														name = "bip01_l_finger3"
-														children = 
-														[
-															{
-																_class = "Bone"
-																name = "bip01_l_finger31"
-																children = 
-																[
-																	{
-																		_class = "Bone"
-																		name = "bip01_l_finger32"
-																		origin = [ 1.196316, 0.000003, -0.000011 ]
-																		angles = [ 0.000001, -33.315498, -0.0 ]
-																		do_not_discard = true
-																	},
-																]
-																origin = [ 1.539101, 0.000008, -0.000006 ]
-																angles = [ 0.0, -23.468119, 0.000001 ]
-																do_not_discard = true
-															},
-														]
-														origin = [ 3.942301, 0.046772, -0.431437 ]
-														angles = [ 4.411375, -44.499905, -8.601761 ]
-														do_not_discard = true
-													},
-													{
-														_class = "Bone"
-														name = "bip01_l_finger2"
-														children = 
-														[
-															{
-																_class = "Bone"
-																name = "bip01_l_finger21"
-																children = 
-																[
-																	{
-																		_class = "Bone"
-																		name = "bip01_l_finger22"
-																		origin = [ 1.20919, 0.00001, -0.000002 ]
-																		angles = [ -0.000006, -14.698598, -0.0 ]
-																		do_not_discard = true
-																	},
-																]
-																origin = [ 1.719585, -0.00001, -0.00001 ]
-																angles = [ -0.000004, -43.710213, -0.0 ]
-																do_not_discard = true
-															},
-														]
-														origin = [ 3.883667, -0.046772, 0.431444 ]
-														angles = [ 1.362149, -32.342499, 4.890194 ]
-														do_not_discard = true
-													},
-													{
-														_class = "Bone"
-														name = "bip01_l_finger1"
-														children = 
-														[
-															{
-																_class = "Bone"
-																name = "bip01_l_finger11"
-																children = 
-																[
-																	{
-																		_class = "Bone"
-																		name = "bip01_l_finger12"
-																		origin = [ 1.099663, -0.000008, -0.000004 ]
-																		angles = [ -0.000008, -20.307171, -0.000005 ]
-																		do_not_discard = true
-																	},
-																]
-																origin = [ 1.719429, -0.000002, -0.000011 ]
-																angles = [ -0.000001, -28.431828, -0.000008 ]
-																do_not_discard = true
-															},
-														]
-														origin = [ 3.859835, -0.137943, 1.332466 ]
-														angles = [ -2.775007, -24.387947, 27.729095 ]
-														do_not_discard = true
-													},
-													{
-														_class = "Bone"
-														name = "bip01_l_finger0"
-														children = 
-														[
-															{
-																_class = "Bone"
-																name = "bip01_l_finger01"
-																children = 
-																[
-																	{
-																		_class = "Bone"
-																		name = "bip01_l_finger02"
-																		origin = [ 1.206974, 0.000004, -0.000011 ]
-																		angles = [ -0.000005, 10.674148, 0.000003 ]
-																		do_not_discard = true
-																	},
-																]
-																origin = [ 1.789764, -0.000012, -0.000029 ]
-																angles = [ 0.000003, 12.181085, 0.000005 ]
-																do_not_discard = true
-															},
-														]
-														origin = [ 0.806047, -0.348915, 1.321253 ]
-														angles = [ -21.007607, -41.389721, -73.770386 ]
-														do_not_discard = true
-													},
-												]
-												origin = [ 11.481651, -0.000019, -0.000069 ]
-												angles = [ -19.451057, 30.993233, -4.940331 ]
-												do_not_discard = true
-											},
-										]
-										origin = [ 11.692525, -0.000027, -0.000031 ]
-										angles = [ 0.0, -47.984932, 0.0 ]
-										do_not_discard = true
-									},
-								]
-								origin = [ 7.723854, 3.14325, -1.366092 ]
-								angles = [ -64.403038, -123.34848, -17.001492 ]
-								do_not_discard = true
-							},
-							{
-								_class = "Bone"
-								name = "arm"
-								children = 
-								[
-									{
-										_class = "Bone"
-										name = "hand"
-										children = 
-										[
-											{
-												_class = "Bone"
-												name = "python"
-												children = 
-												[
-													{
-														_class = "Bone"
-														name = "muzzle"
-														origin = [ -0.000132, 0.765274, 8.032595 ]
-														angles = [ -0.0, 0.0, 0.0 ]
-														do_not_discard = true
-													},
-													{
-														_class = "Bone"
-														name = "smdimport02"
-														origin = [ 0.225976, -4.99025, 1.015465 ]
-														angles = [ 89.444672, 68.079567, -22.971142 ]
-														do_not_discard = true
-													},
-												]
-												origin = [ 0.09978, 3.177673, 4.325954 ]
-												angles = [ 0.207296, -1.050805, -0.515146 ]
-												do_not_discard = true
-											},
-										]
-										origin = [ 0.463462, 5.50676, 13.080228 ]
-										angles = [ -12.374972, 0.0, 0.0 ]
-										do_not_discard = true
-									},
-								]
-								origin = [ -7.018476, -0.538841, 8.058478 ]
-								angles = [ 12.374972, -0.0, -0.0 ]
-								do_not_discard = true
-							},
-						]
-						origin = [ 0.0, -0.878417, 54.32534 ]
-						angles = [ -0.0, 0.0, 89.999985 ]
-						do_not_discard = true
-					},
-				]
-			},
-			{
 				_class = "MaterialGroupList"
 				children = 
 				[
@@ -420,6 +195,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_idle01_0.dmx"
 						start_frame = -1
@@ -455,6 +231,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_fire_1.dmx"
 						start_frame = -1
@@ -477,6 +254,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_draw_2.dmx"
 						start_frame = -1
@@ -556,6 +334,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_reload_3.dmx"
 						start_frame = -1
@@ -578,6 +357,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_holster_4.dmx"
 						start_frame = -1
@@ -600,6 +380,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_idletolow_5.dmx"
 						start_frame = -1
@@ -622,6 +403,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_lowtoidle_6.dmx"
 						start_frame = -1
@@ -644,6 +426,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_lowidle_7.dmx"
 						start_frame = -1
@@ -666,6 +449,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_idle01_0.dmx"
 						start_frame = 0
@@ -688,6 +472,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_fire_1.dmx"
 						start_frame = 0
@@ -710,6 +495,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_draw_2.dmx"
 						start_frame = 0
@@ -732,6 +518,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_reload_3.dmx"
 						start_frame = 0
@@ -754,6 +541,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_holster_4.dmx"
 						start_frame = 0
@@ -776,6 +564,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_idletolow_5.dmx"
 						start_frame = 0
@@ -798,6 +587,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_lowtoidle_6.dmx"
 						start_frame = 0
@@ -820,6 +610,7 @@
 						hidden = false
 						anim_markup_ordered = false
 						disable_compression = false
+						disable_interpolation = false
 						enable_scale = false
 						source_filename = "models/weapons/v_toolgun_refs/anim/_lowidle_7.dmx"
 						start_frame = 0
