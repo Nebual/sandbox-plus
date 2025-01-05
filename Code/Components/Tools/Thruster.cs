@@ -4,7 +4,7 @@ public class Thruster : BaseTool
 {
 	[Property, Title( "Model" ), ModelProperty( SpawnLists = ["thruster"] )]
 	public override string SpawnModel { get; set; } = "models/thruster/thrusterprojector.vmdl";
-	[Property, Range( 0, 10000, 10 ), Title("Force Multiplier"), Description("The amount of force the thruster will apply to the attached object.")]
+	[Property, Range( 1, 10000, 10 ), Title("Force Multiplier"), Description("The amount of force the thruster will apply to the attached object.")]
 	public float ForceMultiplier { get; set; } = 1000f;
 	[Property]
 	public bool Massless { get; set; } = true;

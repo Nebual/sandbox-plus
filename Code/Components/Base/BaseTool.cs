@@ -33,27 +33,25 @@ public abstract class BaseTool : Component
 
 	public virtual void Activate()
 	{
-		if ( previewModel != null )
-		{
-			previewModel.Destroy();
-		}
-		CreatePreview();
 		if ( !IsProxy )
 		{
+			previewModel?.Destroy();
+			CreatePreview();
 			Sandbox.UI.ToolMenu.Instance?.UpdateInspector();
 		}
 	}
 
 	public virtual void Disabled()
 	{
-		previewModel?.Destroy();
+		if ( !IsProxy )
+			previewModel?.Destroy();
 	}
 
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
 
-		if ( previewModel != null )
+		if ( !IsProxy && previewModel != null )
 		{
 			var trace = Parent.BasicTraceTool();
 			if ( IsPreviewTraceValid( trace ) )
@@ -76,7 +74,8 @@ public abstract class BaseTool : Component
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
-		previewModel?.Destroy();
+		if ( !IsProxy )
+			previewModel?.Destroy();
 	}
 	protected string GetConvarValue( string name, string defaultValue = null )
 	{
