@@ -44,7 +44,7 @@ namespace Sandbox.UI
 					return;
 				}
 				var sceneWorld = new SceneWorld();
-				var mod = new SceneObject( sceneWorld, Cloud.Model( "https://asset.party/drakefruit.cube32" ), Transform.Zero );
+				var mod = new SceneObject( sceneWorld, Cloud.Model( "drakefruit.cube32" ), Transform.Zero );
 				var color = colors[index];
 				mod.ColorTint = color;
 
