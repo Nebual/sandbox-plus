@@ -451,8 +451,8 @@ namespace Sandbox.Tools
 					var propHelper = trace.GameObject.GetComponent<PropHelper>();
 					propHelper?.RemoveConstraints( Type );
 					ResetTool();
-					return true;
 				}
+				return true;
 			}
 			else if ( stage == ConstraintToolStage.Removing )
 			{
@@ -463,6 +463,17 @@ namespace Sandbox.Tools
 					return false;
 				}
 				var propHelper = trace1.GameObject.GetComponent<PropHelper>();
+				if ( !propHelper.IsValid() )
+				{
+					trace1 = trace2;
+					trace2 = trace;
+					propHelper = trace1.GameObject.GetComponent<PropHelper>();
+				}
+				if ( !propHelper.IsValid() )
+				{
+					ResetTool();
+					return false;
+				}
 				propHelper?.RemoveConstraints( Type, trace2.GameObject );
 				ResetTool();
 				return true;

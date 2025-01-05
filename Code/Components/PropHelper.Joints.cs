@@ -30,6 +30,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		goJoint.SetParent( GetJointGameObject( this.GameObject, fromBone ) );
+		goJoint.NetworkSpawn();
 
 		var hingeJoint = goJoint.Components.Create<Sandbox.HingeJoint>();
 		hingeJoint.Body = GetJointGameObject( to, toBone );
@@ -55,6 +56,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		goJoint.SetParent( GetJointGameObject( this.GameObject, fromBone ) );
+		goJoint.NetworkSpawn();
 
 		var ballJoint = goJoint.Components.Create<Sandbox.BallJoint>();
 		ballJoint.Body = GetJointGameObject( to, toBone );
@@ -78,6 +80,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		goJoint.SetParent( GetJointGameObject( this.GameObject, fromBone ) );
+		goJoint.NetworkSpawn();
 
 		var toJoint = new GameObject
 		{
@@ -85,6 +88,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		toJoint.SetParent( GetJointGameObject( to, toBone ) );
+		toJoint.NetworkSpawn();
 
 		var springJoint = goJoint.Components.Create<Sandbox.SpringJoint>();
 		springJoint.Attachment = Joint.AttachmentMode.LocalFrames;
@@ -141,6 +145,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		goJoint.SetParent( goFrom );
+		goJoint.NetworkSpawn();
 
 		var toJoint = new GameObject
 		{
@@ -150,6 +155,7 @@ public partial class PropHelper
 			Tags = { "jointHelper" }
 		};
 		toJoint.SetParent( goTo );
+		toJoint.NetworkSpawn();
 
 		var sliderJoint = goJoint.Components.Create<Sandbox.SliderJoint>();
 		sliderJoint.Attachment = Joint.AttachmentMode.LocalFrames;
@@ -182,7 +188,8 @@ public partial class PropHelper
 		return sliderJoint;
 	}
 
-	private LegacyParticleSystem MakeVisualRope( GameObject go1, Vector3 position1, GameObject go2, Vector3 position2 )
+	[Rpc.Broadcast]
+	private static void MakeVisualRope( GameObject go1, Vector3 position1, GameObject go2, Vector3 position2 )
 	{
 		var rope = Particles.MakeParticleSystem( "particles/entity/rope.vpcf", go1.WorldTransform, 0, go1 );
 		rope.GameObject.SetParent( go1 );
@@ -204,8 +211,6 @@ public partial class PropHelper
 			RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.GameObject, GameObjectValue = go2 } );
 		}
 		rope.ControlPoints = RopePoints;
-
-		return rope;
 	}
 
 	private static GameObject GetJointGameObject( GameObject go, int bone = -1 )
@@ -235,7 +240,7 @@ public partial class PropHelper
 				continue;
 			}
 
-			if ( !to.IsValid() || ((j.GameObject == this.GameObject || j.Body == this.GameObject) && (j.Body == to || j.GameObject == to)) )
+			if ( !to.IsValid() || JointMatchesGameObjects( j, to ) )
 			{
 				if ( j.GetConstraintType() == type )
 				{
@@ -243,6 +248,12 @@ public partial class PropHelper
 				}
 			}
 		}
+	}
+	private bool JointMatchesGameObjects( Joint joint, GameObject to )
+	{
+		var propHelper1 = joint?.GameObject?.GetComponentInParent<PropHelper>();
+		var propHelper2 = joint?.Body?.GetComponentInParent<PropHelper>();
+		return (propHelper1?.GameObject == this.GameObject && propHelper2?.GameObject == to) || (propHelper2?.GameObject == this.GameObject && propHelper1?.GameObject == to);
 	}
 }
 
@@ -288,7 +299,7 @@ public static class JointExtensions
 			GameObject ent = objsToCheck.Pop();
 			foreach ( GameObject e in ent.Children )
 			{
-				if ( objsChecked.Add( e ) )
+				if ( e.IsValid() && objsChecked.Add( e ) )
 					objsToCheck.Push( e );
 			}
 			if ( ent.Parent.IsValid() && ent.Parent.GetComponent<Prop>() is not null && objsChecked.Add( ent.Parent ) )
@@ -309,9 +320,9 @@ public static class JointExtensions
 			{
 				if ( jointsChecked.Add( j ) )
 				{
-					if ( objsChecked.Add( j.Body1.GetGameObject() ) )
+					if ( j.Body1.GetGameObject().IsValid() && objsChecked.Add( j.Body1.GetGameObject() ) )
 						objsToCheck.Push( j.Body1.GetGameObject() );
-					if ( objsChecked.Add( j.Body2.GetGameObject() ) )
+					if ( j.Body2.GetGameObject().IsValid() && objsChecked.Add( j.Body2.GetGameObject() ) )
 						objsToCheck.Push( j.Body2.GetGameObject() );
 				}
 			}

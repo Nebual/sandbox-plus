@@ -236,6 +236,7 @@ public partial class PropHelper : Component, Component.ICollisionListener
 
 	private ModelPropData GetModelPropData()
 	{
+		if ( !Prop.IsValid() ) return null;
 		if ( Prop.Model.IsValid() && !Prop.Model.IsError && Prop.Model.TryGetData( out ModelPropData propData ) )
 		{
 			return propData;
