@@ -37,7 +37,7 @@ public class Weld : BaseTool
 
 		if ( Input.Pressed( "reload" ) && trace.GameObject.Components.TryGet<PropHelper>( out var propHelper ) )
 		{
-			propHelper.Unweld();
+			propHelper.RemoveConstraints( ConstraintType.Weld );
 
 			welded = null;
 			return true;
@@ -50,7 +50,7 @@ public class Weld : BaseTool
 	{
 		return () =>
 		{
-			propHelper.Unweld( from );
+			propHelper.RemoveConstraints( ConstraintType.Weld, from );
 
 			return "Un-welded two objects";
 		};
