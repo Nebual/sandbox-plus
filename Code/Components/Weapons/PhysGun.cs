@@ -21,6 +21,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 	private bool BeamSoundPlaying;
 	GameObject lastGrabbed = null;
 	private Model _model = Cloud.Model( "katka/gravitygun" ); // in the prefab, but this ensures its downloaded
+	private Model _handAdapterModel = Cloud.Model( "katka/hand_adapter_valvebiped_to_sbox" );
 	private RealTimeSince LastReloadPressed;
 
 	PhysicsBody _heldBody;
@@ -79,7 +80,7 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 
 		if ( !IsProxy )
 		{
-			ViewModel?.Renderer.SceneObject.Attributes.Set( "colortint", Color.Cyan );
+			ViewModel?.Renderer?.SceneObject?.Attributes.Set( "colortint", Color.Cyan );
 			ProngsState = ProngsState.LerpTo( grabbed ? 1 : 0, Time.Delta * 10f );
 			SetRendererAnimParam( "prongs", ProngsState );
 		}

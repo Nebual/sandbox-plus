@@ -9,7 +9,7 @@ public class ViewModel : Component
 	[Property] public Vector3 BobDirection { get; set; } = new( 0.0f, 1.0f, 0.5f );
 	[Property] public float InertiaDamping { get; set; } = 20.0f;
 
-	[RequireComponent] public SkinnedModelRenderer Renderer { get; set; }
+	[Property, RequireComponent] public SkinnedModelRenderer Renderer { get; set; }
 
 	public float YawInertia { get; private set; }
 	public float PitchInertia { get; private set; }
