@@ -67,40 +67,11 @@ namespace Sandbox.Tools
 
 			if ( useRope )
 			{
-				var body = go.GetComponent<Rigidbody>().PhysicsBody;
-				var bounds = body.GetBounds();
-
-				var point1 = PhysicsPoint.World( tr.Body, tr.EndPosition, tr.Body.Rotation );
-				var position2 = body.Transform.PointToWorld( new Vector3( bounds.Size.x * -1 + 2, 0, 0 ) );
-				var point2 = PhysicsPoint.World( body, position2, body.Rotation );
 				var lengthOffset = float.Parse( GetConvarValue( "tool_balloon_rope_length", "100" ) );
-				var length = lengthOffset;
-				var joint = PhysicsJoint.CreateLength(
-					point1,
-					point2,
-					length
-				);
-				joint.SpringLinear = new( 1000.0f, 0.7f );
-				joint.Collisions = true;
+				var body = go.GetComponent<Rigidbody>().PhysicsBody;
+				var position1 = body.Transform.PointToWorld( new Vector3( body.GetBounds().Size.x * -1 + 2, 0, 0 ) );
 
-				var rope = ConstraintTool.MakeRope( body, position2, tr.Body, tr.HitPosition );
-
-				var trPropHelper = tr.GameObject.GetComponent<PropHelper>();
-				if ( trPropHelper.IsValid() )
-				{
-					trPropHelper.PhysicsJoints.Add( joint );
-				}
-				go.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-				joint.OnBreak += () =>
-				{
-					rope?.Destroy();
-					joint.Remove();
-				};
-				go.GetComponent<Prop>().OnPropBreak += () =>
-				{
-					rope?.Destroy();
-					joint.Remove();
-				};
+				go.GetComponent<PropHelper>().Rope(tr.GameObject, position1, tr.HitPosition, noCollide: false, toBone: tr.Bone, max: lengthOffset, visualRope: true);
 			}
 			return go;
 		}

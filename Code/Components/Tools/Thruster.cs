@@ -74,7 +74,6 @@ public class Thruster : BaseTool
 	{
 		return () =>
 		{
-			// TODO: When UnHinge works, uncomment this
 			wheel.Destroy();
 			return "Undid thruster creation";
 		};
