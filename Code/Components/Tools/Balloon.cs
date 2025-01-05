@@ -91,36 +91,8 @@ public partial class BalloonTool : BaseSpawnTool
 		var go = SpawnEntity( tr );
 		if ( useRope )
 		{
-			var body = go.GetComponent<Rigidbody>().PhysicsBody;
-			var point1 = PhysicsPoint.World( tr.Body, tr.EndPosition, tr.Body.Rotation );
-			var point2 = PhysicsPoint.World( body, tr.EndPosition, body.Rotation );
-			var length = BalloonRopeLength;
-			var joint = PhysicsJoint.CreateLength(
-				point1,
-				point2,
-				length
-			);
-			joint.SpringLinear = new( 1000.0f, 0.7f );
-			joint.Collisions = true;
-
-			var rope = ConstraintTool.MakeRope( body, go.WorldPosition, tr.Body, tr.HitPosition );
-
-			var trPropHelper = tr.GameObject.GetComponent<PropHelper>();
-			if ( trPropHelper.IsValid() )
-			{
-				trPropHelper.PhysicsJoints.Add( joint );
-			}
-			go.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			joint.OnBreak += () =>
-			{
-				rope?.Destroy();
-				joint.Remove();
-			};
-			go.GetComponent<Prop>().OnPropBreak += () =>
-			{
-				rope?.Destroy();
-				joint.Remove();
-			};
+			var propHelper = go.GetComponent<PropHelper>();
+			propHelper.Rope(tr.GameObject, tr.HitPosition, tr.HitPosition, noCollide: false, toBone: tr.Bone, max: BalloonRopeLength, visualRope: true);
 		}
 		return go;
 	}
