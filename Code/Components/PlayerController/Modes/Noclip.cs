@@ -8,6 +8,8 @@ public class MoveModeNoclip : MoveMode
 
 	protected override void OnFixedUpdate()
 	{
+		if ( IsProxy ) return;
+
 		if ( Input.Pressed( "noclip" ) ) Tags.Toggle( "noclip" );
 	}
 
