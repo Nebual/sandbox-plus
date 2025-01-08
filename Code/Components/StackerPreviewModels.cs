@@ -54,7 +54,6 @@
 		var previewObject = new GameObject();
 		previewObject.WorldPosition = data.Position;
 		previewObject.WorldRotation = data.Rotation;
-		previewObject.Parent = parent;
 
 		var renderer = previewObject.Components.Create<ModelRenderer>();
 		renderer.Tint = Color.White.WithAlpha( 0.5f );
