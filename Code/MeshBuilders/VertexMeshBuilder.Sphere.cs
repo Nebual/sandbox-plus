@@ -95,7 +95,8 @@ namespace Sandbox
 		}
 		public static string CreateSphere(  float radius, int numSegments, int texSize )
 		{
-			CreateSphereModelClient(radius, numSegments, texSize);
+			using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+				CreateSphereModelClient(radius, numSegments, texSize);
 			return CreateSphereModel(radius, numSegments, texSize);
 		}
 		
