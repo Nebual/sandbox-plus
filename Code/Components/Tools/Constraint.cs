@@ -152,8 +152,11 @@ namespace Sandbox.Tools
 					Rotation.LookAt( trace1.Normal, trace1.Direction ) * Rotation.From( new Angles( 90, 0, 0 ) )
 				) );
 				stage = ConstraintToolStage.Moving;
-				previewModel?.Destroy();
-				CreatePreview();
+				if ( ShouldMove() )
+				{
+					previewModel?.Destroy();
+					CreatePreview();
+				}
 				return true;
 			}
 
@@ -181,7 +184,7 @@ namespace Sandbox.Tools
 					return false; // can't both be world
 				}
 
-				if ( GetConvarValue( "tool_constraint_move_target" ) != "0" && Type != ConstraintType.Nocollide )
+				if ( ShouldMove() )
 				{
 					var wantsRotation = GetConvarValue( "tool_constraint_rotate_target" ) != "0" && !trace1.GameObject.IsWorld();
 
@@ -243,6 +246,11 @@ namespace Sandbox.Tools
 				return true;
 			}
 			return false;
+		}
+
+		protected bool ShouldMove()
+		{
+			return GetConvarValue( "tool_constraint_move_target" ) != "0" && Type != ConstraintType.Nocollide;
 		}
 
 		protected bool ApplyConstraint()
