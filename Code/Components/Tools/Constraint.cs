@@ -132,6 +132,12 @@ namespace Sandbox.Tools
 					trace1.GameObject.WorldTransform = trace1.GameObject.WorldTransform.RotateAround( trace2.HitPosition, rotation );
 				}
 			}
+
+			if ( stage == ConstraintToolStage.Moving && previewModel != null )
+			{
+				var tr2 = Parent.BasicTraceTool();
+				previewModel.previewObject.WorldTransform = CalculateNewTransform( trace1.GameObject.WorldTransform, trace1.Normal, trace1.EndPosition, tr2.Normal, tr2.EndPosition, GetMoveOffset( trace1 ) );
+			}
 		}
 
 		public override bool Primary( SceneTraceResult trace )
@@ -146,6 +152,8 @@ namespace Sandbox.Tools
 					Rotation.LookAt( trace1.Normal, trace1.Direction ) * Rotation.From( new Angles( 90, 0, 0 ) )
 				) );
 				stage = ConstraintToolStage.Moving;
+				previewModel?.Destroy();
+				CreatePreview();
 				return true;
 			}
 
@@ -188,19 +196,13 @@ namespace Sandbox.Tools
 						trace1.Body.MotionEnabled = false;
 					}
 
-					var offset = float.Parse( GetConvarValue( "tool_constraint_move_offset" ) );
-					if ( GetConvarValue( "tool_constraint_move_percent" ) != "0" )
-					{
-						offset = GetEntityOffsetPercent( offset, trace1 );
-					}
-
 					trace1.GameObject.WorldTransform = CalculateNewTransform(
 						trace1.GameObject.WorldTransform,
 						trace1.Normal,
 						trace1.EndPosition,
 						trace2.Normal,
 						trace2.EndPosition,
-						offset
+						GetMoveOffset( trace1 )
 					);
 					wasMoved = true;
 
@@ -498,6 +500,16 @@ namespace Sandbox.Tools
 			return true;
 		}
 
+		private float GetMoveOffset( SceneTraceResult tr )
+		{
+			var offset = float.Parse( GetConvarValue( "tool_constraint_move_offset" ) );
+			if ( GetConvarValue( "tool_constraint_move_percent" ) != "0" )
+			{
+				offset = GetEntityOffsetPercent( offset, tr );
+			}
+			return offset;
+		}
+
 		private float GetEntityOffsetPercent( float percent, SceneTraceResult tr )
 		{
 			if ( Math.Abs( tr.Normal.Dot( tr.GameObject.WorldRotation.Forward ) ) > 0.8f )
@@ -615,50 +627,27 @@ namespace Sandbox.Tools
 
 			ResetTool();
 		}
-		/*
-		PreviewEntity previewModel;
 
 		protected override bool IsPreviewTraceValid( SceneTraceResult tr )
 		{
 			if ( stage != ConstraintToolStage.Moving || !trace1.GameObject.IsValid() )
 				return false;
 
-			if ( !base.IsPreviewTraceValid( tr ) )
-				return false;
+			if ( trace1.GameObject.GetComponent<MeshComponent>() is not null )
+				return false; // unsupported yet, todo
 
 			return true;
 		}
 
-		public override void CreatePreviews()
+		protected override bool HasModel()
 		{
-			if ( !Game.IsClient )
-			{
-				return;
-			}
-			TryCreatePreview( ref previewModel, "models/citizen_props/crate01.vmdl" );
+			return GetModel() != "";
 		}
 
-		public override void UpdatePreviews()
+		protected override string GetModel()
 		{
-			if ( !Game.IsClient )
-			{
-				return;
-			}
-			CreatePreviews();
-			base.UpdatePreviews();
-
-			var tr2 = DoTrace();
-			if ( !IsPreviewTraceValid( tr2 ) )
-			{
-				return;
-			}
-			if ( previewModel.IsValid() )
-			{
-				previewModel.Model = trace1.GameObject.GetComponent<Prop>().Model;
-				previewModel.Transform = CalculateNewTransform( trace1.GameObject.Transform, trace1.Normal, trace1.EndPosition, tr2.Normal, tr2.EndPosition, float.Parse( GetConvarValue( "tool_constraint_move_offset" ) ) );
-			}
+			return trace1.GameObject?.GetComponent<Prop>()?.Model.ResourcePath ?? "";
 		}
-		*/
 
 		private static Transform CalculateNewTransform( Transform originalTransform, Vector3 normal1, Vector3 endPos1, Vector3 normal2, Vector3 endPos2, float offset = 0f )
 		{

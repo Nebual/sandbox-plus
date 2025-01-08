@@ -318,11 +318,11 @@ public static class JointExtensions
 			// }
 			foreach ( Joint j in GetJoints( ent ) )
 			{
-				if ( jointsChecked.Add( j ) )
+				if ( j.IsValid() && jointsChecked.Add( j ) )
 				{
-					if ( j.Body1.GetGameObject().IsValid() && objsChecked.Add( j.Body1.GetGameObject() ) )
+					if ( j.Body1.IsValid() && j.Body1.GetGameObject().IsValid() && objsChecked.Add( j.Body1.GetGameObject() ) )
 						objsToCheck.Push( j.Body1.GetGameObject() );
-					if ( j.Body2.GetGameObject().IsValid() && objsChecked.Add( j.Body2.GetGameObject() ) )
+					if ( j.Body2.IsValid() && j.Body2.GetGameObject().IsValid() && objsChecked.Add( j.Body2.GetGameObject() ) )
 						objsToCheck.Push( j.Body2.GetGameObject() );
 				}
 			}
