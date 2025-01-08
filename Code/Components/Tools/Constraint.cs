@@ -1,11 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System;
-using Sandbox.UI;
-using Sandbox.UI.Construct;
-using Sandbox.Physics;
-
-namespace Sandbox.Tools
+﻿namespace SandboxPlus.Tools
 {
 	[Library( "tool_constraint", Title = "Constraint", Description = "Constrain stuff together", Group = "constraints" )]
 	public partial class ConstraintTool : BaseTool
