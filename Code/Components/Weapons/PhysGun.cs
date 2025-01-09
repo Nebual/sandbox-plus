@@ -213,14 +213,11 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 		if ( !rootEnt.IsValid() )
 			return;
 
-		var weldContexts = GetAllConnectedProps( rootEnt );
+		foreach(var attachedEnt in rootEnt.GetAttachedGameObjects()) {
+			ModelPhysics modelPhysics = attachedEnt.GetComponent<ModelPhysics>();
+			Rigidbody rigidbody = attachedEnt.GetComponent<Rigidbody>();
 
-		for ( int i = 0; i < weldContexts.Count; i++ )
-		{
-			ModelPhysics modelPhysics = weldContexts[i]?.GetComponent<ModelPhysics>();
-			Rigidbody rigidbody = weldContexts[i]?.GetComponent<Rigidbody>();
-
-			var body = modelPhysics.IsValid() ? modelPhysics?.PhysicsGroup?.GetBody( 0 ) : (rigidbody.IsValid() ? weldContexts[i]?.GetComponent<Rigidbody>()?.PhysicsBody : null);
+			var body = modelPhysics.IsValid() ? modelPhysics?.PhysicsGroup?.GetBody( 0 ) : rigidbody?.PhysicsBody;
 
 			if ( !body.IsValid() ) continue;
 
@@ -238,61 +235,6 @@ public partial class PhysGun : BaseWeapon, Component.INetworkListener
 			{
 				body.BodyType = PhysicsBodyType.Dynamic;
 			}
-		}
-	}
-
-	public static List<GameObject> GetAllConnectedProps( GameObject gameObject )
-	{
-		PropHelper propHelper = gameObject.Components.Get<PropHelper>();
-
-		if ( !propHelper.IsValid() )
-			return null;
-
-		var result = new List<Joint>();
-		var visited = new HashSet<PropHelper>();
-
-		CollectWelds( propHelper, result, visited );
-
-		List<GameObject> returned = new List<GameObject> { gameObject };
-
-		foreach ( Joint joint in result )
-		{
-			GameObject object1 = joint?.Body1?.GetGameObject();
-			GameObject object2 = joint?.Body2?.GetGameObject();
-
-			if ( object1.IsValid() && !returned.Contains( object1 ) ) returned.Add( object1 );
-			if ( object2.IsValid() && !returned.Contains( object2 ) ) returned.Add( object2 );
-		}
-
-		return returned;
-	}
-
-	private static void CollectWelds( PropHelper propHelper, List<Joint> result, HashSet<PropHelper> visited )
-	{
-		if ( visited.Contains( propHelper ) )
-			return;
-
-		visited.Add( propHelper );
-		result.AddRange( propHelper.Joints );
-
-		foreach ( var joint in propHelper.Joints )
-		{
-			GameObject jointObject = joint.Body1?.GetGameObject();
-
-			if ( jointObject == propHelper.GameObject )
-			{
-				jointObject = joint.Body2?.GetGameObject();
-			}
-
-			if ( !jointObject.IsValid() )
-				return;
-
-			PropHelper propHelper1 = jointObject.Components.GetInParentOrSelf<PropHelper>();
-
-			if ( !propHelper1.IsValid() )
-				return;
-
-			CollectWelds( propHelper1, result, visited );
 		}
 	}
 

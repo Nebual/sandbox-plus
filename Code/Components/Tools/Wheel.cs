@@ -33,7 +33,8 @@ public class Wheel : BaseTool
 			if ( !propHelper.IsValid() )
 				return true;
 
-			propHelper.Hinge( trace.GameObject, trace.EndPosition, trace.Normal );
+			var rotation = Rotation.LookAt( trace.Normal, trace.Direction ) * Rotation.From( new Angles( 90, 0, 0 ) );
+			propHelper.Axis( trace.GameObject, new Transform( trace.EndPosition, rotation ), toBone: trace.Bone );
 
 			UndoSystem.Add( creator: this.Owner, callback: ReadyUndo( wheel, trace.GameObject ), prop: trace.GameObject );
 

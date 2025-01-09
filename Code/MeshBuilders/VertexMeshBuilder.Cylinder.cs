@@ -129,7 +129,8 @@ namespace Sandbox
 		}
 		public static string CreateCylinder( float radius, float depth, int numFaces, int texSize )
 		{
-			CreateCylinderModelClient( radius, depth, numFaces, texSize );
+			using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+				CreateCylinderModelClient( radius, depth, numFaces, texSize );
 			return CreateCylinderModel( radius, depth, numFaces, texSize );
 		}
 		

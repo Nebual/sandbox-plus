@@ -1,4 +1,5 @@
-﻿public partial class ThrusterComponent : BaseWireInputComponent, Component.IPressable
+﻿[Library( "ent_thruster", Title = "Thruster")]
+public partial class ThrusterComponent : BaseWireInputComponent, Component.IPressable
 {
 	[Property] public float ForceMultiplier { get; set; } = 100.0f;
 	[Property] public float Force = 0f;

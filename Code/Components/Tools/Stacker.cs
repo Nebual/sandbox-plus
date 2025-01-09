@@ -324,9 +324,7 @@
 
 		private bool IsTraceValid( SceneTraceResult trace )
 		{
-			Prop prop = trace.GameObject.GetComponent<Prop>();
-
-			if ( !trace.Hit || !trace.Body.IsValid() || !prop.IsValid() )
+			if ( !trace.Hit || !trace.Body.IsValid() || !trace.GameObject.GetComponent<Prop>().IsValid() )
 				return false;
 
 			return true;
@@ -340,19 +338,9 @@
 			return false;
 		}
 
-		public override void Activate()
-		{
-			base.Activate();
-
-			if ( previewModels != null )
-			{
-				previewModels.Destroy();
-			}
-			CreatePreview();
-		}
-
 		public override void CreatePreview()
 		{
+			previewModels?.Destroy();
 			previewModels = new StackerPreviewModels
 			{
 				Stacker = this
@@ -361,12 +349,15 @@
 
 		public override void Disabled()
 		{
+			base.Disabled();
 			previewModels?.Destroy();
+			previewModels = null;
 		}
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 			previewModels?.Destroy();
+			previewModels = null;
 		}
 	}
 

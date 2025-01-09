@@ -33,19 +33,7 @@ namespace Sandbox.Tools
 
 			if ( ShouldWeld && tr.Body.IsValid() && !tr.GameObject.IsWorld() )
 			{
-				var point1 = PhysicsPoint.World( tr.Body, ent.WorldPosition, ent.WorldRotation );
-				var point2 = PhysicsPoint.World( ent.GetComponent<Rigidbody>().PhysicsBody, ent.WorldPosition, ent.WorldRotation );
-				var joint = PhysicsJoint.CreateFixed(
-					point1,
-					point2
-				);
-				joint.Collisions = false;
-				ent.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-
-				if ( tr.GameObject.GetComponent<PropHelper>() is var propHelper2 && propHelper2.IsValid() )
-				{
-					propHelper2.PhysicsJoints.Add( joint );
-				}
+				tr.GameObject.GetComponent<PropHelper>().Weld(ent, noCollide: false, fromBone: tr.Bone);
 			}
 			return true;
 		}
