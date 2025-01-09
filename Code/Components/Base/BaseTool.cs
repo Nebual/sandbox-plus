@@ -102,7 +102,7 @@ public abstract class BaseTool : Component
 		return false;
 	}
 
-	protected bool HasModel()
+	protected virtual bool HasModel()
 	{
 		if ( SpawnModel != "" ) return true;
 		var toolId = GetConvarValue( "tool_current" );

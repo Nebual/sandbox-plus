@@ -6,9 +6,18 @@ public class MoveModeNoclip : MoveMode
 	[Property]
 	public int Priority { get; set; } = 100;
 
+	private RealTimeSince _lastJumpPress = 0;
+
 	protected override void OnFixedUpdate()
 	{
+		if ( IsProxy ) return;
+
 		if ( Input.Pressed( "noclip" ) ) Tags.Toggle( "noclip" );
+		else if ( Input.Pressed( "jump" ) )
+		{
+			if ( _lastJumpPress < 0.3f ) Tags.Toggle( "noclip" );
+			_lastJumpPress = 0;
+		}
 	}
 
 	public override int Score( PlayerController controller )

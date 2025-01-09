@@ -1,11 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System;
-using Sandbox.UI;
-using Sandbox.UI.Construct;
-using Sandbox.Physics;
-
-namespace Sandbox.Tools
+﻿namespace SandboxPlus.Tools
 {
 	[Library( "tool_constraint", Title = "Constraint", Description = "Constrain stuff together", Group = "constraints" )]
 	public partial class ConstraintTool : BaseTool
@@ -51,7 +44,8 @@ namespace Sandbox.Tools
 		private ConstraintToolStage stage { get; set; } = ConstraintToolStage.Waiting;
 		private SceneTraceResult trace1;
 		private SceneTraceResult trace2;
-		private PhysicsJoint createdJoint;
+		private Transform localTransform1;
+		private Joint createdJoint;
 		private Func<string> createdUndo;
 		private bool wasMoved;
 		private bool wasFrozen;
@@ -62,7 +56,7 @@ namespace Sandbox.Tools
 		private const float RotateSpeed = 30.0f;
 
 		// Dynamic entrypoint for optional Wirebox support, if installed
-		public static Action<Player, SceneTraceResult, ConstraintType, PhysicsJoint, Func<string>> CreateWireboxConstraintController;
+		public static Action<Player, SceneTraceResult, ConstraintType, Joint, Func<string>> CreateWireboxConstraintController;
 		private static bool WireboxSupport
 		{
 			get => CreateWireboxConstraintController != null;
@@ -131,6 +125,12 @@ namespace Sandbox.Tools
 					trace1.GameObject.WorldTransform = trace1.GameObject.WorldTransform.RotateAround( trace2.HitPosition, rotation );
 				}
 			}
+
+			if ( stage == ConstraintToolStage.Moving && previewModel != null )
+			{
+				var tr2 = Parent.BasicTraceTool();
+				previewModel.previewObject.WorldTransform = CalculateNewTransform( trace1.GameObject.WorldTransform, trace1.Normal, trace1.EndPosition, tr2.Normal, tr2.EndPosition, GetMoveOffset( trace1 ) );
+			}
 		}
 
 		public override bool Primary( SceneTraceResult trace )
@@ -140,7 +140,16 @@ namespace Sandbox.Tools
 			if ( stage == ConstraintToolStage.Waiting )
 			{
 				trace1 = trace;
+				localTransform1 = trace1.Body.Transform.ToLocal( new Transform(
+					Input.Down( "run" ) ? trace1.Body.MassCenter : trace1.HitPosition,
+					Rotation.LookAt( trace1.Normal, trace1.Direction ) * Rotation.From( new Angles( 90, 0, 0 ) )
+				) );
 				stage = ConstraintToolStage.Moving;
+				if ( ShouldMove() )
+				{
+					previewModel?.Destroy();
+					CreatePreview();
+				}
 				return true;
 			}
 
@@ -152,13 +161,23 @@ namespace Sandbox.Tools
 					ResetTool();
 					return false;
 				}
+				if ( trace1.GameObject.IsWorld() )
+				{
+					trace2 = trace1;
+					trace1 = trace;
+				}
+				if ( trace1.GameObject.GetComponent<PropHelper>() is null )
+				{
+					ResetTool();
+					return false;
+				}
 
 				if ( trace1.GameObject.IsWorld() && trace2.GameObject.IsWorld() )
 				{
 					return false; // can't both be world
 				}
 
-				if ( GetConvarValue( "tool_constraint_move_target" ) != "0" && Type != ConstraintType.Nocollide )
+				if ( ShouldMove() )
 				{
 					var wantsRotation = GetConvarValue( "tool_constraint_rotate_target" ) != "0" && !trace1.GameObject.IsWorld();
 
@@ -173,19 +192,13 @@ namespace Sandbox.Tools
 						trace1.Body.MotionEnabled = false;
 					}
 
-					var offset = float.Parse( GetConvarValue( "tool_constraint_move_offset" ) );
-					if ( GetConvarValue( "tool_constraint_move_percent" ) != "0" )
-					{
-						offset = GetEntityOffsetPercent( offset, trace1 );
-					}
-
 					trace1.GameObject.WorldTransform = CalculateNewTransform(
 						trace1.GameObject.WorldTransform,
 						trace1.Normal,
 						trace1.EndPosition,
 						trace2.Normal,
 						trace2.EndPosition,
-						offset
+						GetMoveOffset( trace1 )
 					);
 					wasMoved = true;
 
@@ -209,7 +222,11 @@ namespace Sandbox.Tools
 
 			if ( stage == ConstraintToolStage.Applying )
 			{
-				return ApplyConstraint();
+				if ( !IsProxy )
+				{
+					ApplyConstraint();
+				}
+				return true;
 			}
 			else if ( stage == ConstraintToolStage.ConstraintController )
 			{
@@ -222,6 +239,11 @@ namespace Sandbox.Tools
 				return true;
 			}
 			return false;
+		}
+
+		protected bool ShouldMove()
+		{
+			return GetConvarValue( "tool_constraint_move_target" ) != "0" && Type != ConstraintType.Nocollide;
 		}
 
 		protected bool ApplyConstraint()
@@ -279,22 +301,14 @@ namespace Sandbox.Tools
 
 		protected void ApplyWeld()
 		{
-			var point1 = PhysicsPoint.World( trace1.Body, trace2.EndPosition, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
-			var joint = PhysicsJoint.CreateFixed(
-				point1,
-				point2
-			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
-
-			trace1.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Weld( trace2.GameObject, noCollide, trace1.Bone, trace2.Bone );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )
 				{
 					joint.Remove();
-					return $"Removed {Type} constraint";
+					return $"Removed Weld constraint";
 				}
 				return "";
 			} );
@@ -302,18 +316,7 @@ namespace Sandbox.Tools
 
 		protected void ApplyNocollide()
 		{
-			var point1 = PhysicsPoint.World( trace1.Body, trace1.EndPosition, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
-			// this is kinda weird for a nocollide, ideally we'd have a dedicated constraint or maybe a modified FixedJoint
-			var joint = PhysicsJoint.CreateLength(
-				point1,
-				point2,
-				9999999
-			);
-			joint.Collisions = false;
-
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			var joint = trace1.GameObject.GetComponent<PropHelper>().NoCollide( trace2.GameObject, trace1.Bone, trace2.Bone );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )
@@ -327,25 +330,23 @@ namespace Sandbox.Tools
 
 		protected void ApplySpring()
 		{
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
 			var position1 = wasMoved ? trace2.EndPosition : trace1.EndPosition;
-			var point1 = PhysicsPoint.World( trace1.Body, position1, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
 			var length = position1.Distance( trace2.EndPosition );
-			var joint = PhysicsJoint.CreateSpring(
-				point1,
-				point2,
-				length,
-				length
-			);
-			joint.SpringLinear = new( 5.0f, 0.7f );
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
-			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Spring(
+				trace2.GameObject,
+				position1,
+				trace2.EndPosition,
+				noCollide,
+				trace1.Bone,
+				trace2.Bone,
+				min: length,
+				max: length,
+				visualRope: true
+			);
 			FinishConstraintCreation( joint, () =>
 			{
-				rope?.Destroy();
 				if ( joint.IsValid() )
 				{
 					joint.Remove();
@@ -357,30 +358,20 @@ namespace Sandbox.Tools
 
 		protected void ApplyRope()
 		{
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
 			var position1 = wasMoved ? trace2.EndPosition : trace1.EndPosition;
-			var point1 = PhysicsPoint.World( trace1.Body, position1, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
 			var lengthOffset = float.Parse( GetConvarValue( "tool_constraint_rope_extra_length" ) );
 			var length = position1.Distance( trace2.EndPosition ) + lengthOffset;
-			var joint = PhysicsJoint.CreateLength(
-				point1,
-				point2,
-				length
-			);
-			joint.SpringLinear = new( 1000.0f, 0.7f );
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
 
+			var minLength = 0f;
 			if ( GetConvarValue( "tool_constraint_rope_rigid" ) == "1" )
 			{
-				joint.MinLength = length;
+				minLength = length;
 			}
 
-			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
-			trace1.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>()?.PhysicsJoints.Add( joint );
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Rope( trace2.GameObject, position1, trace2.EndPosition, noCollide, trace1.Bone, trace2.Bone, min: minLength, max: length, visualRope: true );
 			FinishConstraintCreation( joint, () =>
 			{
-				rope?.Destroy();
 				if ( joint.IsValid() )
 				{
 					joint.Remove();
@@ -392,22 +383,9 @@ namespace Sandbox.Tools
 
 		protected void ApplyAxis()
 		{
-			var position1 = wasMoved ? trace2.EndPosition : trace1.EndPosition;
-			var pivot = Input.Down( "run" )
-				? trace1.Body.MassCenter
-				: position1;
-
-			var pivotTransform = new Transform( pivot, Rotation.LookAt( Rotation.LookAt( trace1.Normal ).Up ) );
-			var joint = PhysicsJoint.CreateHinge(
-				trace1.Body,
-				trace2.Body,
-				trace1.Body.Transform.ToLocal( pivotTransform ),
-				trace2.Body.Transform.ToLocal( pivotTransform )
-			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
-
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
+			var pivotTransform = trace1.Body.Transform.ToWorld( localTransform1 );
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Axis( trace2.GameObject, pivotTransform, noCollide, trace1.Bone, trace2.Bone );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )
@@ -421,19 +399,9 @@ namespace Sandbox.Tools
 
 		protected void ApplyBallsocket()
 		{
-			var position1 = wasMoved ? trace2.EndPosition : trace1.EndPosition;
-			var pivot = Input.Down( "run" )
-				? trace1.Body.MassCenter
-				: position1;
-
-			var joint = PhysicsJoint.CreateBallSocket(
-				PhysicsPoint.World( trace1.Body, pivot, trace1.Body.Rotation ),
-				PhysicsPoint.World( trace2.Body, pivot, trace2.Body.Rotation )
-			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
-
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
+			var pivotTransform = trace1.Body.Transform.ToWorld( localTransform1 );
+			var joint = trace1.GameObject.GetComponent<PropHelper>().BallSocket( trace2.GameObject, pivotTransform, noCollide, trace1.Bone, trace2.Bone );
 			FinishConstraintCreation( joint, () =>
 			{
 				if ( joint.IsValid() )
@@ -447,23 +415,12 @@ namespace Sandbox.Tools
 
 		protected void ApplySlider()
 		{
+			var noCollide = GetConvarValue( "tool_constraint_nocollide_target" ) != "0" && !ConnectedToWorld();
 			var position1 = wasMoved ? trace2.EndPosition : trace1.EndPosition;
-			var point1 = PhysicsPoint.World( trace1.Body, position1, trace2.Body.Rotation );
-			var point2 = PhysicsPoint.World( trace2.Body, trace2.EndPosition, trace2.Body.Rotation );
-			var joint = PhysicsJoint.CreateSlider(
-				point1,
-				point2,
-				0,
-				0 // can be used like a rope hybrid, to limit max length
-			);
-			joint.Collisions = GetConvarValue( "tool_constraint_nocollide_target" ) == "0" || ConnectedToWorld();
-
-			var rope = MakeRope( trace1.Body, position1, trace2.Body, trace2.EndPosition );
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
-			trace2.GameObject.GetComponent<PropHelper>().PhysicsJoints.Add( joint );
+			// todo: UI to limit max length, friction?
+			var joint = trace1.GameObject.GetComponent<PropHelper>().Slider( trace2.GameObject, position1, trace2.EndPosition, noCollide, trace1.Bone, trace2.Bone, visualRope: true );
 			FinishConstraintCreation( joint, () =>
 			{
-				rope?.Destroy();
 				if ( joint.IsValid() )
 				{
 					joint.Remove();
@@ -494,10 +451,11 @@ namespace Sandbox.Tools
 				stage = ConstraintToolStage.Removing;
 				if ( Input.Down( "walk" ) )
 				{
-					RemoveConstraints( Type, trace );
+					var propHelper = trace.GameObject.GetComponent<PropHelper>();
+					propHelper?.RemoveConstraints( Type );
 					ResetTool();
-					return true;
 				}
+				return true;
 			}
 			else if ( stage == ConstraintToolStage.Removing )
 			{
@@ -507,7 +465,19 @@ namespace Sandbox.Tools
 					ResetTool();
 					return false;
 				}
-				RemoveConstraintBetweenEnts( Type, trace1, trace2 );
+				var propHelper = trace1.GameObject.GetComponent<PropHelper>();
+				if ( !propHelper.IsValid() )
+				{
+					trace1 = trace2;
+					trace2 = trace;
+					propHelper = trace1.GameObject.GetComponent<PropHelper>();
+				}
+				if ( !propHelper.IsValid() )
+				{
+					ResetTool();
+					return false;
+				}
+				propHelper?.RemoveConstraints( Type, trace2.GameObject );
 				ResetTool();
 				return true;
 			}
@@ -531,6 +501,16 @@ namespace Sandbox.Tools
 			return true;
 		}
 
+		private float GetMoveOffset( SceneTraceResult tr )
+		{
+			var offset = float.Parse( GetConvarValue( "tool_constraint_move_offset" ) );
+			if ( GetConvarValue( "tool_constraint_move_percent" ) != "0" )
+			{
+				offset = GetEntityOffsetPercent( offset, tr );
+			}
+			return offset;
+		}
+
 		private float GetEntityOffsetPercent( float percent, SceneTraceResult tr )
 		{
 			if ( Math.Abs( tr.Normal.Dot( tr.GameObject.WorldRotation.Forward ) ) > 0.8f )
@@ -550,31 +530,6 @@ namespace Sandbox.Tools
 		private bool ConnectedToWorld()
 		{
 			return trace1.GameObject.IsWorld() || trace2.GameObject.IsWorld();
-		}
-
-		private void RemoveConstraints( ConstraintType type, SceneTraceResult tr )
-		{
-			tr.GameObject.GetComponent<PropHelper>().PhysicsJoints.ForEach( j =>
-			{
-				if ( j.GetConstraintType() == type )
-				{
-					j.Remove();
-				}
-			} );
-		}
-
-		private void RemoveConstraintBetweenEnts( ConstraintType type, SceneTraceResult trace1, SceneTraceResult trace2 )
-		{
-			trace1.GameObject.GetComponent<PropHelper>().PhysicsJoints.ForEach( j =>
-			{
-				if ( (j.Body1 == trace1.Body || j.Body2 == trace1.Body) && (j.Body1 == trace2.Body || j.Body2 == trace2.Body) )
-				{
-					if ( j.GetConstraintType() == type )
-					{
-						j.Remove();
-					}
-				}
-			} );
 		}
 
 		private void SelectNextType()
@@ -618,6 +573,10 @@ namespace Sandbox.Tools
 				desc += $"\n{Input.GetButtonOrigin( "reload" )} to select an entity to remove {Type} constraint ({Input.GetButtonOrigin( "walk" )} to remove all {Type} constraints)";
 				desc += $"\n{Input.GetButtonOrigin( "drop" )} to cycle to next constraint type";
 			}
+			if ( stage == ConstraintToolStage.Removing )
+			{
+				desc += $"\nNow, {Input.GetButtonOrigin( "reload" )} the second entity to remove the {Type} constraint between them, or {Input.GetButtonOrigin( "reload" )} the same entity to remove all {Type}'s";
+			}
 			if ( WireboxSupport )
 			{
 				if ( stage == ConstraintToolStage.Moving )
@@ -632,7 +591,7 @@ namespace Sandbox.Tools
 			return desc;
 		}
 
-		private void FinishConstraintCreation( PhysicsJoint joint, Func<string> undo )
+		private void FinishConstraintCreation( Sandbox.Joint joint, Func<string> undo )
 		{
 			joint.OnBreak += () => { undo(); };
 
@@ -648,46 +607,6 @@ namespace Sandbox.Tools
 				return;
 			}
 			ResetTool();
-		}
-
-		public static LegacyParticleSystem MakeRope( PhysicsBody body1, Vector3 position1, PhysicsBody body2, Vector3 position2 )
-		{
-			var go1 = body1.GetGameObject();
-			var go2 = body2.GetGameObject();
-			var rope = Particles.MakeParticleSystem( "particles/entity/rope.vpcf", go1.WorldTransform, 0, go1 );
-			rope.GameObject.SetParent( go1 );
-			var propHelper2 = go2.GetComponent<PropHelper>();
-			if ( propHelper2.IsValid() )
-			{
-				propHelper2.OnComponentDestroy += () => rope?.Destroy();
-			}
-			var RopePoints = new List<ParticleControlPoint>();
-			if ( go1.IsWorld() )
-			{
-				RopePoints.Add( new() { StringCP = "0", Value = ParticleControlPoint.ControlPointValueInput.Vector3, VectorValue = position1 } );
-			}
-			else
-			{
-				var p = new GameObject();
-				p.SetParent( go1 );
-				p.LocalPosition = body1.Transform.PointToLocal( position1 );
-
-				RopePoints.Add( new() { StringCP = "0", Value = ParticleControlPoint.ControlPointValueInput.GameObject, GameObjectValue = p } );
-			}
-			if ( go2.IsWorld() )
-			{
-				RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.Vector3, VectorValue = position2 } );
-			}
-			else
-			{
-				var p = new GameObject();
-				p.SetParent( go2 );
-				p.LocalPosition = body2.Transform.PointToLocal( position2 );
-				RopePoints.Add( new() { StringCP = "1", Value = ParticleControlPoint.ControlPointValueInput.GameObject, GameObjectValue = p } );
-			}
-			rope.ControlPoints = RopePoints;
-
-			return rope;
 		}
 
 		protected void ResetTool()
@@ -709,50 +628,27 @@ namespace Sandbox.Tools
 
 			ResetTool();
 		}
-		/*
-		PreviewEntity previewModel;
 
 		protected override bool IsPreviewTraceValid( SceneTraceResult tr )
 		{
 			if ( stage != ConstraintToolStage.Moving || !trace1.GameObject.IsValid() )
 				return false;
 
-			if ( !base.IsPreviewTraceValid( tr ) )
-				return false;
+			if ( trace1.GameObject.GetComponent<MeshComponent>() is not null )
+				return false; // unsupported yet, todo
 
 			return true;
 		}
 
-		public override void CreatePreviews()
+		protected override bool HasModel()
 		{
-			if ( !Game.IsClient )
-			{
-				return;
-			}
-			TryCreatePreview( ref previewModel, "models/citizen_props/crate01.vmdl" );
+			return GetModel() != "";
 		}
 
-		public override void UpdatePreviews()
+		protected override string GetModel()
 		{
-			if ( !Game.IsClient )
-			{
-				return;
-			}
-			CreatePreviews();
-			base.UpdatePreviews();
-
-			var tr2 = DoTrace();
-			if ( !IsPreviewTraceValid( tr2 ) )
-			{
-				return;
-			}
-			if ( previewModel.IsValid() )
-			{
-				previewModel.Model = trace1.GameObject.GetComponent<Prop>().Model;
-				previewModel.Transform = CalculateNewTransform( trace1.GameObject.Transform, trace1.Normal, trace1.EndPosition, tr2.Normal, tr2.EndPosition, float.Parse( GetConvarValue( "tool_constraint_move_offset" ) ) );
-			}
+			return trace1.GameObject?.GetComponent<Prop>()?.Model.ResourcePath ?? "";
 		}
-		*/
 
 		private static Transform CalculateNewTransform( Transform originalTransform, Vector3 normal1, Vector3 endPos1, Vector3 normal2, Vector3 endPos2, float offset = 0f )
 		{
@@ -772,16 +668,5 @@ namespace Sandbox.Tools
 
 			return transform;
 		}
-	}
-
-	public enum ConstraintType
-	{
-		Weld,
-		Nocollide, // Generic
-		Axis, // Revolute
-		BallSocket, // Spherical
-		Rope,
-		Spring, // Winch/Hydraulic
-		Slider, // Prismatic
 	}
 }

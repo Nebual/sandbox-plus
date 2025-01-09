@@ -41,7 +41,26 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 
 			if ( !Networking.IsActive )
 			{
-				Networking.CreateLobby( new LobbyConfig { Name = $"{Package.GetCachedTitle(Game.Ident)} Server" } );
+				Networking.CreateLobby( new LobbyConfig { Name = $"{Package.GetCachedTitle( Game.Ident )} Server" } );
+			}
+		}
+		InitAddons( true );
+	}
+	void ISceneStartup.OnClientInitialize()
+	{
+		if ( Networking.IsHost ) return; // already done in OnHostInitialize
+		InitAddons( false );
+	}
+
+	private void InitAddons( bool isHostInit )
+	{
+		var methods = TypeLibrary.GetMethodsWithAttribute<GameInitAttribute>();
+		foreach ( var (method, attribute) in methods )
+		{
+			if ( attribute.HostOnly && !isHostInit ) continue;
+			if ( method.IsStatic )
+			{
+				method.Invoke( null, null );
 			}
 		}
 	}

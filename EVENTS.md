@@ -1,5 +1,6 @@
 # Custom Events provided by SandboxPlus
 - IPropSpawnedEvent
+- `[GameInit(HostOnly: false)]` static method attribute for initializing addons
 
 # Custom Concommands
 - `weapon_switch physgun`
@@ -11,7 +12,6 @@
 # ----
 # Older stuff we once had back in 2023-entity-system, maybe portable to Scene
 
-- "game.init": run on initial addon load
 - "package.mounted": run when a package is async mounted via `spawnpackage`
 - "sandbox.hud.loaded": run after the Sandbox.Hud has loaded, eg. for extending the spawnmenu
 - "entity.spawned"

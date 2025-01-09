@@ -225,7 +225,8 @@ namespace Sandbox
 		}
 		public static string CreateGear( float radius, float depth, int numTeeth, float cutDepth, float cutAngle, int texSize )
 		{
-			CreateGearModelClient( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
+			using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+				CreateGearModelClient( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
 			return CreateGearModel( radius, depth, numTeeth, cutDepth, cutAngle, texSize );
 		}
 

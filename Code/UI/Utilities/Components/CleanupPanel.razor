@@ -53,7 +53,7 @@
 		{
 			if (prop.Components.TryGet<Joint>(out var joint))
 			{
-				joint.Destroy();
+				joint.Remove();
 				prop.GameObject.Root.Network.Refresh();
 			}
 		}

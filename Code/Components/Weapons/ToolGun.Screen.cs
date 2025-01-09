@@ -36,7 +36,7 @@ partial class ToolGun
 
 		var toolName = DisplayInfo.For( CurrentTool ).Name;
 		screenPanel.CurrentToolName = toolName;
-		if ( CurrentTool is Sandbox.Tools.ConstraintTool ctool )
+		if ( CurrentTool is SandboxPlus.Tools.ConstraintTool ctool )
 		{
 			screenPanel.CurrentToolName = $"{toolName} | {ctool.Type.ToString()}";
 		}

@@ -96,14 +96,16 @@ public partial class ToolGun : BaseWeapon
 		CurrentTool.Activate();
 	}
 
-	public SceneTraceResult TraceTool( Vector3 start, Vector3 end, float radius = 2.0f )
+	public SceneTraceResult TraceTool( Vector3 start, Vector3 end, float radius = 0 )
 	{
 		var trace = Scene.Trace.Ray( start, end )
 				.UseHitboxes()
 				.WithAnyTags( "solid", "npc", "glass" )
 				.WithoutTags( "debris", "player" )
-				.IgnoreGameObjectHierarchy( Owner.GameObject )
-				.Size( radius );
+				.IgnoreGameObjectHierarchy( Owner.GameObject );
+
+		if (radius > 0)
+			trace = trace.Size( radius );
 
 		var tr = trace.Run();
 
