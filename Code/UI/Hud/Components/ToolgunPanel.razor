@@ -4,7 +4,6 @@
 @inherits RootPanel
 
 <style>
-
 	.background {
 		position: absolute;
 		background-image: url("materials/weapons/v_toolgun/screen_bg_color.png");
@@ -17,16 +16,22 @@
 
 	.marquee {
 		width: 100%;
-		white-space: nowrap; /* Prevents text from wrapping to the next line */
-		overflow: hidden; /* Hides any overflowing content */
-		position: relative; /* Enables positioning the text inside the div */
+		white-space: nowrap;
+		/* Prevents text from wrapping to the next line */
+		overflow: hidden;
+		/* Hides any overflowing content */
+		position: relative;
+		/* Enables positioning the text inside the div */
 	}
 
 	.marquee_p {
-		animation: scroll-left 2s linear infinite; /* Adjust the duration as needed */
-		position: absolute; /* Positions the text absolutely within the div */
+		animation: scroll-left 2s linear infinite;
+		/* Adjust the duration as needed */
+		position: absolute;
+		/* Positions the text absolutely within the div */
 		top: 23%;
-		right: 100%; /* Start the text outside the div on the right */
+		right: 100%;
+		/* Start the text outside the div on the right */
 		color: white;
 		text-shadow: 1px 1px 8px black;
 		font-size: 256px;
@@ -36,13 +41,15 @@
 
 	@@keyframes scroll-left {
 		0% {
-			right: -200%; /* Start position */
+			right: -200%;
+			/* Start position */
 		}
+
 		100% {
-			right: 100%; /* End position */
+			right: 100%;
+			/* End position */
 		}
 	}
-
 </style>
 
 <root>
@@ -57,8 +64,6 @@
 
 	public Rect ScreenBounds = new Rect(0, 0, 1024, 1024);
 	public string CurrentToolName = "Current Tool";
-
-	private Panel titleLabel;
 
 	protected override void UpdateBounds(Rect rect)
 	{
