@@ -105,6 +105,9 @@ Chat {
                     color: #849a74;
                 }
             }
+            .name {
+                max-width: 8em;
+            }
 
             &.stale {
                 transition: opacity 1s ease;
