@@ -6,36 +6,6 @@
     "Enabled": true,
     "Components": [
       {
-        "__type": "Sandbox.SkinnedModelRenderer",
-        "__guid": "7d871118-8fd3-49b9-a946-89ef43cf4b38",
-        "BodyGroups": 18446744073709551615,
-        "CreateAttachments": false,
-        "CreateBoneObjects": false,
-        "Model": "models/weapons/v_toolgun.vmdl",
-        "Morphs": {},
-        "Parameters": {
-          "bools": {
-            "fire": false
-          },
-          "ints": {},
-          "floats": {},
-          "vectors": {},
-          "rotations": {}
-        },
-        "RenderOptions": {
-          "GameLayer": true,
-          "OverlayLayer": false,
-          "BloomLayer": false,
-          "AfterUILayer": false
-        },
-        "RenderType": "On",
-        "Sequence": {
-          "Name": null
-        },
-        "Tint": "1,1,1,1",
-        "UseAnimGraph": true
-      },
-      {
         "__type": "ViewModel",
         "__guid": "6e677851-ec97-4296-9cdb-a53eb1f0f39a",
         "BobCycleTime": 7,
@@ -43,230 +13,171 @@
         "EnableSwingAndBob": true,
         "InertiaDamping": 20,
         "MaxOffsetLength": 10,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Renderer": {
+          "_type": "component",
+          "component_id": "9a86bb8a-43b8-4107-8441-a50941f9eff6",
+          "go": "16a1d1a2-3b62-49b0-992a-2bef70592f34",
+          "component_type": "SkinnedModelRenderer"
+        },
         "ReturnSpeed": 5,
         "SwingInfluence": 0.05
       }
     ],
     "Children": [
       {
-        "__guid": "76f3f6f0-fa13-46f3-8cc1-54fcdc82d7aa",
+        "__guid": "16a1d1a2-3b62-49b0-992a-2bef70592f34",
         "Flags": 0,
-        "Name": "base",
-        "Position": "-3.121189,-1.999545,-12.6728",
-        "Rotation": "0.5,0.4999568,0.5,0.5000431",
+        "Name": "vm",
         "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "9a86bb8a-43b8-4107-8441-a50941f9eff6",
+            "AnimationGraph": null,
+            "BodyGroups": 18446744073709551615,
+            "BoneMergeTarget": null,
+            "CreateAttachments": false,
+            "CreateBoneObjects": false,
+            "MaterialGroup": null,
+            "MaterialOverride": null,
+            "Model": "models/weapons/toolgun/v_toolgun.vmdl",
+            "Morphs": {},
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parameters": {
+              "bools": {
+                "deploy": true
+              },
+              "ints": {},
+              "floats": {},
+              "vectors": {},
+              "rotations": {}
+            },
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Sequence": {
+              "Name": null
+            },
+            "Tint": "1,1,1,1",
+            "UseAnimGraph": true
+          }
+        ],
         "Children": [
           {
-            "__guid": "998b2226-b118-4cfa-a7b0-fb95c312ec6f",
+            "__guid": "ce33d55a-e403-46ab-aaa8-cff2805f12b6",
             "Flags": 0,
-            "Name": "bip01_l_upperarm",
-            "Position": "7.723855,3.143246,-1.366092",
-            "Rotation": "-0.5228332,-0.1404518,-0.7745524,0.3270891",
+            "Name": "arms_adapter",
+            "Position": "0,0,1",
             "Enabled": true,
-            "Children": [
+            "Components": [
               {
-                "__guid": "6035810c-019b-4e0f-a302-10660e8029c0",
-                "Flags": 0,
-                "Name": "bip01_l_forearm",
-                "Position": "11.69252,-0.00002098083,-0.00003290176",
-                "Rotation": "0,0,-0.4054731,0.914107",
-                "Enabled": true,
-                "Children": [
-                  {
-                    "__guid": "2bd363d6-4d26-42c0-ac11-e3f2139b2c19",
-                    "Flags": 0,
-                    "Name": "bip01_l_hand",
-                    "Position": "11.48165,-0.00002193451,-0.0000667572",
-                    "Rotation": "0.003927832,-0.1744216,0.2556544,0.9508956",
-                    "Enabled": true,
-                    "Children": [
-                      {
-                        "__guid": "56736d43-e7ce-46b5-bc60-05a249edb06f",
-                        "Flags": 0,
-                        "Name": "bip01_l_finger0",
-                        "Position": "0.8060436,-0.3489163,1.321255",
-                        "Rotation": "0.6035912,-0.07212535,0.3802659,-0.6970463",
-                        "Enabled": true,
-                        "Children": [
-                          {
-                            "__guid": "b9d7c956-0880-4c04-9b98-87463d509195",
-                            "Flags": 0,
-                            "Name": "bip01_l_finger01",
-                            "Position": "1.789062,-0.000004768372,-0.00001716614",
-                            "Rotation": "0,0,-0.1060946,-0.994356",
-                            "Enabled": true,
-                            "Children": [
-                              {
-                                "__guid": "7a7d66ee-580e-4079-a7dc-7f45f32ea1d7",
-                                "Flags": 0,
-                                "Name": "bip01_l_finger02",
-                                "Position": "1.206055,0.000002861023,-0.00001525879",
-                                "Rotation": "0,0,-0.09297307,-0.9956686",
-                                "Enabled": true
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "__guid": "d0e5b87e-9ee5-40fa-bd5b-db3ab9748fc1",
-                        "Flags": 0,
-                        "Name": "bip01_l_finger4",
-                        "Position": "3.859375,-0.142334,-1.191406",
-                        "Rotation": "-0.1941039,0.1487397,-0.4967196,0.8327483",
-                        "Enabled": true,
-                        "Children": [
-                          {
-                            "__guid": "e43066e2-6395-4002-a721-8860d20c61cd",
-                            "Flags": 0,
-                            "Name": "bip01_l_finger41",
-                            "Position": "1.3125,0.00001335144,-0.000007629395",
-                            "Rotation": "0,0,0.2159876,-0.9763961",
-                            "Enabled": true,
-                            "Children": [
-                              {
-                                "__guid": "650e29fc-a2c3-4d74-b037-119b2490611a",
-                                "Flags": 0,
-                                "Name": "bip01_l_finger42",
-                                "Position": "0.7290039,0.000005722046,0.000003814697",
-                                "Rotation": "0,0,0.1197773,-0.9928008",
-                                "Enabled": true
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "__guid": "b91f5afb-8e2c-405d-9070-f747dedcfd86",
-                        "Flags": 0,
-                        "Name": "bip01_l_finger3",
-                        "Position": "3.941406,0.04675293,-0.4313965",
-                        "Rotation": "-0.05481699,0.06388122,-0.3746116,0.9233528",
-                        "Enabled": true,
-                        "Children": [
-                          {
-                            "__guid": "e33ca56d-a0ef-4d86-b560-bd382b4c8e55",
-                            "Flags": 0,
-                            "Name": "bip01_l_finger31",
-                            "Position": "1.539062,0.000007629395,-0.000007629395",
-                            "Rotation": "0,0,0.2033408,-0.979108",
-                            "Enabled": true,
-                            "Children": [
-                              {
-                                "__guid": "fb577759-28cd-41cc-80d0-a13c8196b938",
-                                "Flags": 0,
-                                "Name": "bip01_l_finger32",
-                                "Position": "1.196289,0.000003814697,-0.000003814697",
-                                "Rotation": "0,0,0.2866454,-0.9580367",
-                                "Enabled": true
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "__guid": "47bb3c36-6427-48e3-9968-6ecffc1dd4d6",
-                        "Flags": 0,
-                        "Name": "bip01_l_finger2",
-                        "Position": "3.882812,-0.04675293,0.4313965",
-                        "Rotation": "0.04424206,-0.0004747928,-0.2787034,0.9593575",
-                        "Enabled": true,
-                        "Children": [
-                          {
-                            "__guid": "0dbeeb39-b054-47ce-88a3-96876374ba3a",
-                            "Flags": 0,
-                            "Name": "bip01_l_finger21",
-                            "Position": "1.71875,-0.000008583069,-0.00001811981",
-                            "Rotation": "0,0,-0.3722376,0.9281375",
-                            "Enabled": true,
-                            "Children": [
-                              {
-                                "__guid": "ef0a60d2-001e-43dd-a6e5-74ba572c7991",
-                                "Flags": 0,
-                                "Name": "bip01_l_finger22",
-                                "Position": "1.208984,0.000009536743,-0.0000009536743",
-                                "Rotation": "0,0,0.1278919,-0.9917881",
-                                "Enabled": true
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "__guid": "9e9604a3-2f4a-437b-b681-eeab5ccd3817",
-                        "Flags": 0,
-                        "Name": "bip01_l_finger1",
-                        "Position": "3.859375,-0.1379395,1.332031",
-                        "Rotation": "0.2291523,-0.07354973,-0.1993267,0.9499203",
-                        "Enabled": true,
-                        "Children": [
-                          {
-                            "__guid": "887b1b18-9a95-43f4-868d-ae65d35b1d26",
-                            "Flags": 0,
-                            "Name": "bip01_l_finger11",
-                            "Position": "1.71875,-0.0000004768372,-0.000008583069",
-                            "Rotation": "0,0,-0.2455543,0.9693829",
-                            "Enabled": true,
-                            "Children": [
-                              {
-                                "__guid": "e546ddb4-4c74-4164-b610-2e30f5896754",
-                                "Flags": 0,
-                                "Name": "bip01_l_finger12",
-                                "Position": "1.099609,-0.000007629395,-0.000005722046",
-                                "Rotation": "0,0,-0.1762776,0.9843405",
-                                "Enabled": true
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
+                "__type": "Sandbox.SkinnedModelRenderer",
+                "__guid": "16bb783a-9ae8-477b-8d13-72fd968d8491",
+                "AnimationGraph": null,
+                "BodyGroups": 18446744073709551615,
+                "BoneMergeTarget": {
+                  "_type": "component",
+                  "component_id": "9a86bb8a-43b8-4107-8441-a50941f9eff6",
+                  "go": "16a1d1a2-3b62-49b0-992a-2bef70592f34",
+                  "component_type": "SkinnedModelRenderer"
+                },
+                "CreateAttachments": false,
+                "CreateBoneObjects": false,
+                "MaterialGroup": null,
+                "MaterialOverride": null,
+                "Model": "models/hand_adapter_valvebiped_to_sbox/hand_adapter_valvebiped_to_sbox.vmdl",
+                "Morphs": {},
+                "OnComponentDestroy": null,
+                "OnComponentDisabled": null,
+                "OnComponentEnabled": null,
+                "OnComponentFixedUpdate": null,
+                "OnComponentStart": null,
+                "OnComponentUpdate": null,
+                "Parameters": {
+                  "bools": {},
+                  "ints": {},
+                  "floats": {},
+                  "vectors": {},
+                  "rotations": {}
+                },
+                "RenderOptions": {
+                  "GameLayer": false,
+                  "OverlayLayer": false,
+                  "BloomLayer": false,
+                  "AfterUILayer": false
+                },
+                "RenderType": "On",
+                "Sequence": {
+                  "Name": null
+                },
+                "Tint": "1,1,1,1",
+                "UseAnimGraph": false
               }
-            ]
-          },
-          {
-            "__guid": "33d11293-532d-4d7b-9ea5-6524627cf0fa",
-            "Flags": 0,
-            "Name": "arm",
-            "Position": "-7.037999,-0.5349399,8.058477",
-            "Rotation": "0,-0.107778,0,-0.994175",
-            "Enabled": true,
+            ],
             "Children": [
               {
-                "__guid": "fc942f87-4082-4783-ac03-0926bbb9367a",
+                "__guid": "fe1a4581-512e-4f9f-87fc-485620e57507",
                 "Flags": 0,
-                "Name": "hand",
-                "Position": "0.4634628,5.506761,13.08023",
-                "Rotation": "0,0.107778,0.0002661308,-0.994175",
+                "Name": "arms",
                 "Enabled": true,
-                "Children": [
+                "Components": [
                   {
-                    "__guid": "257dc7f2-e951-4a02-a79e-dcf2513daa55",
-                    "Flags": 0,
-                    "Name": "python",
-                    "Position": "0.09977913,3.17767,4.325956",
-                    "Rotation": "0.004445788,-0.001812845,0.009150553,-0.9999466",
-                    "Enabled": true,
-                    "Children": [
-                      {
-                        "__guid": "a15c0302-70ad-479a-9a31-ac2e1833b568",
-                        "Flags": 0,
-                        "Name": "muzzle",
-                        "Position": "-0.0001182556,0.7652659,8.032595",
-                        "Rotation": "0,0,0,-1",
-                        "Enabled": true
-                      },
-                      {
-                        "__guid": "e37e45c4-a3db-4408-bf35-e7a204d36aa1",
-                        "Flags": 0,
-                        "Name": "smdimport02",
-                        "Position": "0.2259846,-4.990251,1.015459",
-                        "Rotation": "0.5032372,-0.4921875,-0.5059339,-0.4985325",
-                        "Enabled": true
-                      }
-                    ]
+                    "__type": "Sandbox.SkinnedModelRenderer",
+                    "__guid": "e9587407-4d64-4040-bb6e-abdec9904bb7",
+                    "AnimationGraph": null,
+                    "BodyGroups": 21,
+                    "BoneMergeTarget": {
+                      "_type": "component",
+                      "component_id": "16bb783a-9ae8-477b-8d13-72fd968d8491",
+                      "go": "ce33d55a-e403-46ab-aaa8-cff2805f12b6",
+                      "component_type": "SkinnedModelRenderer"
+                    },
+                    "CreateAttachments": false,
+                    "CreateBoneObjects": false,
+                    "MaterialGroup": null,
+                    "MaterialOverride": null,
+                    "Model": "models/first_person/first_person_arms.vmdl",
+                    "Morphs": {},
+                    "OnComponentDestroy": null,
+                    "OnComponentDisabled": null,
+                    "OnComponentEnabled": null,
+                    "OnComponentFixedUpdate": null,
+                    "OnComponentStart": null,
+                    "OnComponentUpdate": null,
+                    "Parameters": {
+                      "bools": {},
+                      "ints": {},
+                      "floats": {},
+                      "vectors": {},
+                      "rotations": {}
+                    },
+                    "RenderOptions": {
+                      "GameLayer": true,
+                      "OverlayLayer": false,
+                      "BloomLayer": false,
+                      "AfterUILayer": false
+                    },
+                    "RenderType": "On",
+                    "Sequence": {
+                      "Name": null
+                    },
+                    "Tint": "1,1,1,1",
+                    "UseAnimGraph": false
                   }
                 ]
               }
@@ -305,6 +216,8 @@
   "MenuIcon": null,
   "DontBreakAsTemplate": false,
   "ResourceVersion": 1,
-  "__references": [],
+  "__references": [
+    "katka.hand_adapter_valvebiped_to_sbox#36579"
+  ],
   "__version": 1
 }

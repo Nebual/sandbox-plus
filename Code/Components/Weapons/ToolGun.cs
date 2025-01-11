@@ -25,7 +25,7 @@ public partial class ToolGun : BaseWeapon
 		{
 			return CurrentTool.WantsSnapGrid;
 		}
-		
+
 		return true;
 	}
 

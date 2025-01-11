@@ -22,7 +22,7 @@ public partial class BaseWeapon : Component, SandboxPlus.PlayerController.IEvent
 	[Sync] public RealTimeSince TimeSincePrimaryAttack { get; set; }
 	[Sync] public RealTimeSince TimeSinceSecondaryAttack { get; set; }
 
-	public ViewModel ViewModel => Scene?.Camera?.GetComponentInChildren<ViewModel>( true );
+	public ViewModel ViewModel => Scene?.Camera?.Components.GetInDescendantsOrSelf<ViewModel>( true );
 	public SkinnedModelRenderer WorldModel => GameObject?.GetComponentInChildren<SkinnedModelRenderer>( true );
 	public SkinnedModelRenderer LocalWorldModel => !Owner.IsValid() || !Owner.Controller.IsValid() || Owner.Controller.ThirdPerson || IsProxy ? WorldModel : ViewModel?.Renderer;
 	public Player Owner => GameObject?.Root?.GetComponent<Player>();
