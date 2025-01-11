@@ -1,9 +1,13 @@
 @using Sandbox.UI
-@namespace Sandbox.UI
+@using Sandbox.Tools
+@using SandboxPlus.Tools
+@namespace SandboxPlus.UI
 @inherits Panel
 @attribute [StyleSheet]
+@attribute [ToolInspector(typeof(DuplicatorTool))]
 
-<root>
+<DefaultToolInspector>
+<Controls>
 	<div class="file-list">
 		<div class="textbutton" onclick="@( () => OnFolderClicked("..") )">/@(Cwd != "" ? Cwd + ".." : "")</div>
 		@foreach (var folder in Folders)
@@ -28,7 +32,8 @@
 		Value=@(float.Parse(ConsoleSystem.GetValue("tool_duplicator_area_size", "250")))
 		style="margin-top: 20px;"
 	/>
-</root>
+</Controls>
+</DefaultToolInspector>
 
 @code {
 	public List<string> Files = new();
@@ -51,7 +56,7 @@
 
 	public void OnFileClicked(string file)
 	{
-		ConsoleSystem.Run("tool_duplicator_openfile", Cwd + file);
+		DuplicatorTool.OpenFile(Cwd + file);
 	}
 
 	public void OnFolderClicked(string folder)
@@ -81,7 +86,7 @@
 			{
 				name += ".dupe";
 			}
-			ConsoleSystem.Run("tool_duplicator_savefile", Cwd + name);
+			DuplicatorTool.SaveFile(Cwd + name);
 			ShowNameInput = false;
 			SpawnMenu.Instance.IgnoreMenuButton = false;
 			

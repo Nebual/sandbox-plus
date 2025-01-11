@@ -113,6 +113,7 @@ public partial class SandboxGameManager
 	[ConCmd( "changemap" )]
 	public static void ChangeMapCmd( string mapName, string who )
 	{
+		Analytics.Increment( "map.changed" );
 		if ( who == "everyone" )
 		{
 			ChangeMapCmd( mapName );

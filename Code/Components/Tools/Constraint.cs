@@ -612,7 +612,7 @@
 
 			// Event.Run( "joint.spawned", joint, Owner );
 			UndoSystem.Add( Owner, undo );
-			// Analytics.ServerIncrement( To.Single( Owner ), "constraint.created" );
+			Analytics.Increment( "constraint.created" );
 
 			if ( WireboxSupport && Input.Down( "walk" ) )
 			{
