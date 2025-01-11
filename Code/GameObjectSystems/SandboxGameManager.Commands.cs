@@ -93,9 +93,9 @@ public partial class SandboxGameManager
 		var model = package.GetMeta( "PrimaryAsset", "models/dev/error.vmdl" );
 
 		// Download and mount the package (if needed)
-		await package.MountAsync();
 		using ( Rpc.FilterExclude( c => c == Connection.Local ) )
 			BroadcastMount( packageName ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
+		await package.MountAsync();
 
 		return model;
 	}

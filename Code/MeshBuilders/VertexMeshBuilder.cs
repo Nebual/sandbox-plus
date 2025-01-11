@@ -79,6 +79,7 @@ namespace Sandbox
 			renderer.ModelId = modelId;
 			renderer.Model = Models[modelId];
 			
+			var prop = entity.AddComponent<Prop>();
 			var helper = entity.AddComponent<PropHelper>();
 			helper.Invincible = true;
 			
@@ -86,7 +87,7 @@ namespace Sandbox
 
 			entity.NetworkSpawn();
 			entity.Network.SetOrphanedMode( NetworkOrphaned.Host );
-			Events.IPropSpawnedEvent.Post( x => x.OnSpawned( helper.Prop ) );
+			Events.IPropSpawnedEvent.Post( x => x.OnSpawned( prop ) );
 			
 			return entity;
 		}
@@ -98,7 +99,8 @@ namespace Sandbox
 		}
 		public static string CreateRectangle( float length, float width, float height, int texSize )
 		{
-			CreateRectangleClient( length, width, height, texSize );
+			using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+				CreateRectangleClient( length, width, height, texSize );
 			return CreateRectangleModel( length, width, height, texSize );
 		}
 
