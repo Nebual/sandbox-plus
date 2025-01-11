@@ -285,14 +285,13 @@ public static class JointExtensions
 		return [];
 	}
 
-	public static IEnumerable<GameObject> GetAttachedGameObjects( this GameObject baseGo, List<Joint> joints = null )
+	public static IEnumerable<GameObject> GetAttachedGameObjects( this GameObject baseGo, HashSet<Joint> joints = null, HashSet<GameObject> objsChecked = null )
 	{
 		joints ??= new();
-		HashSet<GameObject> objsChecked = new();
-		HashSet<Joint> jointsChecked = joints.ToHashSet();
+		objsChecked ??= new();
 		Stack<GameObject> objsToCheck = new();
-		objsChecked.Add( baseGo );
-		objsToCheck.Push( baseGo );
+		if ( objsChecked.Add( baseGo ) )
+			objsToCheck.Push( baseGo );
 
 		while ( objsToCheck.Count > 0 )
 		{
@@ -318,7 +317,7 @@ public static class JointExtensions
 			// }
 			foreach ( Joint j in GetJoints( ent ) )
 			{
-				if ( j.IsValid() && jointsChecked.Add( j ) )
+				if ( j.IsValid() && joints.Add( j ) )
 				{
 					if ( j.Body1.IsValid() && j.Body1.GetGameObject().IsValid() && objsChecked.Add( j.Body1.GetGameObject() ) )
 						objsToCheck.Push( j.Body1.GetGameObject() );
@@ -327,11 +326,10 @@ public static class JointExtensions
 				}
 			}
 		}
-		joints.AddRange( jointsChecked );
 		return objsChecked;
 	}
 
-	public static IEnumerable<T> GetAttachedGameObjects<T>( this GameObject baseGo, List<Joint> joints = null )
+	public static IEnumerable<T> GetAttachedGameObjects<T>( this GameObject baseGo, HashSet<Joint> joints = null )
 	{
 		return baseGo.GetAttachedGameObjects( joints ).Select( x => x.GetComponent<T>() ).Where( x => x is not null );
 	}

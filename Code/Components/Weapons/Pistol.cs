@@ -56,6 +56,7 @@ partial class Pistol : BaseWeapon, Component.ICollisionListener
 			ViewModel?.Renderer?.Set( "b_attack", true );
 			WeagleKill( prop );
 			ShootEffects();
+			Analytics.Increment( "fun.weagle.kill" );
 		}
 	}
 
