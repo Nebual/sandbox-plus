@@ -6,7 +6,7 @@
 
 <root>
 	<div class="listcontainer">
-		<TextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
+		<MenuTextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
 		<div class="toollist">
 			@if (true)
 			{
@@ -34,7 +34,7 @@
 {
 	public static ToolMenu Instance { get; private set; }
 
-	TextEntry SearchEntry;
+	MenuTextEntry SearchEntry;
 	Panel InspectorPanel;
 
 	string GetGroup(Type tool) => TypeLibrary.GetAttribute<LibraryAttribute>(tool)?.Group ?? "construction";

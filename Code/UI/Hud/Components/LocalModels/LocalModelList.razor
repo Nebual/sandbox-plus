@@ -6,7 +6,7 @@
 
 <root class="spawnpage columned">
 	<div class="search-container">
-		<TextEntry @ref="SearchEntry" OnTextEdited=@Search Placeholder="Search..." />
+		<MenuTextEntry @ref="SearchEntry" OnTextEdited=@Search Placeholder="Search..." />
 		<div class="folderlist">
 			<div class="entry @(SelectedFolder == "" ? "selected" : "")" onclick=@ResetFolder>
 				<i>category</i>
@@ -25,7 +25,7 @@
 
 @code
 {
-	TextEntry SearchEntry;
+	MenuTextEntry SearchEntry;
 	string SelectedFolder = "";
 	string SearchQuery = "";
 	List<Model> ModelList = new();

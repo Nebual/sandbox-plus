@@ -58,10 +58,12 @@
 	Panel SelectedPanelLeft;
 	Panel SelectedPanelRight;
 
-    public Panel SpawnMenuLeftTabs  { get; private set; }
-    public Panel SpawnMenuLeftBody { get; private set; }
-    public bool IgnoreMenuButton = false;
-	public bool IsVisible => (Input.Down("Menu") && !IgnoreMenuButton) || Panel.Children.Any(x => x.HasFocus);
+	public Panel SpawnMenuLeftTabs { get; private set; }
+	public Panel SpawnMenuLeftBody { get; private set; }
+	public bool IgnoreMenuButton = false;
+
+	private bool _isVisible = false;
+	public bool IsVisible { get => _isVisible; private set => _isVisible = value; }
 
 	protected override void OnTreeFirstBuilt()
 	{
@@ -95,6 +97,15 @@
 		{
 			Panel.Children.FirstOrDefault(x => x.HasFocus)?.Blur();
 			Panel?.Blur();
+		}
+
+		if (!IgnoreMenuButton && !Panel.Children.Any(x => x.HasFocus))
+		{
+			if (Input.Pressed("Menu"))
+				_isVisible = !_isVisible;
+			else if (Input.Released("Menu"))
+				_isVisible = false;
+
 		}
 	}
 	protected override int BuildHash() => System.HashCode.Combine(SelectedPanelLeft ?? null, SelectedPanelRight ?? null, IsVisible);

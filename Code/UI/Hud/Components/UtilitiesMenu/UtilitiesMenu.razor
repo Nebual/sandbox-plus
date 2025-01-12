@@ -9,7 +9,7 @@
 
 <root>
 	<div class="listcontainer">
-		<TextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
+		<MenuTextEntry @ref="SearchEntry" Placeholder="Quick Filter..." />
 		<div class="toollist">
 			@if (true)
 			{
@@ -38,7 +38,7 @@
 
 	Panel CurrentPage;
 
-	TextEntry SearchEntry;
+	MenuTextEntry SearchEntry;
 	Panel InspectorPanel;
 
 	string GetGroup(Type utility) => TypeLibrary.GetAttribute<UtilityPageAttribute>(utility)?.Group ?? "Other";

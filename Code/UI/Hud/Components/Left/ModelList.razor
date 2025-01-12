@@ -5,7 +5,7 @@
 <root class="spawnpage columned">
     <div class="nav">
         <div class="section">
-            <TextEntry @ref="SearchInput" onsubmit="@Search" Placeholder="Search..." />
+            <MenuTextEntry @ref="SearchInput" onsubmit="@Search" Placeholder="Search..." />
         </div>
 
         <div class="section grow" />
@@ -25,7 +25,7 @@
     public string SortOrder { get; set; } = "popular";
     public string SearchTerm { get; set; } = "";
 
-    public TextEntry SearchInput { get; protected set; }
+    public MenuTextEntry SearchInput { get; protected set; }
 
     public string GetQueryString()
     {

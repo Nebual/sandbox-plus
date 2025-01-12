@@ -1,18 +1,14 @@
 
 namespace Sandbox.UI
 {
+	[StyleSheet]
 	[Library( "MenuTextEntry" )]
 	public partial class MenuTextEntry : TextEntry
 	{
-		MenuTextEntry()
-		{
-			StyleSheet.Load( "/ui/MenuTextEntry.scss" ); // todo fix path
-		}
 		private float filteringMenuButtonUntil = 0;
 		protected override void OnMouseDown( MousePanelEvent e )
 		{
 			filteringMenuButtonUntil = Time.Now + 0.25f;
-			SpawnMenu.Instance.IgnoreMenuButton = true;
 			base.OnMouseDown( e );
 		}
 		public override void OnKeyTyped( char k )
