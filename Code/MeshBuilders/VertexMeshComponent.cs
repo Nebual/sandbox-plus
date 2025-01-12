@@ -1,6 +1,6 @@
 namespace Sandbox
 {
-	public partial class VertexMeshComponent : Prop
+	public partial class VertexMeshComponent : Prop, IDuplicatable
 	{
 		[Sync]
 		public string ModelId { get; set; }
@@ -21,6 +21,20 @@ namespace Sandbox
 				Model = VertexModel;
 				_lastModel = ModelId;
 			}
+		}
+
+		Dictionary<string, object> IDuplicatable.PreDuplicatorCopy()
+		{
+			return new()
+			{
+				{ "ModelId", ModelId }
+			};
+		}
+		void IDuplicatable.PostDuplicatorPaste( Dictionary<string, object> saved )
+		{
+			ModelId = (string)saved["ModelId"];
+			OnUpdate();
+			GetComponent<Rigidbody>().PhysicsBody.BodyType = PhysicsBodyType.Static;
 		}
 	}
 }

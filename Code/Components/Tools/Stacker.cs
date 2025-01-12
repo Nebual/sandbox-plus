@@ -79,6 +79,11 @@
 					{
 						GameObject newGO = traceGO.Clone(prop.Position, prop.Rotation);
 
+						if ( traceGO.GetComponent<VertexMeshComponent>() is VertexMeshComponent meshComponent)
+						{
+							newGO.GetComponent<VertexMeshComponent>().ModelId = meshComponent.ModelId; // dynshapes
+						}
+
 						Rigidbody rigidbody = newGO.Components.Get<Rigidbody>();
 						if ( rigidbody.IsValid() && rigidbody.PhysicsBody.IsValid() )
 							rigidbody.PhysicsBody.BodyType = PhysicsBodyType.Static;
