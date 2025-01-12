@@ -88,7 +88,7 @@ namespace Sandbox.UI
 			var material = Material.Load( file );
 
 			var sceneWorld = new SceneWorld();
-			var mod = new SceneObject( sceneWorld, Cloud.Model( "drakefruit/cube32" ), Transform.Zero );
+			var mod = new SceneObject( sceneWorld, Model.Cube, Transform.Zero );
 			mod.SetMaterialOverride( material );
 
 			var sceneLight = new SceneLight( sceneWorld, Vector3.Up * 45.0f, 300.0f, Color.White * 30.0f );

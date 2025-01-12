@@ -7,6 +7,7 @@ namespace Sandbox.UI
 	public partial class ColorSelector : Panel
 	{
 		public Action<Color> OnValueChanged { get; set; }
+		protected float alpha = 1f;
 		protected Color Value;
 		public SerializedProperty SerializedProperty
 		{
@@ -27,6 +28,7 @@ namespace Sandbox.UI
 			initialized = true;
 			AddClass( "modelselector" );
 			AddClass( "active" );
+			AddClass( "flex-column" );
 			AddChild( out Canvas, "canvas" );
 
 			Canvas.Layout.AutoColumns = true;
@@ -44,7 +46,7 @@ namespace Sandbox.UI
 					return;
 				}
 				var sceneWorld = new SceneWorld();
-				var mod = new SceneObject( sceneWorld, Cloud.Model( "drakefruit.cube32" ), Transform.Zero );
+				var mod = new SceneObject( sceneWorld, Model.Cube, Transform.Zero );
 				var color = colors[index];
 				mod.ColorTint = color;
 
@@ -55,7 +57,7 @@ namespace Sandbox.UI
 
 				panel.AddEventListener( "onclick", () =>
 				{
-					Value = color;
+					Value = color.WithAlpha( alpha );
 					OnValueChanged?.Invoke( Value );
 					_property?.SetValue( Value );
 				} );
@@ -66,12 +68,25 @@ namespace Sandbox.UI
 				}
 			};
 
-			foreach (var color in colors)
+			foreach ( var color in colors )
 			{
 				Canvas.AddItem( color );
 			}
 			// VirtualScrollPanel doesn't have a valid height (subsequent children overlap it within flex-direction: column) so calculate it manually
 			Style.Height = (64 + 6) * (int)Math.Ceiling( colors.Length / 5f );
+
+			AddChild( out Slider slider );
+			slider.Label = "Alpha (transparency)";
+			slider.Max = 100;
+			slider.Min = 0;
+			slider.Value = 100;
+			slider.OnValueChanged += ( value ) =>
+			{
+				alpha = value / 100f;
+				Value = Value.WithAlpha( alpha );
+				OnValueChanged?.Invoke( Value );
+				_property?.SetValue( Value );
+			};
 		}
 	}
 }
