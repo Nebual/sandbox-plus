@@ -5,9 +5,8 @@
 @inherits Panel
 @attribute [ToolInspector(typeof(ConstraintTool))]
 
-<root class="DefaultToolInspector">
-    <label class="header">@CurrentTool.GetCurrentTool()?.Name</label>
-<div class="content">
+<DefaultToolInspector>
+<Controls>
 	<div class="list">
 		@foreach ( var type in Enum.GetValues<ConstraintType>() )
 		{
@@ -90,8 +89,8 @@
 		/>
 	}
 	<!-- Autorotate to World? -->
-</div>
-</root>
+</Controls>
+</DefaultToolInspector>
 
 @code {
 	public void OnTypeClicked(ConstraintType constraintType)
@@ -110,9 +109,10 @@ ConstraintToolConfig {
 	.list {
 		flex-direction: column;
 		margin-bottom: 10px;
-		padding: 5px;
+		padding: 0 5px;
 		.list_option {
-			padding: 2px 0;
+			padding: 1px 0;
+			margin: 1px 0;
 			font-size: 12px;
 			align-items: center;
 			font-weight: 600;
@@ -121,6 +121,7 @@ ConstraintToolConfig {
 			label {
 				text-shadow: 1px 1px 4px rgba(black, 0.2);
 			}
+			background-color: rgba(0, 0, 0, 0.1);
 
 			&:hover {
 				opacity: 0.9;
@@ -129,6 +130,7 @@ ConstraintToolConfig {
 			&.active {
 				transform: scale(1);
 				opacity: 1;
+				background-color: rgba(0, 0, 0, 0.2);
 			}
 		}
 	}

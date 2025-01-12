@@ -2,98 +2,28 @@
 @using Sandbox.Tools;
 @inherits Panel
 @namespace Sandbox.UI
+@attribute [StyleSheet]
 
 <root class="DefaultToolInspector">
-	<label class="header">@currentTool.Name</label>
+	<label class="header">@BaseTool.Instance.Name</label>
 	<div class="content">
-		<label class="description">@currentTool.Description</label>
-		<div class="controls">
-			@foreach (var property in TypeLibrary.GetSerializedObject(currentTool))
-			{
-				if (!property.HasAttribute<PropertyAttribute>() || property.PropertyType == typeof(Action)) continue;
-				property.TryGetAttribute<TitleAttribute>(out var title);
-				var name = title?.Value ?? property.Name;
-				<div class="control">
-					@if (property.PropertyType == typeof(float))
-					{
-						property.TryGetAttribute<RangeAttribute>(out var range);
-						<Slider
-							Label=@name
-							Min=@(range?.Min ?? 0)
-							Max=@(range?.Max ?? 1)
-							Step=@(range?.Step ?? 0.01f)
-							SerializedProperty=@property
-							OnValueChanged=@((float _value) => { property.SetValue(_value); })
-							ShowTextEntry=@(true)
-						/>
-					}
-					else if (property.PropertyType == typeof(int))
-					{
-						property.TryGetAttribute<RangeAttribute>(out var range);
-						<Slider
-							Label=@name
-							Min=@(range?.Min ?? 0)
-							Max=@(range?.Max ?? 1)
-							Step=@(range?.Step ?? 1)
-							SerializedProperty=@property
-							OnValueChanged=@((float _value) => { property.SetValue(_value); })
-							ShowTextEntry=@(true)
-						/>
-					}
-					else if (property.PropertyType == typeof(bool))
-					{
-						<ToolCheckbox
-							Label=@name
-							SerializedProperty=@property
-							OnValueChanged=@((bool _value) => { property.SetValue(_value); })
-						/>
-					}
-					else if (property.TryGetAttribute<ModelPropertyAttribute>(out var modelProperty) && modelProperty != null)
-					{
-						<ModelSelector
-							SpawnListNames=@(modelProperty.SpawnLists)
-							SerializedProperty=@property
-							OnValueChanged=@((string _value) => { property.SetValue(_value); })
-						/>
-					}
-					else if (property.TryGetAttribute<MaterialPropertyAttribute>(out var materialProperty) && materialProperty != null)
-					{
-						<MaterialSelector
-							SerializedProperty=@property
-							OnValueChanged=@((string _value) => { property.SetValue(_value); })
-						/>
-					}
-					else if (property.PropertyType == typeof(string))
-					{
-						@* todo text entry *@
-					}
-					else if (property.PropertyType == typeof(Color))
-					{
-						<ColorSelector
-							SerializedProperty=@property
-						/>
-					}
-				</div>
-				@if (property.TryGetAttribute<DescriptionAttribute>(out var description))
-				{
-					<label class="description">@description.Value</label>
-				}
-			}
-		</div>
+		<label class="description">@BaseTool.Instance.Description</label>
+		@if (Controls != null)
+		{
+			<div class="controls">
+				@Controls
+			</div>
+		}
+		else
+		{
+			<DefaultToolInspectorControls CurrentTool="@BaseTool.Instance" />
+		}
 	</div>
 </root>
 
 @code
 {
-	protected override int BuildHash() => System.HashCode.Combine("");
+	public Sandbox.Razor.RenderFragment Controls { get; set; }
 
-	protected BaseTool lastTool = new WhatIsThatTool();
-	protected BaseTool currentTool
-	{
-		get
-		{
-			lastTool = CurrentTool.GetCurrentTool() ?? lastTool;
-			return lastTool;
-		}
-	}
+	protected override int BuildHash() => System.HashCode.Combine(BaseTool.Instance.Name);
 }

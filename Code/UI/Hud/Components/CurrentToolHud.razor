@@ -1,0 +1,40 @@
+﻿@using Sandbox.UI
+@using Sandbox.UI.Construct
+
+@inherits Panel
+
+<root>
+	<label @ref="Title" class="title">Tool</label>
+	<label @ref="Description" class="description">This is a tool</label>
+</root>
+
+@code
+{
+	public Label Title { get; set; }
+	public Label Description { get; set; }
+
+	public override void Tick()
+	{
+		var tool = GetCurrentTool();
+		SetClass("active", tool != null);
+
+		if (tool != null)
+		{
+			Title.Text = tool.Name;
+			Description.Text = tool.LongDescription;
+		}
+	}
+
+	private static BaseTool GetCurrentTool()
+	{
+		var player = Player.FindLocalPlayer();
+		if (player == null) return null;
+
+		var inventory = player.Inventory;
+		if (inventory == null) return null;
+
+		if (inventory.ActiveWeapon is not ToolGun tool) return null;
+
+		return tool?.CurrentTool;
+	}
+}

@@ -9,7 +9,7 @@
 	<HintFeed />
 	<Scoreboard T="ScoreboardEntry" />
 	<Health />
-	<CurrentTool />
+	<CurrentToolHud />
 	<InventoryBar />
 </root>
 
@@ -37,7 +37,7 @@
 	[Rpc.Owner]
 	public static void HotReloadTool()
 	{
-		CurrentTool.GetCurrentTool()?.Activate();
+		BaseTool.Instance?.Activate();
 	}
 
 	void IHotloadManaged.Persisted()

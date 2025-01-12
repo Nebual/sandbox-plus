@@ -1,0 +1,47 @@
+.DefaultToolInspector
+{
+	width: 100%;
+	height: 100%;
+	flex-direction: column;
+	gap: 4px;
+	font-family: Poppins;
+	font-size: 13px;
+	color: black;
+
+	> .content,
+	&.content
+	{
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		padding: 4px;
+
+		> .description
+		{
+			padding: 4px 16px;
+		}
+
+		> .controls
+		{
+			flex-direction: column;
+			padding: 8px;
+			gap: 8px;
+
+			> .control
+			{
+				align-items: center;
+				
+
+				> * {
+					flex-grow: 1;
+				}
+			}
+
+			> .description
+			{
+				color: #2F95F1;
+				margin: 0 12px;
+			}
+		}
+	}
+}

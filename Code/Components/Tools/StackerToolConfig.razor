@@ -5,9 +5,8 @@
 @inherits Panel
 @attribute [ToolInspector(typeof(StackerTool))]
 
-<root class="DefaultToolInspector">
-	<label class="header">@CurrentTool.GetCurrentTool().Name</label>
-<div class="content">
+<DefaultToolInspector>
+<Controls>
     <h4>Stack Relative To</h4>
 	<div class="list">
 		@foreach ( var type in Enum.GetValues<StackRelatativeTo>() )
@@ -94,8 +93,8 @@
 	 	Convar="tool_stacker_roll_offset"
 	/>
     @* End Angles *@
-</div>
-</root>
+</Controls>
+</DefaultToolInspector>
 
 @code {
 	public void OnSelectorClicked(string convarName, string selected)

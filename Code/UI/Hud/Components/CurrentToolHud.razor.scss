@@ -1,6 +1,6 @@
 $blue: #3273eb;
 
-CurrentTool {
+CurrentToolHud {
     border-left: 10px solid $blue;
     position: relative;
     top: 0;
@@ -38,6 +38,6 @@ CurrentTool {
         white-space: pre-line;
     }
 }
-.spawnmenuopen CurrentTool {
+.spawnmenuopen CurrentToolHud {
     opacity: 0.01;
 }

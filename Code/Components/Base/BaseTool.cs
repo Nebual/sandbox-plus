@@ -13,8 +13,25 @@ public abstract class BaseTool : Component
 
 	protected PreviewModel previewModel;
 	public virtual string SpawnModel { get; set; } = "";
-	
+
 	public virtual bool WantsSnapGrid { get; set; } = true;
+
+	private static BaseTool _lastTool = new Sandbox.Tools.WhatIsThatTool();
+	public static BaseTool Instance
+	{
+		get
+		{
+			var player = Player.FindLocalPlayer();
+			if ( player == null ) return _lastTool;
+
+			var inventory = player.Inventory;
+			if ( inventory == null ) return _lastTool;
+
+			if ( inventory.ActiveWeapon is not ToolGun tool ) return _lastTool;
+
+			return tool?.CurrentTool;
+		}
+	}
 
 	public virtual bool Primary( SceneTraceResult trace )
 	{
