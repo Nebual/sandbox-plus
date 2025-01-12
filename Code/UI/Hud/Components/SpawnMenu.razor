@@ -6,13 +6,13 @@
 <root class="@(IsVisible ? "spawnmenuopen" : "")">
 	<div class="left">
 		<div class="tabs" @ref="SpawnMenuLeftTabs">
-			<div onclick=@(() => SetActiveLeft(CloudModelsPanel)) class="btn @(SelectedPanelLeft == CloudModelsPanel ? "active" : "")">
-				<i>cloud_download</i>
-				<label>#spawnmenu.modellist</label>
-			</div>
 			<div onclick=@(() => SetActiveLeft(LocalModelsPanel)) class="btn @(SelectedPanelLeft == LocalModelsPanel ? "active" : "")">
 				<i>category</i>
 				<label>#spawnmenu.props</label>
+			</div>
+			<div onclick=@(() => SetActiveLeft(CloudModelsPanel)) class="btn @(SelectedPanelLeft == CloudModelsPanel ? "active" : "")">
+				<i>cloud_download</i>
+				<label>#spawnmenu.modellist</label>
 			</div>
 			<div onclick=@(() => SetActiveLeft(CloudMapsPanel)) class="btn @(SelectedPanelLeft == CloudMapsPanel ? "active" : "")">
 				<i>map</i>
@@ -71,7 +71,7 @@
 
 		// todo: remove this when the "sandbox.hud.loaded" event works again
 		DynShapeSpawnMenu.Initialize();
-		SetActiveLeft(CloudModelsPanel);
+		SetActiveLeft(LocalModelsPanel);
 		SetActiveRight(ToolsPanel);
 	}
     protected override void OnTreeBuilt()
