@@ -165,6 +165,10 @@
 				{
 					trace2 = trace1;
 					trace1 = trace;
+					localTransform1 = trace1.Body.Transform.ToLocal( new Transform(
+						Input.Down( "run" ) ? trace1.Body.MassCenter : trace1.HitPosition,
+						Rotation.LookAt( trace1.Normal, trace1.Direction ) * Rotation.From( new Angles( 90, 0, 0 ) )
+					) );
 				}
 				if ( trace1.GameObject.GetComponent<PropHelper>() is null )
 				{
@@ -549,11 +553,22 @@
 			{
 				if ( stage == ConstraintToolStage.Waiting )
 				{
-					desc += $"\nFirst, {Input.GetButtonOrigin( "attack1" )} the part that spins (eg. wheel).";
+					desc += $"\nFirst, {Input.GetButtonOrigin( "attack1" )} the part that spins (eg. wheel). \nHold {Input.GetButtonOrigin( "run" )} to use wheel's center of mass.";
 				}
 				else if ( stage == ConstraintToolStage.Moving )
 				{
-					desc += $"\nSecond, {Input.GetButtonOrigin( "attack1" )} the base. Hold {Input.GetButtonOrigin( "run" )} to use wheel's center of mass.";
+					desc += $"\nSecond, {Input.GetButtonOrigin( "attack1" )} the base.";
+				}
+			}
+			else if ( Type == ConstraintType.BallSocket )
+			{
+				if ( stage == ConstraintToolStage.Waiting )
+				{
+					desc += $"\nFirst, {Input.GetButtonOrigin( "attack1" )} the part that spins (eg. sphere). \nHold {Input.GetButtonOrigin( "run" )} to use sphere's center of mass.";
+				}
+				else if ( stage == ConstraintToolStage.Moving )
+				{
+					desc += $"\nSecond, {Input.GetButtonOrigin( "attack1" )} the base.";
 				}
 			}
 			else
