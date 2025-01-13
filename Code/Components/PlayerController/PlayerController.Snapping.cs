@@ -140,19 +140,24 @@ public sealed partial class PlayerController : Component
 
 	void UpdateSnapInput()
 	{
-		IsSnapping = false;
-
 		if ( !SnapLocation.HasValue )
+		{
+			IsSnapping = false;
 			return;
+		}
 
-		if ( Input.Down( UseButton ) )
+		if ( Input.Down( UseButton ) && (IsShowingSnapHUD || IsSnapping) )
 		{
 			EyeAngles = Vector3.Direction( Scene.Camera.WorldPosition, SnapLocation.Value ).EulerAngles;
 			IsSnapping = true;
 		}
-		else if ( !Hovered.IsValid() )
+		else
 		{
-			SnapLocation = null;
+			IsSnapping = false;
+			if ( !Hovered.IsValid() )
+			{
+				SnapLocation = null;
+			}
 		}
 	}
 
