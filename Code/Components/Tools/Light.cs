@@ -17,7 +17,6 @@ public partial class LightTool : LampTool
 		lamp.Shadows = true;
 		lamp.Radius = 512;
 		lamp.Attenuation = 1f;
-		go.GetComponent<ModelRenderer>().RenderType = ModelRenderer.ShadowRenderType.Off; // otherwise the light itself casts shadows from the inside
 
 		go.GetOrAddComponent<LightWireComponent>();
 	}

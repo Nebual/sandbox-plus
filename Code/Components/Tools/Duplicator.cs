@@ -16,7 +16,7 @@ namespace SandboxPlus
 		public virtual void PostDuplicatorPaste( Dictionary<string, object> data ) { }
 
 		// Called after all entities are created
-		public virtual void PostDuplicatorPasteEntities( Dictionary<int, GameObject> entities ) { }
+		public virtual void PostDuplicatorPasteEntities( Dictionary<int, GameObject> entities, Dictionary<string, object> data ) { }
 
 		// Called after pasting is done
 		public virtual void PostDuplicatorPasteDone() { }
@@ -84,6 +84,14 @@ namespace SandboxPlus
 					writeConstraint( item );
 				}
 			}
+			void writeInt( int i )
+			{
+				bn.Write( i );
+			}
+			void writeFloat( float f )
+			{
+				bn.Write( f );
+			}
 			void writeString( string s )
 			{
 				byte[] bytes = Encoding.ASCII.GetBytes( s );
@@ -125,11 +133,27 @@ namespace SandboxPlus
 						break;
 					case GameObject ent:
 						bn.Write( (byte)4 );
-						bn.Write( ent.Id.GetHashCode() ); // todo: maybe store as a bigint instead
+						writeInt( ent.Id.GetHashCode() ); // todo: maybe store as a bigint instead
 						break;
 					case Vector4 v:
 						bn.Write( (byte)5 );
 						writeVector4( v );
+						break;
+					case Color c:
+						bn.Write( (byte)9 );
+						writeVector4( c );
+						break;
+					case bool b:
+						bn.Write( (byte)6 );
+						bn.Write( b );
+						break;
+					case int i:
+						bn.Write( (byte)7 );
+						writeInt( i );
+						break;
+					case float f:
+						bn.Write( (byte)8 );
+						writeFloat( f );
 						break;
 					default:
 						throw new Exception( "Invalid userdata " + o.GetType() );
@@ -151,11 +175,11 @@ namespace SandboxPlus
 				bn.Write( ent.components.Count );
 				foreach ( var o in ent.components )
 				{
-					bn.Write( o.TypeName );
+					writeString( o.TypeName );
 					bn.Write( o.Data.Count );
 					foreach ( var kv in o.Data )
 					{
-						bn.Write( kv.Key );
+						writeString( kv.Key );
 						writeObject( kv.Value );
 					}
 				}
@@ -253,6 +277,16 @@ namespace SandboxPlus
 						return readRotation();
 					case 4:
 						return bn.ReadInt32();
+					case 5:
+						return readVector4();
+					case 6:
+						return bn.ReadBoolean();
+					case 7:
+						return bn.ReadInt32();
+					case 8:
+						return bn.ReadSingle();
+					case 9:
+						return (Color)readVector4();
 					default:
 						throw new Exception( "Invalid userdata type (" + type + ")" );
 				}
@@ -391,6 +425,21 @@ namespace SandboxPlus
 
 	public class DuplicatorData
 	{
+		private static HashSet<string> GenericIgnoredComponents = new() {
+			"Prop",
+			"ModelRenderer",
+			"ModelCollider",
+			"MapCollider",
+			"Rigidbody",
+			"PropHelper",
+			"SkinnedModelRenderer",
+			"ModelPhysics",
+		};
+		private static HashSet<string> GenericIgnoredComponentProperties = new()
+		{
+			"FogMode", // type FogInfluence
+		};
+
 		public class DuplicatorItem
 		{
 			public int index;
@@ -424,13 +473,34 @@ namespace SandboxPlus
 				mass = rigidBody?.MassOverride ?? 0;
 				frozen = rigidBody?.PhysicsBody?.BodyType == PhysicsBodyType.Static;
 
-				foreach ( var comp in ent.GetComponents<IDuplicatable>() )
+				foreach ( var comp in ent.GetComponents<Component>() )
 				{
-					components.Add( new()
+					if ( GenericIgnoredComponents.Contains( comp.GetType().Name ) || comp is Joint ) continue;
+					if ( comp is IDuplicatable duplicatableComp )
 					{
-						TypeName = comp.GetType().Name,
-						Data = comp.PreDuplicatorCopy(),
-					} );
+						components.Add( new()
+						{
+							TypeName = duplicatableComp.GetType().Name,
+							Data = duplicatableComp.PreDuplicatorCopy(),
+						} );
+					}
+					else
+					{
+						// Log.Info( "Duplicator: genericComponent serializing " + model + "'s " + comp.GetType().Name );
+						DuplicatorComponent savedComp = new()
+						{
+							TypeName = comp.GetType().Name,
+						};
+						TypeLibrary.GetSerializedObject( comp )
+							.Where( property => property.HasAttribute<PropertyAttribute>() && property.IsPublic && !GenericIgnoredComponentProperties.Contains( property.Name ) ).ToList()
+							.ForEach( property =>
+							{
+								var value = property.GetValue<object>();
+								// Log.Info( "  " + property.Name + " = " + value );
+								savedComp.Data[property.Name] = value;
+							} );
+						components.Add( savedComp );
+					}
 				}
 			}
 
@@ -460,10 +530,23 @@ namespace SandboxPlus
 				var rigidBody = go.GetComponent<Rigidbody>();
 				rigidBody.PhysicsBody.BodyType = PhysicsBodyType.Static;
 
-				foreach ( var comp in components )
+				foreach ( var savedComp in components )
 				{
-					if ( go.Components.Create( TypeLibrary.GetType( comp.TypeName ) ) is IDuplicatable dupe )
-						dupe.PostDuplicatorPaste( comp.Data );
+					var typeInfo = TypeLibrary.GetType( savedComp.TypeName );
+					Component newComp = go.Components.Create( typeInfo );
+					if ( !newComp.IsValid() ) continue;
+
+					if ( newComp is IDuplicatable duplicatableComp )
+					{
+						duplicatableComp.PostDuplicatorPaste( savedComp.Data );
+					}
+					else
+					{
+						foreach ( var (name, data) in savedComp.Data )
+						{
+							typeInfo.SetValue( newComp, name, data );
+						}
+					}
 				}
 				go.Network.SetOwnerTransfer( OwnerTransfer.Takeover );
 				go.Network.SetOrphanedMode( NetworkOrphaned.Host );
@@ -475,7 +558,7 @@ namespace SandboxPlus
 		public class DuplicatorComponent
 		{
 			public string TypeName;
-			public Dictionary<string, object> Data;
+			public Dictionary<string, object> Data = new();
 		}
 		public class DuplicatorConstraint
 		{
@@ -671,10 +754,10 @@ namespace SandboxPlus
 				}
 				if ( spawnedEnts == data.entities.Count )
 				{
-					foreach ( var ent in entList.Values )
+					foreach ( var (index, ent) in entList )
 					{
 						foreach ( var comp in ent.GetComponents<IDuplicatable>() )
-							comp.PostDuplicatorPasteEntities( entList );
+							comp.PostDuplicatorPasteEntities( entList, entData[index].components.Find( compData => compData.TypeName == comp.GetType().Name )?.Data );
 					}
 				}
 				return true;
