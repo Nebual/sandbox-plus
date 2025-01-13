@@ -5,7 +5,7 @@
   "Ident": "sandboxplus",
   "Schema": 1,
   "IncludeSourceFiles": false,
-  "Resources": "/menu/*\n*.vmdl_c.png\nentity/*.png\n*.spawnlist",
+  "Resources": "/menu/*\n*.vmdl_c.png\nentity/*.png\n*.spawnlist\nmaterials/weapons/v_toolgun/screen_bg_color.png",
   "PackageReferences": [],
   "EditorReferences": null,
   "IsWhitelistDisabled": false,

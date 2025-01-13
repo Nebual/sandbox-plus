@@ -50,7 +50,8 @@ public class Weld : BaseTool
 	{
 		return () =>
 		{
-			propHelper.RemoveConstraints( ConstraintType.Weld, from );
+			if ( propHelper.IsValid() )
+				propHelper.RemoveConstraints( ConstraintType.Weld, from );
 
 			return "Un-welded two objects";
 		};
