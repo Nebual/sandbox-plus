@@ -30,8 +30,7 @@ namespace SandboxPlus
 		{
 			if ( data[0] == LeftBracket )
 			{
-				// not working yet
-				// return DecodeJsonV0( Encoding.ASCII.GetString( data ) );
+				return DecodeJsonV0( Encoding.ASCII.GetString( data ) );
 			}
 			using ( var stream = new MemoryStream( data ) )
 			using ( var bn = new BinaryReader( stream ) )
@@ -386,7 +385,7 @@ namespace SandboxPlus
 
 		public static DuplicatorData DecodeJsonV0( string data )
 		{
-			return (DuplicatorData)JsonSerializer.Deserialize( data, typeof( DuplicatorData ) );
+			return JsonSerializer.Deserialize<DuplicatorData>( data, new JsonSerializerOptions { IncludeFields = true } );
 		}
 	}
 

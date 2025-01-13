@@ -21,7 +21,12 @@
 	</div>
 	<button class="button" onclick="@( () => OnSaveClicked() )" disabled="@(!SaveEnabled ? "disabled" : "")">@(!ShowNameInput ? "Save" : "Confirm Save")</button>
 	@if (SaveEnabled && ShowNameInput) {
-		<div><label class="input-label">Save Name: </label><MenuTextEntry Value:bind=@SaveName /></div>
+		<div><label class="input-label">Save Name: </label><MenuTextEntry @ref="SaveTextEntry" Value:bind=@SaveName /></div>
+		<ToolCheckbox
+			Label="Compact Format"
+			Value=@CompactFormat
+			OnValueChanged=@((bool _value) => { CompactFormat = _value; })
+		/>
 	}
 
 	<Slider
@@ -36,11 +41,13 @@
 </DefaultToolInspector>
 
 @code {
+	private MenuTextEntry SaveTextEntry;
 	public List<string> Files = new();
 	public List<string> Folders = new();
 	public string Cwd = "";
 	public bool SaveEnabled = true; // todo: disable when empty
 	public bool ShowNameInput = false; 
+	public bool CompactFormat { get; set; } = true;
 	public string SaveName = "";
 
 	public DuplicatorToolConfig()
@@ -50,7 +57,7 @@
 	private void RefreshFiles()
 	{
 		FileSystem.OrganizationData.CreateDirectory( "dupes" );
-		Files = FileSystem.OrganizationData.FindFile("dupes/" + Cwd, "*.dupe").ToList();
+		Files = FileSystem.OrganizationData.FindFile("dupes/" + Cwd, "*.dupe*").ToList();
 		Folders = FileSystem.OrganizationData.FindDirectory("dupes/" + Cwd, "*").ToList();
 	}
 
@@ -79,15 +86,26 @@
 		} else if (SaveName == "")
 		{
 			ShowNameInput = false;
+			SaveTextEntry?.Blur();
 		} else
 		{
 			var name = SaveName;
-			if (!name.EndsWith(".dupe"))
+			if (name.EndsWith(".json.dupe")) { } // correct
+			else if (name.EndsWith(".json"))
+			{
+				name = name.Substring(0, name.Length - 5) + ".dupe.json";
+			}
+			else if (!name.EndsWith(".dupe"))
 			{
 				name += ".dupe";
 			}
+			if (!CompactFormat && !name.EndsWith(".json"))
+			{
+				name += ".json";
+			}
 			DuplicatorTool.SaveFile(Cwd + name);
 			ShowNameInput = false;
+			SaveTextEntry?.Blur();
 			SpawnMenu.Instance.IgnoreMenuButton = false;
 			
 			for (var i = 500; i < 4000; i += 500)
