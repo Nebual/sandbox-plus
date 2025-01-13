@@ -1,5 +1,5 @@
-﻿[Library( "ent_thruster", Title = "Thruster")]
-public partial class ThrusterComponent : BaseWireInputComponent, Component.IPressable
+﻿[Library( "ent_thruster", Title = "Thruster" )]
+public partial class ThrusterComponent : BaseWireInputComponent, Component.IPressable, IDuplicatable
 {
 	[Property] public float ForceMultiplier { get; set; } = 100.0f;
 	[Property] public float Force = 0f;
@@ -104,6 +104,33 @@ public partial class ThrusterComponent : BaseWireInputComponent, Component.IPres
 				var bounds = GetComponent<Prop>().Model.Bounds;
 				effects.WorldPosition = Transform.World.PointToWorld( bounds.Center + new Vector3( 0, 0, bounds.Extents.z ) );
 			}
+		}
+	}
+
+	Dictionary<string, object> IDuplicatable.PreDuplicatorCopy()
+	{
+		return new()
+		{
+			{ "Force", Force },
+			{ "IsForward", IsForward },
+			{ "Massless", Massless },
+			{ "ForceMultiplier", ForceMultiplier },
+			{ "TargetBody", TargetBody.GameObject.Id.GetHashCode() },
+		};
+	}
+	void IDuplicatable.PostDuplicatorPasteEntities( Dictionary<int, GameObject> entities, Dictionary<string, object> data )
+	{
+		Force = (float)data["Force"];
+		if ( !Force.AlmostEqual( 0 ) )
+		{
+			OnThrusterEnabled();
+		}
+		IsForward = (bool)data["IsForward"];
+		Massless = (bool)data["Massless"];
+		ForceMultiplier = (float)data["ForceMultiplier"];
+		if ( data.TryGetValue( "TargetBody", out var targetBody ) )
+		{
+			TargetBody = entities[(int)targetBody]?.GetComponent<Rigidbody>();
 		}
 	}
 }

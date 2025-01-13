@@ -2,6 +2,7 @@
 public partial class LampComponent : SpotLight, Component.IPressable
 {
 	private bool _on = true;
+	[Property]
 	public bool On
 	{
 		get
@@ -10,15 +11,16 @@ public partial class LampComponent : SpotLight, Component.IPressable
 		}
 		set
 		{
-			_on = value;
-			if ( _on )
+			if ( value )
 			{
-				OnEnabled();
+				if ( !_on )
+					OnEnabled();
 			}
 			else
 			{
 				OnDisabled(); // this deletes the sceneObject of the Light
 			}
+			_on = value;
 		}
 	}
 	bool IPressable.CanPress( IPressable.Event e )
