@@ -14,6 +14,29 @@ public class PhysicsLocking : BaseTool
 	[Property, Title( "Z Lock" )]
 	public bool ZLock { get; set; } = false;
 
+	public override Dictionary<string, Action> GetPresetOptions()
+	{
+		return (new() {
+			{ "Keep Upright", () => PhysicsLocking.SetConfig(PitchLock: true, RollLock: true) },
+			{ "Elevator", () => PhysicsLocking.SetConfig(PitchLock: true, YawLock: true, RollLock: true, XLock: true, YLock: true) },
+			{ "Prevent Rotation", () => PhysicsLocking.SetConfig(PitchLock: true, YawLock: true, RollLock: true) },
+			{ "Prevent Movement", () => PhysicsLocking.SetConfig(XLock: true, YLock: true, ZLock: true) },
+			{ "Prevent Rotation & Movement", () => PhysicsLocking.SetConfig(PitchLock: true, YawLock: true, RollLock: true, XLock: true, YLock: true, ZLock: true) },
+		});
+	}
+	public static void SetConfig( bool PitchLock = false, bool YawLock = false, bool RollLock = false, bool XLock = false, bool YLock = false, bool ZLock = false )
+	{
+		if ( Instance is PhysicsLocking self )
+		{
+			self.PitchLock = PitchLock;
+			self.YawLock = YawLock;
+			self.RollLock = RollLock;
+			self.XLock = XLock;
+			self.YLock = YLock;
+			self.ZLock = ZLock;
+		}
+	}
+
 	public override bool Primary( SceneTraceResult trace )
 	{
 		if ( !Input.Pressed( "attack1" ) )

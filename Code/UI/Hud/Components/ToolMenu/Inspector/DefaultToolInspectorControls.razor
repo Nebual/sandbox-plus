@@ -4,6 +4,19 @@
 @namespace Sandbox.UI
 
 <root class="controls">
+	@if (CurrentTool != null && CurrentTool.GetPresetOptions() is Dictionary<string, Action> presetOptions) {
+		<div class="control preset-dropdown-container">
+			<div class="control-header">
+				<label>Presets:</label>
+			</div>
+			<div class="preset-dropdown">
+				<DropDown
+					Options=@presetOptions.Keys.Select(x => new Option(x, x)).ToList()
+					ValueChanged=@((string _value) => { presetOptions[_value](); })
+				/>
+			</div>
+		</div>
+	}
 	@foreach (var property in TypeLibrary.GetSerializedObject(CurrentTool))
 	{
 		if (!property.HasAttribute<PropertyAttribute>() || property.PropertyType == typeof(Action)) continue;
@@ -83,3 +96,24 @@
 	protected override int BuildHash() => System.HashCode.Combine("");
 	public BaseTool CurrentTool { get; set; }
 }
+
+<style>
+.preset-dropdown-container {
+	label {
+		font-size: 16px;
+	}
+	.preset-dropdown {
+		min-width: 160px;
+		dropdown {
+			flex: 1;
+			padding: 10px 0;
+		}
+		.dropdown_indicator {
+			font-size: 20px;
+			background-color: #dfdfdf;
+			border-radius: 5px;
+			margin: 0 2px;
+		}
+	}
+}
+</style>

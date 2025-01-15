@@ -149,6 +149,11 @@ public abstract class BaseTool : Component
 	{
 	}
 
+	public virtual Dictionary<string, Action> GetPresetOptions()
+	{
+		return null;
+	}
+
 	public void DoAxisOverlay( SceneTraceResult trace, CameraComponent camera, bool DrawLabels = true )
 	{
 		if ( !trace.Hit || !trace.Body.IsValid() )
