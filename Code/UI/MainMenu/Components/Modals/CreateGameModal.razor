@@ -18,6 +18,13 @@
                 </Control>
             </FormGroup>
 
+	        <FormGroup>
+		        <Label>Password</Label>
+		        <Control>
+			        <TextEntry Value:bind="@Password" />
+		        </Control>
+	        </FormGroup>
+
             <FormGroup class="form-group">
                 <Label>Max Players</Label>
                 <Control>
@@ -54,6 +61,7 @@
 @code
 {
     LobbyConfig CurrentConfig;
+    String Password;
 
     public CreateGameModal()
     {
@@ -66,6 +74,8 @@
             };
 
         LaunchArguments.Map = "softsplit.gm_bigcity";
+
+        Password = "";
     }
 
     async void CreateGame()
@@ -91,6 +101,13 @@
             var sceneFile = mapPackage.GetMeta<SceneFile>("PrimaryAsset");
             sceneLoadOptions.SetScene(sceneFile);
             Scene.Load(sceneLoadOptions);
+        }
+
+        Password = Password.Trim();
+        if ( Password.Length > 0 )
+        {
+	        SandboxGameManager.Password = Password;
+	        Log.Info("Set sbox_password to *****");
         }
 
         sceneLoadOptions.SetScene("scenes/engine.scene");
