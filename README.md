@@ -1,25 +1,29 @@
 # SandboxPlus, an S&box Game
 
-Its built on top of [Sandbox Classic](https://github.com/Softsplit/sandbox) (which itself is a rewrite of Facepunch's Sandbox for the Scene system), with additions to make it more extendable (adding events, publicizing UI globals, etc), while staying unopinionated/light. The goal is "Gmod 2", replicating the functionality found in Gmod's Sandbox gamemode (with improvements).
+Play it on [sbox.game](https://sbox.game/wiremod/sandboxplus)!
 
-For the old version using the Entity system, see [2023-entity-system](https://github.com/Nebual/sandbox-plus/tree/2023-entity-system) branch.
+Its built on top of [Sandbox Classic](https://github.com/Softsplit/sandbox) (which itself is a rewrite of Facepunch's Sandbox for the Scene system), with additions to make it more extendable (adding events, publicizing UI globals, etc), while staying unopinionated/light. The goal is "Gmod 2", replicating the functionality found in Gmod's Sandbox gamemode (with improvements).
 
 ## Improvements over Facepunch/sandbox:
 
 ### Gameplay
 
 - It exists (since Facepunch deleted theirs)
-- Constraint tool: an omni-tool (like Precision Tool) with all your classic Gmod constraints (weld/axis/rope/elastic/slider/ballsocket) and nudge/rotate/move
+- Variety of Tools:
+- - Constraint tool: an omni-tool (like Precision Tool) with all your classic Gmod constraints (weld/axis/rope/elastic/slider/ballsocket) and nudge/rotate/move
+- - Duplicator
+- - Color & Material
+- - Physics Locking (eg. Keep Upright)
+- - Stacker
+- - Network Ownership changer
+- - Smartsnap grid overlay for all tools
+- - UI tool panels, including ModelSelector with extendable `.spawnlist`'s
 - Undo System
 - DynShapes spawnmenu: like PHX, but dynamic, fully customizable sizes using procedural meshes. Rectangles, cylinders, spheres, gears!
-- Material tool
-- Toolgun model
-- UI tool panels, including ModelSelector with extendable `.spawnlist`'s
+- Map changer menu
+- Physgun & Toolgun model
 - [Wirebox](https://github.com/wiremod/wirebox) support
-
-#### WIP (needs porting over from 2023-entity-system / CodeOld/)
-- Duplicator tool
-- [Many new events](EVENTS.md) (aiming to reproduce many of Gmod 1's), including "IPropSpawnedEvent" event, "undo.add" event
+- [Many new events](EVENTS.md) (aiming to reproduce many of Gmod 1's)
 
 ## Addons for SandboxPlus
 
@@ -28,6 +32,8 @@ For the old version using the Entity system, see [2023-entity-system](https://gi
 - ~~[Sbox Tool Auto](https://github.com/Nebual/sbox_tool_auto)~~ outdated, which is a simple example addon recreating gmod_tool_auto behaviour
 - ~~[AdminEssentials](https://asset.party/ryan/adminessentials)~~ outdated, non-gamemode-specific, non-open-source.
 - ~~[Napkins-Chat](https://github.com/Nebual/napkins-chat)~~ outdated
+
+For the old version using the Entity system, see [2023-entity-system](https://github.com/Nebual/sandbox-plus/tree/2023-entity-system) branch.
 
 ### Libraries
 
