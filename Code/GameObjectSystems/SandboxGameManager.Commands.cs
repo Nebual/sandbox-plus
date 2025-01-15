@@ -2,6 +2,8 @@ using Sandbox.Events;
 
 public partial class SandboxGameManager
 {
+	public static Dictionary<string, string> ModelToPackage = new();
+
 	[ConCmd( "spawn" )]
 	public static void Spawn( string modelname )
 	{
@@ -93,21 +95,43 @@ public partial class SandboxGameManager
 		var model = package.GetMeta( "PrimaryAsset", "models/dev/error.vmdl" );
 
 		// Download and mount the package (if needed)
-		using ( Rpc.FilterExclude( c => c == Connection.Local ) )
-			BroadcastMount( packageName ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
-		await package.MountAsync();
+		await BroadcastMount(package);
 
 		return model;
 	}
 
+	public static async Task<Package> BroadcastMount( string packageName )
+	{
+		// start the RPC asap because ideally everyone loads the package at the same time
+		using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+			_BroadcastMount( packageName ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
+		var package = await Package.Fetch( packageName, true );
+		await _MountPackage(package);
+		return package;
+	}
+	public static async Task<Package> BroadcastMount( Package package )
+	{
+		using ( Rpc.FilterExclude( c => c == Connection.Local ) )
+			_BroadcastMount( package.FullIdent ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
+		await _MountPackage(package);
+		return package;
+	}
+
 	[Rpc.Broadcast]
-	public static void BroadcastMount( string packageName )
+	private static void _BroadcastMount( string packageName )
 	{
 		GameTask.MainThread().OnCompleted( async () =>
 		{
 			var package = await Package.Fetch( packageName, true );
-			await package.MountAsync();
+			await _MountPackage(package);
 		} );
+	}
+
+	private static async Task _MountPackage( Package package)
+	{
+		var modelPath = package.GetMeta<string>( "PrimaryAsset" );
+		ModelToPackage[modelPath] = package.FullIdent;
+		await package.MountAsync();
 	}
 
 	[ConCmd( "changemap" )]

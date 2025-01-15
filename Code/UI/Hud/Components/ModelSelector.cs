@@ -134,10 +134,7 @@ namespace Sandbox.UI
 				return;
 			}
 
-			using ( Rpc.FilterExclude( c => c == Connection.Local ) )
-				SandboxGameManager.BroadcastMount( model ); // broadcast the mount to everyone else (local player has to await it, so can't wait for RPC)
-
-			await package.MountAsync();
+			await SandboxGameManager.BroadcastMount( package );
 			model = package.GetCachedMeta( "SingleAssetSource", "" );
 			if ( model == "" )
 			{

@@ -218,7 +218,11 @@ public partial class PropHelper
 		// Sandbox.Joint's only work with GameObjects, so we need to get the Bone's GameObject
 		if ( bone > -1 && go.GetComponent<SkinnedModelRenderer>() is SkinnedModelRenderer skinnedModelRenderer )
 		{
-			return skinnedModelRenderer.GetBoneObject( bone );
+			var boneObj = skinnedModelRenderer.GetBoneObject( bone );
+			if ( boneObj.IsValid() )
+			{
+				return boneObj;
+			}
 		}
 		return go;
 	}

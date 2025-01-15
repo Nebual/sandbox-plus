@@ -94,6 +94,10 @@ namespace SandboxPlus
 			{
 				bn.Write( v.x ); bn.Write( v.y ); bn.Write( v.z );
 			}
+			void writeVector4( Vector4 v )
+			{
+				bn.Write( v.x ); bn.Write( v.y ); bn.Write( v.z ); bn.Write( v.w );
+			}
 			void writeRotation( Rotation r )
 			{
 				bn.Write( r.x ); bn.Write( r.y ); bn.Write( r.z ); bn.Write( r.w );
@@ -124,6 +128,10 @@ namespace SandboxPlus
 						bn.Write( (byte)4 );
 						bn.Write( ent.Id.GetHashCode() ); // todo: maybe store as a bigint instead
 						break;
+					case Vector4 v:
+						bn.Write( (byte)5 );
+						writeVector4( v );
+						break;
 					default:
 						throw new Exception( "Invalid userdata " + o.GetType() );
 				}
@@ -132,11 +140,15 @@ namespace SandboxPlus
 			void writeEntity( DuplicatorData.DuplicatorItem ent )
 			{
 				bn.Write( ent.index );
-				writeString( "" ); // todo remove from v2
+				writeString( ent.packageId );
 				writeString( ent.model );
 				writeVector( ent.position );
 				writeRotation( ent.rotation );
+				writeVector( ent.scale );
+				writeVector4( ent.color );
+				bn.Write( ent.mass );
 				bn.Write( ent.frozen );
+
 				bn.Write( ent.components.Count );
 				foreach ( var o in ent.components )
 				{
@@ -214,6 +226,10 @@ namespace SandboxPlus
 			protected Vector3 readVector()
 			{
 				return new Vector3( bn.ReadSingle(), bn.ReadSingle(), bn.ReadSingle() ); // Args eval left to right in C#
+			}
+			protected Vector4 readVector4()
+			{
+				return new Vector4( bn.ReadSingle(), bn.ReadSingle(), bn.ReadSingle(), bn.ReadSingle() ); // Args eval left to right in C#
 			}
 			protected Rotation readRotation()
 			{
@@ -302,10 +318,13 @@ namespace SandboxPlus
 			{
 				DuplicatorData.DuplicatorItem ret = new DuplicatorData.DuplicatorItem();
 				ret.index = bn.ReadInt32();
-				readString();
+				ret.packageId = readString();
 				ret.model = readString();
 				ret.position = readVector();
 				ret.rotation = readRotation();
+				ret.scale = readVector();
+				ret.color = readVector4();
+				ret.mass = bn.ReadSingle();
 				ret.frozen = bn.ReadBoolean();
 				for ( int i = 0, end = Math.Min( bn.ReadInt32(), 1024 ); i < end; ++i )
 				{
@@ -376,9 +395,13 @@ namespace SandboxPlus
 		public class DuplicatorItem
 		{
 			public int index;
-			public string model;
+			public string packageId;
+			public string model = "";
 			public Vector3 position;
 			public Rotation rotation;
+			public Vector3 scale = Vector3.One;
+			public Vector4 color = Color.White;
+			public float mass;
 			public bool frozen;
 			public List<DuplicatorComponent> components = new();
 			public DuplicatorItem() { }
@@ -386,12 +409,21 @@ namespace SandboxPlus
 			{
 				index = ent.Id.GetHashCode();
 				if ( ent.GetComponent<ModelRenderer>() is ModelRenderer p )
+				{
 					model = p.Model.Name;
-				else
-					model = "";
+					packageId = SandboxGameManager.ModelToPackage.GetValueOrDefault( model, "" );
+				}
 				position = origin.PointToLocal( ent.WorldPosition );
 				rotation = origin.RotationToLocal( ent.WorldRotation );
-				frozen = ent.GetComponent<Rigidbody>()?.PhysicsBody?.BodyType == PhysicsBodyType.Static;
+				scale = ent.WorldScale;
+				var renderer = ent.GetComponent<ModelRenderer>();
+				if ( renderer.IsValid() )
+				{
+					color = renderer.Tint;
+				}
+				var rigidBody = ent.GetComponent<Rigidbody>();
+				mass = rigidBody?.MassOverride ?? 0;
+				frozen = rigidBody?.PhysicsBody?.BodyType == PhysicsBodyType.Static;
 
 				foreach ( var comp in ent.GetComponents<IDuplicatable>() )
 				{
@@ -414,11 +446,18 @@ namespace SandboxPlus
 				{
 					WorldPosition = origin.PointToWorld( position ),
 					WorldRotation = origin.RotationToWorld( rotation ),
+					WorldScale = scale,
+					Tags = { "solid" },
 				};
 				var prop = go.AddComponent<Prop>();
 				prop.Model = Model.Load( model );
 
 				var propHelper = go.GetOrAddComponent<PropHelper>();
+				var renderer = go.GetComponent<ModelRenderer>();
+				if ( renderer.IsValid() )
+				{
+					renderer.Tint = color;
+				}
 				var rigidBody = go.GetComponent<Rigidbody>();
 				rigidBody.PhysicsBody.BodyType = PhysicsBodyType.Static;
 
@@ -427,6 +466,8 @@ namespace SandboxPlus
 					if ( go.Components.Create( TypeLibrary.GetType( comp.TypeName ) ) is IDuplicatable dupe )
 						dupe.PostDuplicatorPaste( comp.Data );
 				}
+				go.Network.SetOwnerTransfer( OwnerTransfer.Takeover );
+				go.Network.SetOrphanedMode( NetworkOrphaned.Host );
 				go.NetworkSpawn();
 				return go;
 			}
@@ -442,8 +483,8 @@ namespace SandboxPlus
 			public ConstraintType type;
 			public int entIndex1;
 			public int entIndex2;
-			public int bone1;
-			public int bone2;
+			public int bone1 = -1;
+			public int bone2 = -1;
 			public Transform anchor1;
 			public Transform anchor2;
 			public bool collisions;
@@ -468,6 +509,7 @@ namespace SandboxPlus
 				anchor2 = joint.Point2.LocalTransform;
 				entIndex1 = joint.Body1.GetGameObject().Id.GetHashCode();
 				entIndex2 = joint.Body2.GetGameObject().Id.GetHashCode();
+				// todo: bones, ragdolls
 				collisions = joint.EnableCollision;
 				type = joint.GetConstraintType();
 				if ( type == ConstraintType.Weld ) { }
@@ -509,6 +551,11 @@ namespace SandboxPlus
 			{
 				var ent1 = spawnedEnts[entIndex1];
 				var ent2 = spawnedEnts[entIndex2];
+				if ( !ent1.IsValid() || !ent2.IsValid() )
+				{
+					Log.Warning( $"Duplicator: Failed to spawn {type}, missing entities" );
+					return;
+				}
 				var anchor1World = ent1.Transform.World.ToWorld( anchor1 );
 				var anchor2World = ent2.Transform.World.ToWorld( anchor2 );
 
@@ -552,6 +599,7 @@ namespace SandboxPlus
 			}
 		}
 
+		public string version = "1";
 		public string name = "";
 		public string author = "";
 		public string date = "";
@@ -585,7 +633,7 @@ namespace SandboxPlus
 		Transform origin;
 		Stopwatch timeUsed = new Stopwatch();
 		Stopwatch timeElapsed = new Stopwatch();
-		Dictionary<int, GameObject> entList = new();
+		public Dictionary<int, GameObject> entList = new();
 		Dictionary<int, DuplicatorData.DuplicatorItem> entData = new();
 		public DuplicatorPasteJob Init( Player owner_, DuplicatorData data_, Transform origin_ )
 		{
@@ -593,6 +641,11 @@ namespace SandboxPlus
 			data = data_;
 			origin = origin_;
 			timeElapsed.Start();
+			foreach ( var entData in data.entities )
+			{
+				if ( entData.packageId != "" )
+					_ = SandboxGameManager.BroadcastMount( entData.packageId );
+			}
 			return this;
 		}
 
@@ -658,14 +711,6 @@ namespace SandboxPlus
 					}
 				}
 
-				UndoSystem.Add( creator: owner, () =>
-				{
-					foreach ( var ent in entList.Values )
-					{
-						ent.Destroy();
-					}
-					return $"Removed duplicator paste {data.name}";
-				} );
 				return false;
 			}
 		}
@@ -917,6 +962,21 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 				Tags = { "duplicatorPasteJob" }
 			};
 			Pasting[Owner] = goPaste.AddComponent<DuplicatorPasteJob>().Init( Owner, Selected, new Transform( tr.EndPosition + new Vector3( 0, 0, PasteHeightOffset ) ) );
+			var dupeName = Selected.name;
+			var entList = Pasting[Owner].entList;
+			UndoSystem.Add( creator: Owner, () =>
+			{
+				foreach ( var ent in entList.Values )
+				{
+					ent?.Destroy();
+				}
+				if ( goPaste.IsValid() && Pasting[Owner] == goPaste.GetComponent<DuplicatorPasteJob>() )
+				{
+					goPaste.Destroy();
+					Pasting.Remove( Owner );
+				}
+				return $"Removed duplicator paste {dupeName}";
+			} );
 			Analytics.Increment( "duplicator.paste" );
 		}
 
