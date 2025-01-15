@@ -785,7 +785,7 @@ namespace SandboxPlus
 
 					if ( ent.GetComponent<Rigidbody>() is Rigidbody rigidBody && rigidBody.PhysicsBody.IsValid() )
 					{
-						if ( !entData[index].frozen )
+						if ( !entData[index].frozen || true ) // temp: always unfreeze to workaround https://github.com/Facepunch/sbox-issues/issues/7371
 						{
 							// Enable physics after all entities are spawned, except for saved-as-frozen ents
 							rigidBody.PhysicsBody.BodyType = PhysicsBodyType.Dynamic;
@@ -800,7 +800,7 @@ namespace SandboxPlus
 		protected override void OnFixedUpdate()
 		{
 			timeUsed.Start();
-			while ( checkTime() )
+			while ( checkTime() || spawnedConstraints > 0 ) // temp: do all constraints (and the unfreeze) in 1 tick to workaround https://github.com/Facepunch/sbox-issues/issues/7371
 			{
 				if ( !next() )
 				{
