@@ -60,7 +60,7 @@ namespace Sandbox.Tools
 				}
 				else if ( Input.Pressed( "reload" ) )
 				{
-					ConsoleSystem.Run( "tool_material_materialindex", "-1" ); // for now, until there's ui
+					ConsoleSystem.SetValue( "tool_material_materialindex", "-1" ); // for now, until there's ui
 					modelEnt.SetClientMaterialOverride( "" );
 
 					Parent.ToolEffects( tr.EndPosition, tr.Normal );

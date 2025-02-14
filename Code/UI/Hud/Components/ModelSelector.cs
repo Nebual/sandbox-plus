@@ -155,11 +155,11 @@ namespace Sandbox.UI
 
 			if ( ConsoleSystem.GetValue( $"{tool}_model" ) != null )
 			{
-				ConsoleSystem.Run( $"{tool}_model", model );
+				ConsoleSystem.SetValue( $"{tool}_model", model );
 			}
 			if ( ConsoleSystem.GetValue( $"{tool}_materialgroup" ) != null )
 			{
-				ConsoleSystem.Run( $"{tool}_materialgroup", materialGroup );
+				ConsoleSystem.SetValue( $"{tool}_materialgroup", materialGroup );
 			}
 		}
 

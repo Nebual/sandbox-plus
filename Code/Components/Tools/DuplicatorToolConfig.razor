@@ -33,7 +33,7 @@
 		Label="AreaCopy Range"
 		Min=@(50)
 		Max=@(2000)
-		OnValueChanged=@((float val) => ConsoleSystem.Run("tool_duplicator_area_size", ((int)val).ToString()))
+		OnValueChanged=@((float val) => ConsoleSystem.SetValue("tool_duplicator_area_size", ((int)val).ToString()))
 		Value=@(float.Parse(ConsoleSystem.GetValue("tool_duplicator_area_size", "250")))
 		style="margin-top: 20px;"
 	/>

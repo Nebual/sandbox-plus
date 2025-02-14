@@ -95,7 +95,7 @@
 @code {
 	public void OnTypeClicked(ConstraintType constraintType)
 	{
-		ConsoleSystem.Run( "tool_constraint_type " + constraintType.ToString() );
+		ConsoleSystem.SetValue( "tool_constraint_type", constraintType.ToString() );
 	}
 
 	public bool IsTypeNocollide()

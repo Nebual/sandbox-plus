@@ -83,7 +83,7 @@ public partial class Player
 
 		if ( tool.StartsWith( "tool_" ) )
 		{
-			ConsoleSystem.Run( "tool_current", tool );
+			ConsoleSystem.SetValue( "tool_current", tool );
 			ConsoleSystem.Run( "weapon_switch", "weapon_tool" );
 		}
 		else

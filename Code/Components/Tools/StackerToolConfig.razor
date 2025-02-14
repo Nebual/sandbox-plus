@@ -99,7 +99,7 @@
 @code {
 	public void OnSelectorClicked(string convarName, string selected)
 	{
-		ConsoleSystem.Run( convarName + " " + selected );
+		ConsoleSystem.SetValue( convarName, selected );
 
         StateHasChanged();
 	}
@@ -118,9 +118,9 @@
 
     public void ResetOffsets() 
     {
-		ConsoleSystem.Run( "tool_stacker_x_offset 0" );
-		ConsoleSystem.Run( "tool_stacker_y_offset 0" );
-		ConsoleSystem.Run( "tool_stacker_z_offset 0" );
+		ConsoleSystem.SetValue( "tool_stacker_x_offset", "0" );
+		ConsoleSystem.SetValue( "tool_stacker_y_offset", "0" );
+		ConsoleSystem.SetValue( "tool_stacker_z_offset", "0" );
 
 		ResyncSlidersToConvars();
         StateHasChanged();
@@ -128,9 +128,9 @@
 
     public void ResetAngles() 
     {
-		ConsoleSystem.Run( "tool_stacker_pitch_offset 0" );
-		ConsoleSystem.Run( "tool_stacker_yaw_offset 0" );
-		ConsoleSystem.Run( "tool_stacker_roll_offset 0" );
+		ConsoleSystem.SetValue( "tool_stacker_pitch_offset", "0" );
+		ConsoleSystem.SetValue( "tool_stacker_yaw_offset", "0" );
+		ConsoleSystem.SetValue( "tool_stacker_roll_offset", "0" );
 
 		ResyncSlidersToConvars();
         StateHasChanged();

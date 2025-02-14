@@ -84,7 +84,7 @@
 
 	void GiveTool(ToolInfo tool)
 	{
-		ConsoleSystem.Run("tool_current", tool.Name);
+		ConsoleSystem.SetValue("tool_current", tool.Name);
 		ConsoleSystem.Run("weapon_switch", "weapon_tool");
 	}
 

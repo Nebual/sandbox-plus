@@ -927,7 +927,7 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 		{
 			if ( Instance is null )
 			{
-				ConsoleSystem.Run( "tool_current tool_duplicator" );
+				ConsoleSystem.SetValue( "tool_current", "tool_duplicator" );
 			}
 			Instance.ReceiveDuplicatorData( FileSystem.OrganizationData.ReadAllBytes( "dupes/" + path ).ToArray() );
 			Analytics.Increment( "duplicator.load" );
@@ -938,7 +938,7 @@ Secondary: Copy contraption (shift for area copy)", Group = "construction" )]
 		{
 			if ( Instance is null )
 			{
-				ConsoleSystem.Run( "tool_current tool_duplicator" );
+				ConsoleSystem.SetValue( "tool_current", "tool_duplicator" );
 			}
 			Instance.SaveDuplicatorData( path );
 			Analytics.Increment( "duplicator.save" );

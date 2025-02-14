@@ -163,7 +163,7 @@
 
         if (Convar != "")
         {
-            ConsoleSystem.Run(Convar, ((float)Value).ToString());
+            ConsoleSystem.SetValue(Convar, ((float)Value).ToString());
         }
         OnValueChanged?.Invoke(Value);
     }
@@ -184,7 +184,7 @@
 		Value = float.Parse(value);
         if (Convar != "")
         {
-            ConsoleSystem.Run(Convar, value);
+            ConsoleSystem.SetValue(Convar, value);
         }
         OnValueChanged?.Invoke(Value);
 	}

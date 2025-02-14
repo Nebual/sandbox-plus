@@ -64,7 +64,7 @@ namespace Sandbox.UI
 					var currentTool = ConsoleSystem.GetValue( "tool_current" );
 					if ( ConsoleSystem.GetValue( $"{currentTool}_material" ) != null )
 					{
-						ConsoleSystem.Run( $"{currentTool}_material", file );
+						ConsoleSystem.SetValue( $"{currentTool}_material", file );
 					}
 				} );
 			};

@@ -15,7 +15,7 @@
 			}
 			private set
 			{
-				ConsoleSystem.Run( "tool_constraint_type", value.ToString() );
+				ConsoleSystem.SetValue( "tool_constraint_type", value.ToString() );
 			}
 		}
 

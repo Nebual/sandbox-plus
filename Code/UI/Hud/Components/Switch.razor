@@ -62,7 +62,7 @@
         Value = !Value;
         if (Convar != "")
         {
-            ConsoleSystem.Run( Convar, Value ? "1" : "0" );
+            ConsoleSystem.SetValue( Convar, Value ? "1" : "0" );
         }
         OnValueChanged?.Invoke( Value );
         e.StopPropagation();
