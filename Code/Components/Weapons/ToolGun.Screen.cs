@@ -47,7 +47,7 @@ partial class ToolGun
 			WorldModel.SceneObject.Attributes.Set( "screenTexture", screenTexture );
 		}
 
-		if ( ViewModel.Renderer.SceneObject.IsValid() )
+		if ( ViewModel?.Renderer?.SceneObject.IsValid() == true )
 		{
 			ViewModel.Renderer.SceneObject.Batchable = false;
 			ViewModel.Renderer.SceneObject.Attributes.Set( "screenTexture", screenTexture );
@@ -55,6 +55,7 @@ partial class ToolGun
 	}
 	private void ToolgunScreenRender( SceneObject sceneObject )
 	{
+		if (screenTexture == null) return;
 		Graphics.RenderTarget = RenderTarget.From( screenTexture );
 		Graphics.Attributes.SetCombo( "D_WORLDPANEL", 0 );
 		Graphics.Viewport = new Rect( 0, screenPanel.PanelBounds.Size );

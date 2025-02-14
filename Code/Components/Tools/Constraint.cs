@@ -139,6 +139,9 @@
 
 			if ( stage == ConstraintToolStage.Waiting )
 			{
+				if ( !trace.Body.IsValid() )
+					return false;
+
 				trace1 = trace;
 				localTransform1 = trace1.Body.Transform.ToLocal( new Transform(
 					Input.Down( "run" ) ? trace1.Body.MassCenter : trace1.HitPosition,

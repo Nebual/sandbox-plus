@@ -5,21 +5,31 @@
 
 <root class="utility-panel">
 	<label class="description">Player Model</label>
-	<button class="btn" onclick=@(TogglePlayerModelType)>Toggle Player Model Humanity (@(dresser.UseHumanModel ? "Human" : "Citizen"))</button>
+	<button class="btn" onclick=@(TogglePlayerModelType)>Toggle Player Model Humanity (@(dresser?.UseHumanModel == true ? "Human" : "Citizen"))</button>
 
     <label class="description">Physgun Sound</label>
-	<button class="btn" onclick=@(TogglePhysgunSound)>Toggle Physgun Sound (@(Player.Local.Settings.UsePhysgunSound ? "On" : "Off"))</button>
+	<button class="btn" onclick=@(TogglePhysgunSound)>Toggle Physgun Sound (@(Player.Local?.Settings.UsePhysgunSound == true ? "On" : "Off"))</button>
 </root>
 
 @code
 {
-    PlayerDresser dresser { get; set; } = Player.Local.Body.GetComponent<PlayerDresser>();
+	PlayerDresser _dresser;
+	PlayerDresser dresser
+	{
+		get
+		{
+			if (!_dresser.IsValid()) _dresser = Player.Local?.Body?.GetComponent<PlayerDresser>();
+			return _dresser;
+		}
+		set
+		{
+			_dresser = value;
+		}
+	}
 
 	void TogglePlayerModelType()
 	{
-        if(dresser == null) dresser = Player.Local.Body.GetComponent<PlayerDresser>();
-
-		dresser.ChangePlayerModelType(!dresser.UseHumanModel);
+		dresser?.ChangePlayerModelType(!dresser.UseHumanModel);
 	}
 
     void TogglePhysgunSound() {

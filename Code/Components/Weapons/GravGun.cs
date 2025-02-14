@@ -232,7 +232,7 @@ public partial class GravGun : BaseWeapon, IPlayerEvent
 
 		if ( bodyIndex > -1 && gameObject.Components.TryGet<ModelPhysics>( out var modelPhysics ) )
 		{
-			body = modelPhysics.PhysicsGroup.Bodies.ElementAt( bodyIndex );
+			body = modelPhysics.PhysicsGroup.Bodies.ElementAtOrDefault( bodyIndex );
 		}
 		else if ( gameObject.Components.TryGet<Rigidbody>( out var rigidbody ) )
 		{
