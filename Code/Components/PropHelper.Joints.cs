@@ -43,6 +43,7 @@ public partial class PropHelper
 
 		AddJointToList( hingeJoint );
 		to.Components.Get<PropHelper>()?.AddJointToList( hingeJoint );
+		CheckCarAchievement( to.GetComponent<PropHelper>() );
 
 		return hingeJoint;
 	}
@@ -258,6 +259,14 @@ public partial class PropHelper
 		var propHelper1 = joint?.GameObject?.GetComponentInParent<PropHelper>();
 		var propHelper2 = joint?.Body?.GetComponentInParent<PropHelper>();
 		return (propHelper1?.GameObject == this.GameObject && propHelper2?.GameObject == to) || (propHelper2?.GameObject == this.GameObject && propHelper1?.GameObject == to);
+	}
+
+	private void CheckCarAchievement( PropHelper propHelper2 )
+	{
+		if ( this.Joints.Count( x => x.GetConstraintType() == ConstraintType.Axis ) == 4 || (propHelper2.IsValid() && propHelper2.Joints.Count( x => x.GetConstraintType() == ConstraintType.Axis ) == 4) )
+		{
+			Analytics.UnlockAchievement( "myfirstcar" );
+		}
 	}
 }
 

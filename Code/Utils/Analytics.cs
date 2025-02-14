@@ -19,5 +19,14 @@ namespace SandboxPlus
 		{
 			Increment( name, amount, context, data );
 		}
+
+		public static void UnlockAchievement( string ident )
+		{
+			if ( !EnableAnalytics )
+			{
+				return;
+			}
+			Sandbox.Services.Achievements.Unlock( ident );
+		}
 	}
 }
