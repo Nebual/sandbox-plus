@@ -119,11 +119,13 @@ public class Thruster : BaseTool
 		Rigidbody targetBody = trace.GameObject.GetComponent<Rigidbody>();
 		if ( targetBody.IsValid() )
 		{
+			thruster.TargetObject = targetBody.GameObject;
 			thruster.TargetBody = targetBody;
 		}
 		else
 		{
 			var rigid = go.GetOrAddComponent<Rigidbody>();
+			thruster.TargetObject = go;
 			thruster.TargetBody = rigid;
 		}
 

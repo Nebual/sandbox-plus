@@ -1,12 +1,14 @@
 ﻿[Library( "ent_thruster", Title = "Thruster" )]
 public partial class ThrusterComponent : BaseWireInputComponent, Component.IPressable, IDuplicatable
 {
-	[Property] public float ForceMultiplier { get; set; } = 100.0f;
+	[Property, Sync] public float ForceMultiplier { get; set; } = 100.0f;
 	[Property] public float Force = 0f;
 	[Property] public bool IsForward { get; set; } = true;
-	[Property] public bool Massless { get; set; } = true;
+	[Property, Sync] public bool Massless { get; set; } = true;
 
-	public Rigidbody TargetBody { get; set; }
+	// can't sync a rigidbody, so sync its GameObject instead
+	[Property, Sync] public GameObject TargetObject { get; set; }
+	[Property] public Rigidbody TargetBody { get; set; }
 	private LegacyParticleSystem effects;
 
 	protected bool On
@@ -85,8 +87,13 @@ public partial class ThrusterComponent : BaseWireInputComponent, Component.IPres
 	{
 		if ( !Force.AlmostEqual( 0 ) )
 		{
+			if ( !TargetObject.IsValid() )
+			{
+				TargetBody = TargetObject.GetComponent<Rigidbody>();
+			}
 			if ( !TargetBody.IsValid() )
 			{
+				TargetObject = GameObject;
 				TargetBody = GetComponent<Rigidbody>();
 				On = false;
 			}
@@ -115,7 +122,7 @@ public partial class ThrusterComponent : BaseWireInputComponent, Component.IPres
 			{ "IsForward", IsForward },
 			{ "Massless", Massless },
 			{ "ForceMultiplier", ForceMultiplier },
-			{ "TargetBody", TargetBody.GameObject.Id.GetHashCode() },
+			{ "TargetObject", TargetObject.Id.GetHashCode() },
 		};
 	}
 	void IDuplicatable.PostDuplicatorPasteEntities( Dictionary<int, GameObject> entities, Dictionary<string, object> data )
@@ -128,9 +135,10 @@ public partial class ThrusterComponent : BaseWireInputComponent, Component.IPres
 		IsForward = (bool)data["IsForward"];
 		Massless = (bool)data["Massless"];
 		ForceMultiplier = (float)data["ForceMultiplier"];
-		if ( data.TryGetValue( "TargetBody", out var targetBody ) )
+		if ( data.TryGetValue( "TargetBody", out var targetObject ) )
 		{
-			TargetBody = entities[(int)targetBody]?.GetComponent<Rigidbody>();
+			TargetObject = entities[(int)targetObject];
+			TargetBody = TargetObject?.GetComponent<Rigidbody>();
 		}
 	}
 }
