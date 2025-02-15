@@ -16,8 +16,11 @@ namespace Sandbox.Tools
 			var prop = tr.GameObject.GetComponent<PropHelper>();
 			if ( prop.IsValid() )
 			{
-				Clipboard.SetText(prop.Prop.Model.Name);
-				message += $" {prop.Prop.Model.Name},\n";
+				if ( prop.Prop.IsValid() && prop.Prop.Model.IsValid() )
+				{
+					Clipboard.SetText( prop.Prop.Model.Name );
+					message += $" {prop.Prop.Model.Name},\n";
+				}
 				var rigidBody = tr.GameObject.GetComponent<Rigidbody>();
 				if ( rigidBody.IsValid() && rigidBody.MassOverride > 0 )
 				{

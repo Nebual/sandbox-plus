@@ -130,7 +130,8 @@ public partial class SandboxGameManager
 	private static async Task _MountPackage( Package package)
 	{
 		var modelPath = package.GetMeta<string>( "PrimaryAsset" );
-		ModelToPackage[modelPath] = package.FullIdent;
+		if ( modelPath != null )
+			ModelToPackage[modelPath] = package.FullIdent;
 		await package.MountAsync();
 	}
 

@@ -129,7 +129,7 @@
 
 			Vector3.Lerp( lastBeamPos, tr.EndPosition, Time.Delta * 10 );
 
-			if ( beam.IsValid() )
+			if ( beam?.IsValid() == true )
 				beam?.SceneObject.SetControlPoint( 1, lastBeamPos );
 
 			endNoHit ??= Particles.MakeParticleSystem( "particles/physgun_end_nohit.vpcf", new Transform( lastBeamPos ), 0 );
@@ -152,7 +152,7 @@
 
 	void INetworkListener.OnDisconnected( Connection channel )
 	{
-		if ( channel == Owner.Network.Owner )
+		if ( channel == Owner.Network.Owner && this.IsValid() )
 			KillEffects();
 	}
 }

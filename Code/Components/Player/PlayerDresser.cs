@@ -20,6 +20,7 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 	private static void LoadClothes(Guid connectionId)
 	{
 		var owner = Connection.Find(connectionId);
+		if ( owner == null ) return;
 		var serializedClothes = owner.GetUserData("avatar"); // only host knows this
 		Player.FindPlayerByConnection(owner)
 			.GetComponentInChildren<PlayerDresser>()
