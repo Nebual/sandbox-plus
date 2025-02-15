@@ -29,6 +29,17 @@
 	string SelectedFolder = "";
 	string SearchQuery = "";
 	List<Model> ModelList = new();
+	List<string> BlockedModels = new()
+	{
+		"models/avatareditorscene.vmdl_c",
+		"models/citizen_human/heads/citizen_human_malehead01/citizen_human_malehead01.vmdl_c",
+		"models/citizen_human/citizen_human_female_staging.vmdl_c",
+		"models/citizen_human/citizen_human_male_staging.vmdl_c",
+		"models/hammer/env_sea.vmdl_c",
+		"models/hand_adapter_valvebiped_to_sbox/hand_adapter_valvebiped_to_sbox.vmdl_c",
+		"materials/models/editor/point_aimat.vmdl_c",
+		"materials/models/editor/proxy_helper.vmdl_c",
+	};
 
 	protected override void OnAfterTreeRender(bool firstTime)
 	{
@@ -58,12 +69,14 @@
 		var files = FileSystem.Mounted.FindFile(SelectedFolder, "*.vmdl_c", true);
 		foreach (var file in files)
 		{
+			if (BlockedModels.Contains(file)) continue;
 			if (string.IsNullOrWhiteSpace(file)) continue;
 			if (string.IsNullOrWhiteSpace(SearchQuery))
 			{
 				if (file.Contains("_lod0")) continue;
-				if (file.Contains("clothes")) continue;
-				if (file.Contains("_gib")) continue;
+				if (file.Contains("clothes") || file.StartsWith("models/citizen/skin/")) continue;
+				if (file.Contains("_gib") || file.Contains("/piece")) continue;
+				if (file.StartsWith("models/dev") || file.StartsWith("models/editor") || file.StartsWith("models/vr") || file.StartsWith("models/first_person")) continue;
 			}
 			else
 			{
