@@ -43,21 +43,26 @@ public static class ThumbnailCache
 
 		var sceneWorld = new SceneWorld();
 		var sceneModel = new SceneModel( sceneWorld, model, new() );
-		var sceneCamera = new SceneCamera();
-		var sceneLight = new SceneDirectionalLight( sceneWorld, Rotation.From( 45, 45, 0 ), Color.White );
-		sceneCamera.World = sceneWorld;
-		sceneCamera.Rotation = Rotation.From( 25, -45, 0 );
 		sceneModel.Rotation = Rotation.From( 0, 180, 0 );
-
-		var bounds = sceneModel.Bounds;
+		var bounds = sceneModel.LocalBounds;
 		var center = bounds.Center;
-		var distance = bounds.Size.Length * 0.8f;
+
+		var sceneCamera = new SceneCamera();
+		sceneCamera.World = sceneWorld;
+		sceneCamera.Rotation = Rotation.From( 25, 220, 0 );
+		sceneCamera.FieldOfView = 30.0f;
+		var distance = MathX.SphereCameraDistance( bounds.Size.Length * 0.4f, sceneCamera.FieldOfView );
 		sceneCamera.Position = center + sceneCamera.Rotation.Backward * distance;
+		var right = sceneCamera.Rotation.Right;
+
+		var sceneLight = new SceneLight( sceneWorld, sceneCamera.Position + Vector3.Up * 500.0f + right * 100.0f, 1000.0f, new Color( 1.0f, 0.9f, 0.9f ) * 50.0f );
+		var sceneCubemap = new SceneCubemap( sceneWorld, Texture.Load( "textures/cubemaps/default2.vtex" ), BBox.FromPositionAndSize( Vector3.Zero, 1000 ) );
 
 		var texture = Texture.CreateRenderTarget().WithSize( 128, 128 ).Create();
 		Graphics.RenderToTexture( sceneCamera, texture );
 		cache[model] = texture;
 
+		sceneCubemap.Delete();
 		sceneLight.Delete();
 		sceneCamera.Dispose();
 		sceneModel.Delete();
