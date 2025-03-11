@@ -62,6 +62,16 @@ public static class ThumbnailCache
 		Graphics.RenderToTexture( sceneCamera, texture );
 		cache[model] = texture;
 
+		// currently only useful for committing more spawnicons to git
+		// ideally we'd be able to cache these clientside, but loading textures from FileSystem.OrganizationData while they generate seems to throw warnings
+		if ( false )
+		{
+			Log.Info( $"Generated thumbnail for {model.ResourcePath}" );
+			FileSystem.OrganizationData.CreateDirectory( System.IO.Path.GetDirectoryName( "spawnicons/" + model.ResourcePath + "_c.png" ) );
+			var stream = FileSystem.OrganizationData.OpenWrite( "spawnicons/" + model.ResourcePath + "_c.png" );
+			stream.Write( texture.GetBitmap( 0 ).ToPng() );
+		}
+
 		sceneCubemap.Delete();
 		sceneLight.Delete();
 		sceneCamera.Dispose();

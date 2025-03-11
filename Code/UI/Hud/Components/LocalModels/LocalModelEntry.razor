@@ -3,7 +3,7 @@
 @namespace Sandbox.UI
 
 <root class="cell" onclick=@Spawn Tooltip=@Model.ResourcePath>
-	<Image Texture=@(Texture.Load(FileSystem.Mounted, $"/{Model.ResourcePath}_c.png", false) ?? ThumbnailCache.Get(Model)) />
+	<Image Texture=@(GetTexture(Model)) />
 </root>
 
 @code
@@ -21,5 +21,12 @@
 		ConsoleSystem.Run("spawn", Model.ResourcePath);
 	}
 
-	protected override int BuildHash() => System.HashCode.Combine(ThumbnailCache.Get(Model));
+	protected override int BuildHash() => System.HashCode.Combine(GetTexture(Model));
+
+	protected Texture GetTexture(Model Model)
+	{
+		return Texture.Load(FileSystem.Mounted, $"/{Model.ResourcePath}_c.png", false)
+			@* ?? Texture.Load(FileSystem.OrganizationData, $"/spawnicons/{Model.ResourcePath}_c.png", false) *@
+			?? ThumbnailCache.Get(Model);
+	}
 }
