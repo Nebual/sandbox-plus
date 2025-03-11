@@ -116,7 +116,7 @@
                   "rotations": {}
                 },
                 "RenderOptions": {
-                  "GameLayer": true,
+                  "GameLayer": false,
                   "OverlayLayer": false,
                   "BloomLayer": false,
                   "AfterUILayer": false
@@ -169,7 +169,7 @@
                       "rotations": {}
                     },
                     "RenderOptions": {
-                      "GameLayer": true,
+                      "GameLayer": false,
                       "OverlayLayer": false,
                       "BloomLayer": false,
                       "AfterUILayer": false
