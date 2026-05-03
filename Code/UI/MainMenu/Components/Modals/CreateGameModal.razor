@@ -74,7 +74,7 @@
         // NOTE: For some reason, ISceneStartup.OnHostInitialize isn't being called
         // when starting from the menu scene. Shitty CTRL+C CTRL+V fix for now
 
-        Scene.Load(MainMenuPanel.Current.GameScene);
+        @* Scene.Load(MainMenuPanel.Current.GameScene); *@
 
         // If the map is a scene, load it
         var mapPackage = await Package.FetchAsync(LaunchArguments.Map, false);
@@ -97,7 +97,10 @@
         sceneLoadOptions.SetScene("scenes/engine.scene");
         Scene.Load(sceneLoadOptions);
 
-        Networking.CreateLobby(CurrentConfig);
+	if (!Networking.IsActive)
+	{
+        	Networking.CreateLobby(CurrentConfig);
+	}
     }
 
     void OnMapClicked()

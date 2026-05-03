@@ -17,8 +17,12 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 	{
 		// NOTE: See CreateGameModal.razor, line 73 for a related issue
 
-		var currentScene = Scene.Source as SceneFile;
-		if ( currentScene.GetMetadata( "Title" ) == "game" )
+		if ( Scene.Source is SceneFile currentScene2 )
+		{
+			Log.Info( $"SandboxGameManager: Loading map scene {currentScene2.ResourceName} {currentScene2.GetMetadata( "Title" )}" );
+		}
+
+		if ( Scene.Source is SceneFile currentScene && currentScene.GetMetadata( "Title" ) == "game" )
 		{
 			// If the map is a scene, load it
 			var mapPackage = await Package.FetchAsync( CustomMapInstance.Current.MapName, false );
@@ -31,13 +35,17 @@ public partial class SandboxGameManager : GameObjectSystem<SandboxGameManager>, 
 
 			if ( primaryAsset.EndsWith( ".scene" ) )
 			{
+				Log.Info( $"SandboxGameManager: Loading map scene {primaryAsset} from package {mapPackage.Title}" );
 				var sceneFile = mapPackage.GetMeta<SceneFile>( "PrimaryAsset" );
 				sceneLoadOptions.SetScene( sceneFile );
 				Scene.Load( sceneLoadOptions );
 			}
-
-			sceneLoadOptions.SetScene( "scenes/engine.scene" );
-			Scene.Load( sceneLoadOptions );
+			else
+			{
+				Log.Info( $"SandboxGameManager: loading engine scene" );
+				sceneLoadOptions.SetScene( "scenes/engine.scene" );
+				Scene.Load( sceneLoadOptions );
+			}
 
 			if ( !Networking.IsActive )
 			{
