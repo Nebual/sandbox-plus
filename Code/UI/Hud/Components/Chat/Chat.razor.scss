@@ -79,6 +79,7 @@ Chat {
                 color: #c0cee7;
                 font-size: 16px;
                 text-shadow: 2px 2px 1px rgba( black, 0.1 );
+                padding-right: 2em;
             }
 
             &.info {
@@ -106,7 +107,7 @@ Chat {
                 }
             }
             .name {
-                max-width: 8em;
+                max-width: 12em;
             }
 
             &.stale {
