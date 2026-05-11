@@ -19,6 +19,7 @@
 
     protected int MaxItems => 100;
     protected float MessageLifetime => 10f;
+    protected int MaxUsernameLength = 50;
 
     public bool IsOpen
     {
@@ -86,8 +87,11 @@
         if (playerId > 0)
             e.PlayerId = playerId;
 
+        var playerName = name; 
+        if (playerName.Length > 50) playerName = $"{playerName.Substring(0, MaxUsernameLength)}......";
+
         e.Message = message;
-        e.Name = $"{name}";
+        e.Name = $"{playerName}";
 
         e.SetClass("noname", string.IsNullOrEmpty(name));
         e.SetClass("info", isInfo);
