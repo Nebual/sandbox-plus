@@ -8,7 +8,7 @@ public class Remover : BaseTool
 
 		if ( Input.Pressed( "attack1" ) )
 		{
-			Remove( trace.GameObject );
+			Remove( Owner.SteamId, trace.GameObject );
 
 			return true;
 		}
@@ -17,9 +17,10 @@ public class Remover : BaseTool
 	}
 
 	[Rpc.Broadcast]
-	static void Remove( GameObject go )
+	static void Remove( SteamId steamId, GameObject go )
 	{
 		if ( !go.IsValid() ) return;
+		UndoSystem.RemoveByGameObject(steamId, go);
 		UndoSystem.CreateUndoParticles(go);
 		go.Destroy();
 	}

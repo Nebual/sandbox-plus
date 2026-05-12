@@ -47,6 +47,14 @@ public sealed class UndoSystem : GameObjectSystem<UndoSystem>
 		return Undos[steamId].Remove( undo );
 	}
 
+	public static int RemoveByGameObject(SteamId steamId, GameObject go)
+	{
+		if ( !Undos.ContainsKey( steamId ) )
+			Undos.Add( steamId, new List<Undo>() );
+
+		return Undos[steamId].RemoveAll( x => x.Prop == go );
+	}
+
 	[ConCmd( "undo" )]
 	public static void PlayerUndo()
 	{
