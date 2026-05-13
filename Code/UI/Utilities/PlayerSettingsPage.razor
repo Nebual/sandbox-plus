@@ -8,31 +8,39 @@
 	<button class="btn" onclick=@(TogglePlayerModelType)>Toggle Player Model Humanity (@(dresser?.UseHumanModel == true ? "Human" : "Citizen"))</button>
 
     <label class="description">Physgun Sound</label>
-	<button class="btn" onclick=@(TogglePhysgunSound)>Toggle Physgun Sound (@(Player.Local?.Settings.UsePhysgunSound == true ? "On" : "Off"))</button>
+    <button class="btn" onclick=@(TogglePhysgunSound)>Toggle Physgun Sound (@(Player.Local?.Settings.UsePhysgunSound == true ? "On" : "Off"))</button>
+
+    <label class="description">Double Jump to NoClip</label>
+    <button class="btn" onclick=@(ToggleDoubleJumpNoclip)>Double Jump to NoClip (@(Player.Local?.Settings.DoubleJumpNoclip == true ? "On" : "Off"))</button>
 </root>
 
 @code
 {
-	PlayerDresser _dresser;
-	PlayerDresser dresser
-	{
-		get
-		{
-			if (!_dresser.IsValid()) _dresser = Player.Local?.Body?.GetComponent<PlayerDresser>();
-			return _dresser;
-		}
-		set
-		{
-			_dresser = value;
-		}
-	}
+    PlayerDresser _dresser;
+    PlayerDresser dresser
+    {
+        get
+        {
+            if (!_dresser.IsValid()) _dresser = Player.Local?.Body?.GetComponent<PlayerDresser>();
+            return _dresser;
+        }
+        set
+        {
+            _dresser = value;
+        }
+    }
 
-	void TogglePlayerModelType()
-	{
-		dresser?.ChangePlayerModelType(!dresser.UseHumanModel);
-	}
+    void TogglePlayerModelType()
+    {
+        dresser?.ChangePlayerModelType(!dresser.UseHumanModel);
+    }
 
     void TogglePhysgunSound() {
-		Player.Local.Settings.UsePhysgunSound = !Player.Local.Settings.UsePhysgunSound;
+        Player.Local.Settings.UsePhysgunSound = !Player.Local.Settings.UsePhysgunSound;
+    }
+
+    void ToggleDoubleJumpNoclip()
+    {
+        Player.Local.Settings.DoubleJumpNoclip = !Player.Local.Settings.DoubleJumpNoclip;
     }
 }

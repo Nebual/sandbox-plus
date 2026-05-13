@@ -24,8 +24,22 @@ namespace Sandbox
 			get => usePhysgunSound;
 			set
 			{
-				if ( usePhysgunSound == value ) return;
+				if (usePhysgunSound == value)
+					return;
 				usePhysgunSound = value;
+				SetDirty();
+			}
+		}
+
+		private bool doubleJumpNoclip = true;
+		public bool DoubleJumpNoclip
+		{
+			get => doubleJumpNoclip;
+			set
+			{
+				if (doubleJumpNoclip == value)
+					return;
+				doubleJumpNoclip = value;
 				SetDirty();
 			}
 		}

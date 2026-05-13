@@ -15,8 +15,12 @@ public class MoveModeNoclip : MoveMode
 		if ( Input.Pressed( "noclip" ) ) Tags.Toggle( "noclip" );
 		else if ( Input.Pressed( "jump" ) )
 		{
+			if (Player.Local.Settings.DoubleJumpNoclip)
+			{
 			if ( _lastJumpPress < 0.3f ) Tags.Toggle( "noclip" );
 			_lastJumpPress = 0;
+			
+			}
 		}
 	}
 
