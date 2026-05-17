@@ -17,6 +17,11 @@ public partial class BaseWeapon : Component, SandboxPlus.PlayerController.IEvent
 	[Property] public float SecondaryRate { get; set; } = 15.0f;
 	[Property] public float ReloadTime { get; set; } = 3.0f;
 
+	/// <summary>
+	/// If true the game should hide the hud when holding this weapon. Useful for cameras, or scopes.
+	/// </summary>
+	[Property] public virtual bool WantsHideHud => false;
+
 	[Sync] public bool IsReloading { get; set; }
 	[Sync] public RealTimeSince TimeSinceReload { get; set; }
 	[Sync] public RealTimeSince TimeSinceDeployed { get; set; }

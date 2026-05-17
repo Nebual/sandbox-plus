@@ -33,6 +33,8 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	[Property] public SteamId SteamId { get; set; } = 0UL;
 	[Property] public SteamId PartyId { get; set; } = 0UL;
 
+	public bool IsLocalPlayer => !IsProxy;
+
 	public bool IsDead => Health <= 0;
 	public Transform EyeTransform => Controller.EyeTransform;
 	public Ray AimRay => new( EyeTransform.Position, EyeTransform.Rotation.Forward );
@@ -43,6 +45,25 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	public bool isInParty()
 	{
 		return PartyId != 0UL;
+	}
+
+	/// <summary>
+	/// True if the player wants the HUD not to draw right now
+	/// </summary>
+	public bool WantsHideHud
+	{
+		get
+		{
+			//var freeCam = Scene.Get<FreeCamGameObjectSystem>();
+			//if ( freeCam.IsActive )
+			//	return true;
+
+			var weapon = GetComponent<PlayerInventory>()?.ActiveWeapon;
+			if ( weapon.IsValid() && weapon.WantsHideHud )
+				return true;
+
+			return false;
+		}
 	}
 
 	protected override void OnUpdate()
