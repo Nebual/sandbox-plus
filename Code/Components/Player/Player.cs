@@ -48,24 +48,27 @@ public sealed partial class Player : Component, Component.IDamageable, SandboxPl
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
-		if ( !IsProxy )
+		if ( IsProxy ) return;
+		else ClientOnUpdate();
+	}
+
+	private void ClientOnUpdate()
+	{
+		if ( Input.Pressed( "undo" ) && TimeSinceLastUndo > 0.1f )
 		{
-			if ( Input.Pressed( "undo" ) && TimeSinceLastUndo > 0.1f )
-			{
-				TimeSinceLastUndo = 0;
-				UndoSystem.PlayerUndo();
-			}
-			if ( Input.Pressed( "attack3" ) )
-			{
-				SboxToolAuto();
-			}
+			TimeSinceLastUndo = 0;
+			UndoSystem.PlayerUndo();
+		}
+		if ( Input.Pressed( "attack3" ) )
+		{
+			SboxToolAuto();
 		}
 
 		// Crosshair
 		Vector3 trace = Vector3.Zero;
 		if ( Controller.ThirdPerson ) trace = Player.DoBasicTrace().HitPosition;
 
-		if ( !Controller.ThirdPerson || trace == Vector3.Zero) trace = AimRay.Position + AimRay.Forward * 5000;
+		if ( !Controller.ThirdPerson || trace == Vector3.Zero ) trace = AimRay.Position + AimRay.Forward * 5000;
 
 		Vector2 loc = Scene.Camera.PointToScreenPixels( trace );
 		Scene.Camera.Hud.DrawCircle( new Vector2( loc.x, loc.y ), new Vector2( 5, 5 ), Color.White );
