@@ -1,0 +1,57 @@
+@import "/UI/Theme.scss";
+
+Voices
+{
+    position: absolute;
+    right: 128px;
+    bottom: 256px;
+    gap: 6px;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .item-row
+    {
+        gap: 10px;
+        align-items: center;
+        padding: 8px 14px 8px 12px;
+        justify-content: flex-end;
+        background-color: $hud-element-bg;
+        border-radius: $hud-radius-sm;
+        overflow: hidden;
+    }
+
+    .avatar-wrap
+    {
+        position: relative;
+        width: $hud-icon-size;
+        height: $hud-icon-size;
+        flex-shrink: 0;
+    }
+
+    .speaking-glow
+    {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        left: -13px;
+        top: -13px;
+        border-radius: 100%;
+        background: radial-gradient( rgba(0, 148, 255, 0.7) 0%, transparent 70% );
+    }
+
+    img
+    {
+        width: $hud-icon-size;
+        height: $hud-icon-size;
+        border-radius: 100px;
+    }
+
+    label
+    {
+        font-family: $title-font;
+        color: $hud-text;
+        font-size: 15px;
+        font-weight: 600;
+        text-shadow: 0px 0px 8px $color-accent;
+    }
+}
