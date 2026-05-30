@@ -48,5 +48,6 @@
 
         inventoryIcon.Label.Text = di.Name;
         inventoryIcon.SetClass("active", player.Inventory.ActiveWeapon == weapon);
+        inventoryIcon.SetWeapon(weapon);
     }
 }

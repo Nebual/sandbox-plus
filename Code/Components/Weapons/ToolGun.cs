@@ -4,6 +4,11 @@ public partial class ToolGun : BaseWeapon
 	[ConVar( "tool_current" )] public static string UserToolCurrent { get; set; } = "tool_boxgun";
 
 	public BaseTool CurrentTool { get; set; }
+	
+	public override InventoryIconPreview GetInventoryPreview() => InventoryIconPreview.Default with
+	{
+		ModelRotation = Rotation.From( -30, 270, 0 ),
+	};
 
 	protected override void OnEnabled()
 	{

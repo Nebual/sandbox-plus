@@ -4,9 +4,15 @@ partial class Flashlight : BaseWeapon
 	protected SpotLight WorldLight => GetComponentInChildren<SpotLight>( true );
 	protected SpotLight ViewLight => ViewModel?.GetComponentInChildren<SpotLight>( true );
 
-	[Sync, Change( nameof( ToggleLight ) )] private bool LightEnabled { get; set; } = true;
+	[Sync, Change( nameof(ToggleLight) )] private bool LightEnabled { get; set; } = true;
+
+	public override InventoryIconPreview GetInventoryPreview() => InventoryIconPreview.Default with
+	{
+		ModelRotation = Rotation.From( 0, 270, 0 ),
+	};
 
 	TimeSince timeSinceLightToggled;
+
 	public override bool ShouldShowCrosshair()
 	{
 		return false;

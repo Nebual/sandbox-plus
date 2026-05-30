@@ -1,26 +1,111 @@
-@using Sandbox.UI
 @using Sandbox.UI.Construct
 @namespace Sandbox.UI
 
 @inherits Panel
 
-<root />
+<root/>
 
 @code
 {
-    public Label Label { get; set; }
-    public Label Number { get; set; }
+	public Label Label { get; set; }
 
-    public InventoryIcon(int i, Panel parent)
-    {
-        Parent = parent;
-        Label = Add.Label("empty", "item-name");
-        Number = Add.Label($"{i}", "slot-number");
-    }
+	private Panel _previewContainer;
+	private Texture _previewTexture;
+	private Panel _previewImage;
+	private BaseWeapon _currentWeapon;
+	private int _slotNum;
 
-    public void Clear()
-    {
-        Label.Text = "";
-        SetClass("active", false);
-    }
+	public InventoryIcon( int i, Panel parent )
+	{
+		_slotNum = i;
+		Parent = parent;
+		_previewContainer = Add.Panel( "preview-container" );
+		Add.Label( $"{i}", "slot-number" );
+		Label = Add.Label( "", "item-name" );
+	}
+
+	public void SetWeapon( BaseWeapon weapon )
+	{
+		if ( _currentWeapon == weapon ) return;
+		_currentWeapon = weapon;
+
+		if ( weapon == null )
+		{
+			ClearPreview();
+			return;
+		}
+
+		var model = weapon.GetInventoryModel();
+		if ( model == null || model.IsError )
+		{
+			ClearPreview();
+			return;
+		}
+
+		BuildPreview( model, weapon.GetInventoryPreview() );
+	}
+
+	private void BuildPreview( Model model, InventoryIconPreview config )
+	{
+		_previewTexture = null;
+
+		var scene = Game.ActiveScene;
+		if ( scene is null ) return;
+
+		var tag = $"inv-prev-{_slotNum}";
+		var bounds = model.Bounds;
+		var previewOrigin = new Vector3( 100f * _slotNum, 0f, -1_000_000f );
+		var worldCenter = previewOrigin + config.ModelRotation * bounds.Center;
+		var cameraRot = config.CameraAngles.ToRotation();
+		var distance = MathX.SphereCameraDistance( bounds.Size.Length * config.DistanceMultiplier, config.FieldOfView );
+		var cameraPos = worldCenter + cameraRot.Backward * distance;
+
+		var modelGo = scene.CreateObject();
+		modelGo.WorldPosition = previewOrigin;
+		modelGo.WorldRotation = config.ModelRotation;
+		modelGo.Tags.Add( tag );
+		modelGo.AddComponent<ModelRenderer>().Model = model;
+
+		var camGo = scene.CreateObject();
+		camGo.WorldPosition = cameraPos;
+		camGo.WorldRotation = cameraRot;
+		var cam = camGo.AddComponent<CameraComponent>();
+		cam.FieldOfView = config.FieldOfView;
+		cam.BackgroundColor = Color.Transparent;
+		cam.ClearFlags = ClearFlags.Color | ClearFlags.Depth;
+		cam.RenderTags.Add( tag );
+
+		var lightGo = scene.CreateObject();
+		lightGo.WorldPosition = cameraPos + cameraRot.Up * 500f + cameraRot.Right * 100f;
+		lightGo.Tags.Add( tag );
+		var light = lightGo.AddComponent<PointLight>();
+		light.LightColor = new Color( 1f, 0.9f, 0.9f ) * 50f;
+		light.Radius = 1000f;
+
+		_previewTexture = Texture.CreateRenderTarget().WithSize( 128, 128 ).Create();
+		cam.RenderToTexture( _previewTexture );
+
+		lightGo.Destroy();
+		modelGo.Destroy();
+		camGo.Destroy();
+
+		if ( _previewImage is null )
+			_previewImage = _previewContainer.Add.Panel( "preview" );
+		_previewImage.Style.SetBackgroundImage( _previewTexture );
+	}
+
+	private void ClearPreview()
+	{
+		_previewImage?.Delete();
+		_previewImage = null;
+		_previewTexture = null;
+	}
+
+	public void Clear()
+	{
+		Label.Text = "";
+		SetClass( "active", false );
+		ClearPreview();
+		_currentWeapon = null;
+	}
 }

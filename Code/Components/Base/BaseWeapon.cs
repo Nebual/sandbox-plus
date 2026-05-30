@@ -1,5 +1,21 @@
 using Sandbox.Citizen;
 
+public struct InventoryIconPreview
+{
+	public static InventoryIconPreview Default => new()
+	{
+		ModelRotation = Rotation.From( 0, 180, 0 ),
+		CameraAngles = new Angles( 0, 270, 0 ),
+		FieldOfView = 30f,
+		DistanceMultiplier = 0.5f,
+	};
+
+	public Rotation ModelRotation { get; set; }
+	public Angles CameraAngles { get; set; }
+	public float FieldOfView { get; set; }
+	public float DistanceMultiplier { get; set; }
+}
+
 /// <summary>
 /// A common base we can use for weapons so we don't have to implement the logic over and over
 /// again. Feel free to not use this and to implement it however you want to.
@@ -44,6 +60,20 @@ public partial class BaseWeapon : Component, SandboxPlus.PlayerController.IEvent
 	{
 		return false;
 	}
+
+	public virtual Model GetInventoryModel()
+	{
+		if ( WorldModel.IsValid() ) return WorldModel.Model;
+
+		if ( WorldModelPrefab.IsValid() )
+			return WorldModelPrefab.GetComponentInChildren<SkinnedModelRenderer>( true )?.Model
+			       ?? WorldModelPrefab.GetComponentInChildren<ModelRenderer>( true )?.Model;
+
+		return GameObject.GetComponentInChildren<SkinnedModelRenderer>( true )?.Model
+		       ?? GameObject.GetComponentInChildren<ModelRenderer>( true )?.Model;
+	}
+
+	public virtual InventoryIconPreview GetInventoryPreview() => InventoryIconPreview.Default;
 
 	void SandboxPlus.PlayerController.IEvents.OnEnableSnapping( ref bool enable )
 	{
